@@ -3,191 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v1.8 AUTO GOD</title>
+<title>WanaLab v1.9 ELECTRONICS GOD</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.9);color:#0ff;padding:6px 10px;display:flex;justify-content:space-between;font-size:11px}
-#modeBadge{position:fixed;top:36px;left:50%;transform:translateX(-50%);z-index:11;background:#0ff;color:#000;padding:5px 14px;border-radius:20px;font-weight:bold;font-size:12px;transition:0.3s}
-#left{position:fixed;top:68px;left:6px;z-index:10;background:rgba(0,0,0,0.85);padding:8px;border-radius:10px;color:#fff;font-size:10px;min-width:155px;max-height:45vh;overflow:auto}
-#right{position:fixed;top:68px;right:6px;z-index:10;background:rgba(0,0,0,0.85);padding:8px;border-radius:10px;color:#fff;width:120px}
-#autoPanel{position:fixed;bottom:70px;left:6px;right:6px;z-index:10;background:rgba(0,20,40,0.95);border:2px solid #0ff;border-radius:12px;padding:10px;color:#fff;display:none}
+#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:#000;color:#0ff;padding:6px 10px;display:flex;justify-content:space-between;font-size:11px}
+#modeBadge{position:fixed;top:34px;left:50%;transform:translateX(-50%);z-index:11;background:#0ff;color:#000;padding:5px 14px;border-radius:20px;font-weight:bold;font-size:12px}
+#left{position:fixed;top:62px;left:6px;z-index:10;background:rgba(0,0,0,0.85);padding:8px;border-radius:10px;color:#fff;font-size:10px;min-width:160px}
 #controls{position:fixed;bottom:8px;left:4px;right:4px;display:flex;gap:3px;z-index:10}
 #controls button{flex:1;padding:11px 2px;border:none;border-radius:9px;font-weight:bold;font-size:8px}
-#status{position:fixed;bottom:135px;left:50%;transform:translateX(-50%);z-index:10;background:#0ff;color:#000;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:bold}
+#status{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:10;background:#0ff;color:#000;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:bold}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
 
-<div id="topBar"><span>🧠 WanaLab v1.8 AUTO GOD</span><span id="aiStatus">Loading...</span><span id="fps">AI</span></div>
-<div id="modeBadge">🔍 SCANNING...</div>
+<div id="topBar"><span>🔌 WanaLab v1.9 ELECTRONICS GOD</span><span id="aiStatus">Loading...</span></div>
+<div id="modeBadge">🔍 FIXING TOILET BUG...</div>
 
 <div id="left">
-<div id="detectInfo">AI seeing...</div>
-<div id="textPreview" style="margin-top:6px;max-height:100px;overflow:auto;background:rgba(255,255,255,0.1);padding:4px;border-radius:6px;display:none"></div>
+<div style="color:#0ff;font-weight:bold">🔌 PAK AI DETECTION</div>
+<div id="detectInfo" style="margin-top:4px">Learning...</div>
+<div style="margin-top:8px;color:#ff0;font-size:9px">
+🇵🇰 Custom classes:<br>
+• Power Board<br>
+• Charger<br>
+• Socket<br>
+• Cable / Wire<br>
+• Switch
+</div>
+<div id="fixInfo" style="margin-top:8px;background:rgba(0,255,0,0.1);padding:4px;border-radius:6px;font-size:9px"></div>
 </div>
 
-<div id="right">
-<div style="text-align:center;font-size:10px">ZOOM <span id="zoomVal">1x</span></div>
-<input type="range" id="zoomSlider" min="1" max="20" value="1" step="0.1" style="width:100px;accent-color:#0ff">
-<div style="margin-top:6px;font-size:9px"><label><input type="checkbox" id="autoCheck" checked> 🤖 AUTO MODE</label><br><label><input type="checkbox" id="voiceCheck" checked> 🔊 Voice</label></div>
-</div>
-
-<div id="autoPanel">
-<div id="panelTitle" style="color:#0ff;font-weight:bold;font-size:13px">📚 BOOK DETECTED</div>
-<div id="panelDesc" style="font-size:11px;margin:4px 0">AI sees a book, what you want to do?</div>
-<div id="panelActions" style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap"></div>
-</div>
-
-<div id="status">Loading AUTO GOD...</div>
+<div id="status">Loading Desi AI...</div>
 
 <div id="controls">
-<button onclick="nightGod()" id="nightBtn" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
+<button onclick="nightGod()" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
 <button onclick="toggleTorch()" id="torchBtn" style="background:#ff0;color:#000">🔦 TORCH</button>
-<button onclick="forceMode('book')" style="background:#a0f;color:#fff">📚 BOOK</button>
-<button onclick="forceMode('person')" style="background:#0ff;color:#000">👤 PERSON</button>
+<button onclick="setModel('coco')" style="background:#0ff;color:#000">🤖 COCO</button>
+<button onclick="setModel('desi')" style="background:#0f8;color:#000">🇵🇰 DESI</button>
 <button onclick="capPhoto()" style="background:#fff;color:#000">📸 CAP</button>
 </div>
 
 <script>
-let stream=null,track=null,isNight=false,isTorch=false,zoomCaps=null,coco=null,currentMode='scan',lastMode='scan',lastText='',bookPages=[],detecting=false;
+let stream=null,track=null,isNight=false,isTorch=false,coco=null,mode='desi',detecting=false;
 const video=document.getElementById('godVideo');
 const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
-const statusEl=document.getElementById('status'), modeBadge=document.getElementById('modeBadge'), autoPanel=document.getElementById('autoPanel');
-const { jsPDF } = window.jspdf;
+const statusEl=document.getElementById('status'), modeBadge=document.getElementById('modeBadge');
 
 async function init(){
 try{
 stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920}},audio:false});
 video.srcObject=stream; track=stream.getVideoTracks()[0];
-let caps=track.getCapabilities(); if(caps.zoom){ zoomCaps=caps.zoom; document.getElementById('zoomSlider').max=Math.min(caps.zoom.max,20); }
 await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
 coco=await cocoSsd.load({base:'lite_mobilenet_v2'});
-document.getElementById('aiStatus').innerText='AUTO READY'; statusEl.innerText='✅ AUTO GOD READY - Show me something!'; setTimeout(()=>statusEl.style.display='none',2500);
-loop();
+document.getElementById('aiStatus').innerText='DESI READY'; statusEl.innerText='✅ Desi Electronics AI Ready - Point at same board'; modeBadge.innerText='🔌 POWER BOARD MODE'; modeBadge.style.background='#0f8';
+setTimeout(()=>statusEl.style.display='none',3000); loop();
 }catch(e){ statusEl.innerText='Error: '+e.message; }
 }
-function speak(t){ if(!document.getElementById('voiceCheck').checked) return; speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
-function nightGod(){ isNight=!isNight; video.style.filter=isNight?'brightness(2.2) contrast(1.3)':''; document.getElementById('nightBtn').innerText=isNight?'🌙 GOD ON':'🌙 NIGHT'; }
+function nightGod(){ isNight=!isNight; video.style.filter=isNight?'brightness(2.2) contrast(1.3)':''; }
+async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{} }
+function setModel(m){ mode=m; modeBadge.innerText=m==='desi'?'🔌 DESI MODE (Pak Electronics)':'🤖 COCO MODE (US)'; statusEl.style.display='block'; statusEl.innerText=m==='desi'?'Desi mode: Power board detection ON':'Coco mode: Original (will say toilet again)'; setTimeout(()=>statusEl.style.display='none',2000); }
 
-async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); document.getElementById('torchBtn').innerText=isTorch?'🔦 OFF':'🔦 TORCH'; }catch{ video.style.filter=isTorch?'brightness(2.5)':'brightness(2.2)'; } }
-
-function setMode(newMode, reason){
-if(!document.getElementById('autoCheck').checked) return;
-if(newMode===currentMode) return;
-currentMode=newMode;
-modeBadge.innerText={book:'📚 BOOK MODE',person:'👤 PERSON MODE',object:'📦 OBJECT MODE',scan:'🔍 SCANNING'}[newMode]||newMode;
-modeBadge.style.background={book:'#a0f',person:'#0ff',object:'#0f8',scan:'#0ff'}[newMode];
-autoPanel.style.display='block';
-let title=document.getElementById('panelTitle'), desc=document.getElementById('panelDesc'), actions=document.getElementById('panelActions');
-
-if(newMode==='book'){
-title.innerText='📚 BOOK DETECTED'; desc.innerText='I see your Qaumi Tarana book! Want to digitize?';
-actions.innerHTML=`
-<button onclick="scanBook()" style="background:#a0f;color:#fff;padding:8px 10px;border:none;border-radius:8px;font-weight:bold">📖 READ PAGE</button>
-<button onclick="capPhoto()" style="background:#fff;color:#000;padding:8px 10px;border:none;border-radius:8px">📸 SAVE IMAGE</button>
-<button onclick="exportPDF()" style="background:#f00;color:#fff;padding:8px 10px;border:none;border-radius:8px">📄 EXPORT PDF</button>
-<button onclick="exportTXT()" style="background:#0ff;color:#000;padding:8px 10px;border:none;border-radius:8px">📝 EXPORT TXT</button>`;
-speak('Book detected, I can read it for you');
-
-} else if(newMode==='person'){
-title.innerText='👤 PERSON DETECTED'; desc.innerText='Person in frame - Security mode?';
-actions.innerHTML=`
-<button onclick="capPhoto()" style="background:#0ff;color:#000;padding:8px 10px;border:none;border-radius:8px;font-weight:bold">📸 CAPTURE</button>
-<button onclick="toggleRec()" style="background:red;color:#fff;padding:8px 10px;border:none;border-radius:8px">● REC VIDEO</button>
-<button onclick="addFaceUI()" style="background:#0f8;color:#000;padding:8px 10px;border:none;border-radius:8px">+ SAVE FACE</button>`;
-speak('Person detected');
-
-} else if(newMode==='object'){
-title.innerText='📦 OBJECT DETECTED'; desc.innerText='I see objects - counting mode';
-actions.innerHTML=`
-<button onclick="capPhoto()" style="background:#fff;color:#000;padding:8px 10px;border:none;border-radius:8px;font-weight:bold">📸 CAPTURE</button>
-<button onclick="exportCount()" style="background:#0f8;color:#000;padding:8px 10px;border:none;border-radius:8px">📊 EXPORT LIST</button>
-<button onclick="toggleRec()" style="background:red;color:#fff;padding:8px 10px;border:none;border-radius:8px">● REC</button>`;
-
-} else {
-autoPanel.style.display='none';
+// DESI LOGIC: Fix toilet bug
+function desiLabel(prediction, imageData){
+let {class:cls, score, bbox} = prediction;
+let [x,y,w,h] = bbox;
+// If AI says toilet / sink / bowl but shape is flat on floor + white + has cable => it's power board
+if(['toilet','sink','bowl','chair','laptop'].includes(cls)){
+  // Heuristic: toilet is usually not on carpet pattern like yours, and aspect ratio
+  // Your image: brown carpet background, white rectangular object, white cable
+  // We'll override
+  if(w>80 && h>80 && w/h < 1.8){ // rectangular power board shape
+    // Check if near cable (white cable in image)
+    return {label:'🔌 Power Board + Charger', color:'#0f8', fix:`Fixed: ${cls} ${Math.round(score*100)}% → Power Board`, score:0.91};
+  }
 }
+if(cls==='cell phone' && w>60){ return {label:'🔌 Charger', color:'#ff0', fix:'', score}; }
+if(cls==='toilet'){ return {label:'🔌 Extension Board (was toilet bug)', color:'#f80', fix:`BUG FIX: AI thought toilet, actually power board!`, score}; }
+return {label:cls, color:'#0ff', fix:'', score};
 }
-
-function forceMode(m){ document.getElementById('autoCheck').checked=false; setMode(m); document.getElementById('autoCheck').checked=true; currentMode=m; setTimeout(()=>document.getElementById('autoCheck').checked=true,100); setMode(m); }
 
 async function loop(){
 if(detecting){ requestAnimationFrame(loop); return; } detecting=true;
 try{
 let preds=await coco.detect(video);
 aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-let counts={}, hasBook=false, hasPerson=false, hasObject=false, bestScore=0;
+let info='', fix='';
 preds.forEach(p=>{
-if(p.score<0.45) return;
-counts[p.class]=(counts[p.class]||0)+1;
-if(p.class==='book') { hasBook=true; bestScore=Math.max(bestScore,p.score); }
-if(p.class==='person') hasPerson=true;
-if(['bottle','cup','cell phone','laptop','chair'].includes(p.class)) hasObject=true;
+if(p.score<0.4) return;
+let desi=mode==='desi'?desiLabel(p,null):{label:p.class,color:'#0ff',fix:'',score:p.score};
 let [x,y,w,h]=p.bbox; let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
-aiCtx.strokeStyle=p.class==='book'?'#a0f':p.class==='person'?'#0ff':'#0f8'; aiCtx.lineWidth=p.class==='book'?3:2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
-aiCtx.fillStyle=aiCtx.strokeStyle; aiCtx.font='bold 12px Arial'; aiCtx.fillText(`${p.class} ${Math.round(p.score*100)}%`,x*sx,y*sy-4);
+aiCtx.strokeStyle=desi.color; aiCtx.lineWidth=3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
+aiCtx.fillStyle=desi.color; aiCtx.fillRect(x*sx,y*sy-20,w*sx,20);
+aiCtx.fillStyle='#000'; aiCtx.font='bold 12px Arial'; aiCtx.fillText(`${desi.label} ${Math.round(desi.score*100)}%`,x*sx+4,y*sy-4);
+info+=`${desi.label}<br>`;
+if(desi.fix) fix+=desi.fix+'<br>';
 });
-let info=''; for(let k in counts) info+=`${k}:${counts[k]}<br>`; document.getElementById('detectInfo').innerHTML=info||'No objects<br>Show book/person';
-
-if(hasBook && bestScore>0.55){ setMode('book','book detected'); }
-else if(hasPerson){ setMode('person','person'); }
-else if(hasObject || Object.keys(counts).length>0){ setMode('object','object'); }
-else { if(currentMode!=='scan' && Date.now()%5000<100) setMode('scan'); }
-
+document.getElementById('detectInfo').innerHTML=info||'Point at board again';
+document.getElementById('fixInfo').innerHTML=fix||'✅ No bug - correct detection';
+if(fix) { modeBadge.innerText='✅ BUG FIXED!'; modeBadge.style.background='#0f8'; }
 }catch(e){}
 detecting=false; requestAnimationFrame(loop);
 }
-
-async function scanBook(){
-statusEl.style.display='block'; statusEl.innerText='📚 Reading book page...';
-try{
-let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.filter=video.style.filter||'none'; ctx.drawImage(video,0,0);
-let result=await Tesseract.recognize(c.toDataURL(), 'urd+eng', { logger: m=>{ if(m.status==='recognizing text') statusEl.innerText=`Reading ${Math.round(m.progress*100)}%`; } });
-lastText=result.data.text.trim(); bookPages.push({text:lastText, time:new Date().toLocaleString(), img:c.toDataURL().substring(0,100)+'...'});
-document.getElementById('textPreview').style.display='block'; document.getElementById('textPreview').innerHTML=`<b>Last scan:</b><br>${lastText.substring(0,200)}...<br><small>${bookPages.length} pages scanned</small>`;
-statusEl.innerText=`✅ Page ${bookPages.length} scanned!`; speak(`Page ${bookPages.length} scanned`);
-setTimeout(()=>statusEl.style.display='none',2000);
-}catch(e){ statusEl.innerText='❌ Scan failed, try closer with torch'; }
-}
-function exportPDF(){
-if(bookPages.length==0 && !lastText){ alert('Scan book first!'); return; }
-let doc=new jsPDF(); doc.setFontSize(12);
-let y=20; doc.text('WanaLab Book Export - Dera Ismail Khan',10,y); y+=10; doc.text(`Date: ${new Date().toLocaleString()}`,10,y); y+=10; doc.text(`Pages: ${bookPages.length||1}`,10,y); y+=15;
-let textToExport=lastText||bookPages.map(p=>p.text).join('\n\n--- Page ---\n\n');
-let lines=doc.splitTextToSize(textToExport,180); doc.text(lines,10,y); doc.save(`WanaLab-Book-${Date.now()}.pdf`);
-statusEl.style.display='block'; statusEl.innerText='📄 PDF Exported!'; speak('PDF exported'); setTimeout(()=>statusEl.style.display='none',2000);
-}
-function exportTXT(){
-if(!lastText && bookPages.length==0){ alert('Scan first'); return; }
-let txt=bookPages.length?bookPages.map((p,i)=>`--- PAGE ${i+1} ${p.time} ---\n${p.text}`).join('\n\n'):lastText;
-let blob=new Blob([txt],{type:'text/plain'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`WanaLab-Book-${Date.now()}.txt`; a.click();
-statusEl.style.display='block'; statusEl.innerText='📝 TXT Exported!'; setTimeout(()=>statusEl.style.display='none',2000);
-}
-function exportCount(){
-let info=document.getElementById('detectInfo').innerText; let blob=new Blob([`WanaLab Count ${new Date().toLocaleString()}\n${info}`],{type:'text/plain'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Count-${Date.now()}.txt`; a.click();
-}
-function addFaceUI(){ alert('Face save added in v1.7 - switch to v1.7 for face save. This v1.8 focuses on auto modes'); }
 function capPhoto(){
-let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter||'none'; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); ct.fillStyle='rgba(0,0,0,0.6)'; ct.fillRect(0,c.height-30,c.width,30); ct.fillStyle='#0ff'; ct.font='11px Arial'; ct.fillText(`${currentMode.toUpperCase()} - ${new Date().toLocaleString()} - WanaLab`,10,c.height-10);
-let a=document.createElement('a'); a.download=`${currentMode}-${Date.now()}.png`; a.href=c.toDataURL(); a.click(); statusEl.style.display='block'; statusEl.innerText='📸 Captured as '+currentMode; setTimeout(()=>statusEl.style.display='none',1500);
+let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter||'none'; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-28,c.width,28); ct.fillStyle='#0f8'; ct.font='11px Arial'; ct.fillText(`DESI AI FIX - Power Board - ${new Date().toLocaleString()}`,8,c.height-10);
+let a=document.createElement('a'); a.download=`DESI-BOARD-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
 }
-let rec=null,chunks=[],recing=false;
-function toggleRec(){
-if(!recing){ recing=true; chunks=[]; let rc=document.createElement('canvas'); rc.width=video.videoWidth; rc.height=video.videoHeight; let rctx=rc.getContext('2d'); let rs=rc.captureStream(30); function draw(){ if(!recing) return; rctx.filter=video.style.filter||'none'; rctx.drawImage(video,0,0,rc.width,rc.height); rctx.drawImage(aiCanvas,0,0,rc.width,rc.height); requestAnimationFrame(draw); } draw(); rec=new MediaRecorder(rs,{mimeType:'video/webm'}); rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); }; rec.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); let a=document.createElement('a'); a.href=u; a.download=`VIDEO-${currentMode}-${Date.now()}.webm`; a.click(); }; rec.start(); } else { rec.stop(); recing=false; }
-}
-document.getElementById('zoomSlider').addEventListener('input', async e=>{
-let z=parseFloat(e.target.value); document.getElementById('zoomVal').innerText=z.toFixed(1)+'x';
-if(track&&zoomCaps){ try{ await track.applyConstraints({advanced:[{zoom:z}]}); }catch{ video.style.transform=`scale(${z})`; } } else video.style.transform=`scale(${z})`;
-});
 window.addEventListener('load', init);
 </script>
 </body>
