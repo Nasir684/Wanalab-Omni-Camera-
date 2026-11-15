@@ -1,0 +1,4 @@
+[
+  {"id":"night-vision-ir","name":"IR Night Vision Clip","type":"CLIP","mode":"night","description":"IR night vision clip with 850nm LED","status":"working"},
+  {"id":"night-god-10frame","name":"Night God 10-Frame Software","type":"SOFTWARE","mode":"night","description":"10-frame HDR fusion night mode","status":"working"}
+]
