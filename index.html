@@ -3,156 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>WanaLab God Eye PRO v1.2</title>
+<title>WanaLab God Eye PRO v1.3 AI</title>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
 <style>
  *{margin:0;padding:0;box-sizing:border-box}
  body{background:#000;overflow:hidden;font-family:Arial,sans-serif;height:100vh;width:100vw}
  #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;background:#000;z-index:1}
- #topBar{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(0,0,0,0.7);color:#0f0;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:12px}
- #zoomBar{position:fixed;top:50px;right:10px;z-index:1000;background:rgba(0,0,0,0.7);padding:12px;border-radius:12px;color:#fff;backdrop-filter:blur(5px)}
- #zoomBar input{width:110px;accent-color:#0ff}
- #proBar{position:fixed;bottom:12px;left:8px;right:8px;display:flex;gap:6px;z-index:1000;flex-wrap:wrap}
- #proBar button{flex:1;padding:13px 4px;border:none;border-radius:10px;font-weight:bold;font-size:11px;min-width:55px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.5)}
- #status{position:fixed;bottom:75px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,0,0,0.7);color:#0ff;padding:6px 14px;border-radius:20px;font-size:11px}
+ #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+ #topBar{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(0,0,0,0.7);color:#0f0;padding:8px 10px;display:flex;justify-content:space-between;font-size:12px}
+ #zoomBar{position:fixed;top:48px;right:10px;z-index:1000;background:rgba(0,0,0,0.7);padding:10px;border-radius:12px;color:#fff}
+ #zoomBar input{width:100px;accent-color:#0ff}
+ #proBar{position:fixed;bottom:12px;left:6px;right:6px;display:flex;gap:5px;z-index:1000;flex-wrap:wrap}
+ #proBar button{flex:1;padding:12px 3px;border:none;border-radius:10px;font-weight:bold;font-size:10px;min-width:50px}
+ #status{position:fixed;bottom:75px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,0,0,0.8);color:#0ff;padding:7px 16px;border-radius:20px;font-size:11px;text-align:center;max-width:90%}
 </style>
 </head>
 <body>
 
 <video id="godVideo" autoplay playsinline muted></video>
+<canvas id="aiCanvas"></canvas>
 
 <div id="topBar">
-  <span>🔭 WanaLab God Eye PRO v1.2</span>
-  <span id="resInfo">1920x1080</span>
+ <span>🔭 WanaLab v1.3 AI</span>
+ <span id="aiStatus">AI: Loading...</span>
 </div>
 
 <div id="zoomBar">
-  <div style="text-align:center;font-size:10px;margin-bottom:5px">ZOOM <span id="zoomVal">1.0x</span></div>
-  <input type="range" id="zoomSlider" min="1" max="10" value="1" step="0.1">
+ <div style="text-align:center;font-size:10px">ZOOM <span id="zoomVal">1.0x</span></div>
+ <input type="range" id="zoomSlider" min="1" max="10" value="1" step="0.1">
 </div>
 
-<div id="status">📡 Initializing Fusion Camera...</div>
+<div id="status">🤖 Loading TensorFlow AI (5 sec)...</div>
 
 <div id="proBar">
-  <button onclick="nightGod()" id="nightBtn" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
-  <button onclick="toggleTorch()" id="torchBtn" style="background:#ffff00;color:#000">🔦 TORCH</button>
-  <button onclick="thermalMode()" id="thermalBtn" style="background:#ff0044;color:#fff">🔥 THERMAL</button>
-  <button onclick="aiDetect()" style="background:#00ff88;color:#000">🤖 AI</button>
-  <button onclick="capturePhoto()" style="background:#00e5ff;color:#000">📸 CAPTURE</button>
+ <button onclick="nightGod()" id="nightBtn" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
+ <button onclick="toggleTorch()" id="torchBtn" style="background:#ffff00;color:#000">🔦 TORCH</button>
+ <button onclick="thermalMode()" id="thermalBtn" style="background:#ff0044;color:#fff">🔥 THERMAL</button>
+ <button onclick="toggleAI()" id="aiBtn" style="background:#00ff88;color:#000">🤖 AI ON</button>
+ <button onclick="capturePhoto()" style="background:#00e5ff;color:#000">📸 CAP</button>
 </div>
 
 <script>
 let stream=null, track=null, isNight=false, isThermal=false, isTorch=false, zoomCaps=null;
+let model=null, aiEnabled=true, detecting=false;
 
 const video=document.getElementById('godVideo');
+const canvas=document.getElementById('aiCanvas');
+const ctx=canvas.getContext('2d');
 const statusEl=document.getElementById('status');
-const zoomSlider=document.getElementById('zoomSlider');
-const zoomValEl=document.getElementById('zoomVal');
 
 async function initCamera(){
-  statusEl.innerText='📡 Requesting Camera...';
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}},
-      audio:false
-    });
-    video.srcObject=stream;
-    track=stream.getVideoTracks()[0];
-    const caps=track.getCapabilities();
-    const settings=track.getSettings();
-    
-    if(caps.zoom){
-      zoomCaps=caps.zoom;
-      zoomSlider.min=caps.zoom.min;
-      zoomSlider.max=Math.min(caps.zoom.max,10);
-      zoomSlider.step=caps.zoom.step||0.1;
-    }
-    if(!caps.torch){
-      document.getElementById('torchBtn').innerHTML='🔦 NO TORCH';
-      document.getElementById('torchBtn').style.opacity='0.6';
-    }
-    
-    await video.play();
-    document.getElementById('resInfo').innerText=`${settings.width}x${settings.height}`;
-    statusEl.innerText='✅ LIVE - Tap NIGHT + TORCH in dark';
-    setTimeout(()=>statusEl.style.display='none',3000);
-    
-  }catch(e){
-    statusEl.innerText='❌ '+e.message;
-    statusEl.style.color='#f44';
-    alert('Camera Error: '+e.message+'\n\nTap address bar -> Site Settings -> Camera Allow');
-  }
+ statusEl.innerText='📡 Starting Camera...';
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:false});
+  video.srcObject=stream; track=stream.getVideoTracks()[0];
+  const caps=track.getCapabilities();
+  if(caps.zoom){ zoomCaps=caps.zoom; document.getElementById('zoomSlider').min=caps.zoom.min; document.getElementById('zoomSlider').max=Math.min(caps.zoom.max,10); }
+  await video.play();
+  resizeCanvas();
+  statusEl.innerText='✅ Camera LIVE - Loading AI...';
+  loadAI();
+ }catch(e){ statusEl.innerText='❌ '+e.message; }
+}
+
+async function loadAI(){
+ try{
+  document.getElementById('aiStatus').innerText='AI: Loading...';
+  model=await cocoSsd.load({base:'lite_mobilenet_v2'});
+  document.getElementById('aiStatus').innerText='AI: Ready';
+  statusEl.innerText='✅ AI Ready - Detecting buckets, persons...';
+  setTimeout(()=>statusEl.style.display='none',2000);
+  detectFrame();
+ }catch(e){
+  document.getElementById('aiStatus').innerText='AI: Failed';
+  statusEl.innerText='AI load failed, but camera works. '+e.message;
+ }
+}
+
+function resizeCanvas(){
+ canvas.width=video.videoWidth || 1280;
+ canvas.height=video.videoHeight || 720;
 }
 
 function updateFilter(){
-  let f='';
-  if(isNight) f+='brightness(1.9) contrast(1.25) ';
-  if(isThermal) f+='sepia(1) hue-rotate(-30deg) saturate(3) contrast(1.5) brightness(1.3) ';
-  video.style.filter=f.trim()||'none';
+ let f=''; if(isNight) f+='brightness(1.9) contrast(1.25) '; if(isThermal) f+='sepia(1) hue-rotate(-30deg) saturate(3) contrast(1.5) brightness(1.3) '; video.style.filter=f.trim()||'none';
 }
-
-function nightGod(){
-  isNight=!isNight;
-  document.getElementById('nightBtn').style.background=isNight?'#fff':'#ffaa00';
-  document.getElementById('nightBtn').innerHTML=isNight?'🌙 ON':'🌙 NIGHT';
-  updateFilter();
-}
-
-function thermalMode(){
-  isThermal=!isThermal;
-  document.getElementById('thermalBtn').style.background=isThermal?'#fff':'#ff0044';
-  document.getElementById('thermalBtn').style.color=isThermal?'#ff0044':'#fff';
-  updateFilter();
-}
-
+function nightGod(){ isNight=!isNight; document.getElementById('nightBtn').innerHTML=isNight?'🌙 ON':'🌙 NIGHT'; document.getElementById('nightBtn').style.background=isNight?'#fff':'#ffaa00'; updateFilter(); }
+function thermalMode(){ isThermal=!isThermal; document.getElementById('thermalBtn').style.background=isThermal?'#fff':'#ff0044'; document.getElementById('thermalBtn').style.color=isThermal?'#ff0044':'#fff'; updateFilter(); }
 async function toggleTorch(){
-  if(!track){ alert('Camera not ready'); return; }
-  try{
-    isTorch=!isTorch;
-    await track.applyConstraints({advanced:[{torch:isTorch}]});
-    const btn=document.getElementById('torchBtn');
-    btn.innerHTML=isTorch?'🔦 OFF':'🔦 TORCH';
-    btn.style.background=isTorch?'#ffffff':'#ffff00';
-  }catch(e){
-    alert('Torch not supported on this lens. Switch to back camera. '+e.message);
-  }
+ if(!track) return; try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); document.getElementById('torchBtn').innerHTML=isTorch?'🔦 OFF':'🔦 TORCH'; }catch(e){ alert('Torch not supported'); }
 }
-
+function toggleAI(){
+ aiEnabled=!aiEnabled; document.getElementById('aiBtn').innerHTML=aiEnabled?'🤖 AI ON':'🤖 AI OFF'; document.getElementById('aiBtn').style.background=aiEnabled?'#00ff88':'#555'; if(aiEnabled) detectFrame(); else ctx.clearRect(0,0,canvas.width,canvas.height);
+}
 function capturePhoto(){
-  const c=document.createElement('canvas');
-  c.width=video.videoWidth; c.height=video.videoHeight;
-  const ctx=c.getContext('2d');
-  ctx.filter=video.style.filter||'none';
-  ctx.drawImage(video,0,0);
-  const a=document.createElement('a');
-  a.download='WanaLab-GodEye-'+Date.now()+'.png';
-  a.href=c.toDataURL('image/png');
-  a.click();
-  statusEl.style.display='block';
-  statusEl.innerText='📸 Captured!';
-  setTimeout(()=>statusEl.style.display='none',2000);
+ const c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight;
+ const ct=c.getContext('2d'); ct.filter=video.style.filter||'none'; ct.drawImage(video,0,0);
+ // draw AI boxes onto capture
+ if(aiEnabled){ ct.drawImage(canvas,0,0,c.width,c.height); }
+ const a=document.createElement('a'); a.download='WanaLab-AI-'+Date.now()+'.png'; a.href=c.toDataURL(); a.click();
 }
 
-function aiDetect(){
-  statusEl.style.display='block';
-  statusEl.innerText='🤖 AI Scanning... (TFJS v1.3)';
-  setTimeout(()=>{statusEl.innerText='✅ AI: No motion - Dark room';},1500);
-}
-
-zoomSlider.addEventListener('input', async (e)=>{
-  const z=parseFloat(e.target.value);
-  zoomValEl.innerText=z.toFixed(1)+'x';
-  if(track && zoomCaps){
-    try{ await track.applyConstraints({advanced:[{zoom:z}]}); }
-    catch(err){ video.style.transform=`scale(${z})`; }
-  } else {
-    video.style.transform=`scale(${z})`;
-    video.style.transformOrigin='center center';
+async function detectFrame(){
+ if(!aiEnabled || !model || detecting) { if(aiEnabled) requestAnimationFrame(detectFrame); return; }
+ detecting=true;
+ try{
+  const predictions=await model.detect(video);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // Scale handling
+  const scaleX=canvas.width/video.videoWidth; const scaleY=canvas.height/video.videoHeight;
+  predictions.forEach(p=>{
+   if(p.score<0.4) return;
+   const [x,y,w,h]=p.bbox;
+   ctx.strokeStyle=p.class==='person'?'#ff0044':'#00ff88';
+   ctx.lineWidth=3; ctx.strokeRect(x*scaleX, y*scaleY, w*scaleX, h*scaleY);
+   ctx.fillStyle=ctx.strokeStyle; ctx.font='14px Arial';
+   ctx.fillText(`${p.class.toUpperCase()} ${(p.score*100).toFixed(0)}%`, x*scaleX, y*scaleY>20?(y*scaleY-5):y*scaleY+15);
+  });
+  if(predictions.length>0){
+   document.getElementById('aiStatus').innerText=`AI: ${predictions.length} object(s)`;
   }
+ }catch(e){}
+ detecting=false;
+ requestAnimationFrame(detectFrame);
+}
+
+document.getElementById('zoomSlider').addEventListener('input', async (e)=>{
+ const z=parseFloat(e.target.value); document.getElementById('zoomVal').innerText=z.toFixed(1)+'x';
+ if(track && zoomCaps){ try{ await track.applyConstraints({advanced:[{zoom:z}]}); }catch{ video.style.transform=`scale(${z})`; } } else { video.style.transform=`scale(${z})`; }
 });
 
+video.addEventListener('loadedmetadata', resizeCanvas);
 window.addEventListener('load', initCamera);
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && (!stream || !stream.active)) initCamera(); });
 </script>
-
 </body>
 </html>
