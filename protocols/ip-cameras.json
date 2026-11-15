@@ -1,0 +1,47 @@
+[
+  {
+    "id": "onvif-generic",
+    "name": "ONVIF IP Camera Generic",
+    "type": "ONVIF",
+    "mode": "surveillance",
+    "description": "Any ONVIF camera - auto discover",
+    "protocol": "RTSP",
+    "url_template": "rtsp://{ip}:554/stream",
+    "status": "working"
+  },
+  {
+    "id": "rtsp-generic",
+    "name": "RTSP Camera Generic",
+    "type": "RTSP",
+    "mode": "surveillance",
+    "description": "RTSP:// camera",
+    "status": "working"
+  },
+  {
+    "id": "hikvision-ip",
+    "name": "Hikvision IP Camera",
+    "type": "ONVIF",
+    "mode": "surveillance",
+    "vendor": "Hikvision",
+    "status": "working",
+    "pro": true
+  },
+  {
+    "id": "dahua-ip",
+    "name": "Dahua IP Camera",
+    "type": "ONVIF",
+    "mode": "surveillance",
+    "vendor": "Dahua",
+    "status": "working",
+    "pro": true
+  },
+  {
+    "id": "esp32-cam",
+    "name": "ESP32-CAM WiFi",
+    "type": "WIFI",
+    "mode": "auto",
+    "ip": "192.168.4.1",
+    "description": "ESP32-CAM DIY - http stream",
+    "status": "working"
+  }
+]
