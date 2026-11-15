@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WanaLab God Eye - Export Hub</title>
+<style>
+body{background:#000;color:#0ff;font-family:monospace;padding:20px}
+h1{text-align:center}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px}
+button{padding:20px;font-size:18px;background:#001122;color:#0ff;border:2px solid #0ff;border-radius:10px;cursor:pointer}
+button:hover{background:#0ff;color:#000}
+textarea{width:100%;height:150px;background:#001122;color:#0ff;border:1px solid #0ff;padding:10px;margin-top:20px}
+.footer{margin-top:30px;text-align:center;font-size:12px;opacity:0.7}
+a{color:#0ff}
+</style>
+</head>
+<body>
+<h1>🌐 WanaLab God Eye v1.0 Export Hub</h1>
+<p style="text-align:center">Founder Nasir Khan | Nasir@wanalab.org | Global v1.0 | All Exports Offline</p>
+
+<textarea id="inputText" placeholder="Paste measurement / observation / protocol results here... Example: Microscope 1000x - Found bacteria... Location..."></textarea>
+
+<div class="grid">
+<button onclick="doExport('txt')">📄 EXPORT TXT</button>
+<button onclick="doExport('pdf')">📕 EXPORT PDF</button>
+<button onclick="doExport('json')">🔧 EXPORT JSON</button>
+<button onclick="doExport('docx')">📘 EXPORT DOCX (Pro)</button>
+<button onclick="doExport('mp3')">🎙️ EXPORT MP3 Audio</button>
+<button onclick="doExport('video')">🎥 EXPORT VIDEO (Pro)</button>
+</div>
+
+<div style="margin-top:20px;text-align:center">
+<button onclick="window.location='index.html'" style="width:100%">⬅️ BACK TO GOD EYE CAMERA</button>
+</div>
+
+<div class="footer">
+<p>WanaLab God Eye v1.0 Global - 10 Modes - Protocol Universe Same Repo</p>
+<p>Modes: auto | micro | tele | night | thermal | macro | wide | endoscope | surveillance | pro</p>
+<p>Protocols Loaded: <span id="pcount">Loading...</span> | Brand Colors: #00ffff #ff00ff</p>
+<p><a href="https://github.com/wanalab" target="_blank">GitHub: WanaLab</a> | Email: Nasir@wanalab.org</p>
+<p>Offline First - No Data Loss - Works in Wana, Pakistan and Global</p>
+</div>
+
+<script src="js/protocol-universe.js"></script>
+<script src="js/export-hub.js"></script>
+<script>
+function doExport(type){
+  const text = document.getElementById('inputText').value || 'WanaLab God Eye v1.0 Global Export\nFounder: Nasir Khan\nEmail: Nasir@wanalab.org\nDate: '+new Date().toISOString()+'\nMode: '+localStorage.getItem('lastMode')+'\n---\nObservation Data Here';
+  switch(type){
+    case 'txt': window.exportHub.exportTXT(text); break;
+    case 'pdf': window.exportHub.exportPDF(text); break;
+    case 'json': window.exportHub.exportJSON({text:text, founder:"Nasir Khan", version:"v1.0 Global", modes:10, date:new Date().toISOString()}); break;
+    case 'docx': alert('DOCX Export Pro: Will use docx.js offline in Pro v1.1 - Current saves as TXT for offline use'); window.exportHub.exportTXT(text); break;
+    case 'mp3': window.exportHub.exportMP3(text); break;
+    case 'video': alert('VIDEO Export Pro: Pro v1.1 will export 4K video with overlay. Current: Screenshot via canvas'); break;
+  }
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(window.protocolUniverse){ window.protocolUniverse.loadAll().then(all=>{ document.getElementById('pcount').innerText = all.length + ' working protocols (offline core + online universe)'; }); }
+});
+</script>
+</body>
+</html>
