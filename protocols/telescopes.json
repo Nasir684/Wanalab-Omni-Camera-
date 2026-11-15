@@ -1,0 +1,34 @@
+[
+  {
+    "id": "phone-telescope-clip-10x",
+    "name": "Phone Telescope Clip 10x (Universal)",
+    "type": "CLIP",
+    "mode": "tele",
+    "description": "Clip-on 10x tele lens + App SuperRes 10x = 100x effective",
+    "optical": "10x",
+    "digital": "10x SuperRes",
+    "total": "100x",
+    "status": "working"
+  },
+  {
+    "id": "apexel-60x-telescope",
+    "name": "Apexel 60x Phone Telescope",
+    "type": "CLIP",
+    "mode": "tele",
+    "description": "Apexel 60x telescope with tripod - Moon mode",
+    "optical": "60x",
+    "digital": "10x",
+    "total": "600x",
+    "status": "working"
+  },
+  {
+    "id": "generic-monocular-40x",
+    "name": "Generic Monocular 40x60",
+    "type": "CLIP",
+    "mode": "tele",
+    "description": "40x60 monocular clip for phone",
+    "optical": "40x",
+    "total": "400x",
+    "status": "working"
+  }
+]
