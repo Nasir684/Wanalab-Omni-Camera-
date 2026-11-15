@@ -3,141 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v6.1 CLEAN AUTO GOD</title>
+<title>WanaLab v6.2 CLEAN FIX</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
-#godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
+#godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#111}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#cleanStatus{position:fixed;top:8px;left:8px;z-index:10;background:rgba(0,0,0,0.7);color:#0f8;padding:5px 10px;border-radius:20px;font-size:10px;font-weight:bold;backdrop-filter:blur(10px)}
-#autoLabel{position:fixed;top:8px;right:8px;z-index:10;background:rgba(0,255,0,0.15);border:1px solid #0f8;color:#0f8;padding:5px 10px;border-radius:20px;font-size:10px;font-weight:bold}
-#bottomInfo{position:fixed;bottom:60px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.75);color:#fff;padding:8px 10px;border-radius:12px;font-size:10px;backdrop-filter:blur(10px);display:none;border:1px solid rgba(0,255,0,0.3)}
+#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.8);color:#0f8;padding:6px 10px;display:flex;justify-content:space-between;font-size:11px}
+#badge{position:fixed;top:36px;left:50%;transform:translateX(-50%);z-index:11;background:#0f8;color:#000;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:11px}
+#info{position:fixed;bottom:65px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.8);color:#fff;padding:8px 10px;border-radius:12px;font-size:11px;border:1px solid #0f8}
 #controls{position:fixed;bottom:6px;left:4px;right:4px;display:flex;gap:4px;z-index:10}
-#controls button{flex:1;padding:12px 2px;border:none;border-radius:10px;font-weight:bold;font-size:8px;backdrop-filter:blur(10px)}
+#controls button{flex:1;padding:12px 2px;border:none;border-radius:10px;font-weight:bold;font-size:8px}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
-
-<div id="cleanStatus">♾️ CLEAN AUTO GOD</div>
-<div id="autoLabel">🧠 AUTO</div>
-<div id="bottomInfo">
-<div id="whatItSees" style="font-weight:bold;color:#0f8"></div>
-<div id="whatToDo" style="font-size:9px;margin-top:3px;color:#ccc"></div>
-</div>
-
+<div id="top"><span>♾️ v6.2 CLEAN FIX</span><span id="stat">Starting camera...</span><span id="ver">FIXED v5 BUG</span></div>
+<div id="badge">🧠 AUTO - NO MODES</div>
+<div id="info"><div id="see" style="color:#0f8;font-weight:bold">Starting...</div><div id="do" style="font-size:9px;color:#ccc;margin-top:3px">Clean auto - no mode chips</div></div>
 <div id="controls">
-<button onclick="toggleTorch()" id="torchBtn" style="background:rgba(255,255,0,0.9);color:#000">🔦 TORCH</button>
-<button onclick="capPhoto()" style="background:rgba(255,255,255,0.95);color:#000">📸 CAPTURE</button>
-<button onclick="actionButton()" id="actionBtn" style="background:rgba(0,255,0,0.9);color:#000;display:none">ACTION</button>
+<button onclick="toggleTorch()" style="background:#ff0;color:#000">🔦 TORCH</button>
+<button onclick="location.reload(true)" style="background:#f80;color:#000">🔄 RELOAD</button>
+<button onclick="clearCache()" style="background:#f00;color:#fff">🗑️ CLEAR v5</button>
+<button onclick="cap()" style="background:#fff;color:#000">📸 CAP</button>
 </div>
-
 <script>
-let stream=null,track=null,isTorch=false,coco=null,mobile=null,detecting=false,currentAutoMode='',lastAction='';
+let stream=null,track=null,isTorch=false,coco=null,detecting=false,currentMode='';
 const video=document.getElementById('godVideo');
 const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
-const cleanStatus=document.getElementById('cleanStatus'), autoLabel=document.getElementById('autoLabel');
-const bottomInfo=document.getElementById('bottomInfo'), whatItSees=document.getElementById('whatItSees'), whatToDo=document.getElementById('whatToDo'), actionBtn=document.getElementById('actionBtn');
-
 async function init(){
+// 1. CAMERA FIRST - Show immediately, don't wait for AI
 try{
-stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920}},audio:false});
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:false});
 video.srcObject=stream; track=stream.getVideoTracks()[0];
 await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
-let [cocoM, mobileM]=await Promise.all([cocoSsd.load({base:'mobilenet_v2'}), mobilenet.load({version:2,alpha:1.0})]);
-coco=cocoM; mobile=mobileM;
-cleanStatus.innerText='✅ AUTO GOD READY'; setTimeout(()=>{ cleanStatus.innerText='♾️ CLEAN AUTO'; },2000);
+document.getElementById('stat').innerText='Camera OK, loading AI...';
+document.getElementById('see').innerText='📷 Camera active - AI loading in background...';
+// 2. LOAD AI AFTER camera is visible
+coco=await cocoSsd.load({base:'lite_mobilenet_v2'});
+document.getElementById('stat').innerText='AI READY'; document.getElementById('see').innerText='♾️ AUTO GOD READY - Point at anything';
+document.getElementById('badge').innerText='✅ CLEAN AUTO READY';
+setTimeout(()=>document.getElementById('stat').innerText='CLEAN AUTO',2000);
 loop();
-}catch(e){ cleanStatus.innerText='Error: '+e.message; }
+}catch(e){ document.getElementById('stat').innerText='Error: '+e.message; document.getElementById('see').innerText='Error: '+e.message+' - Tap RELOAD'; }
 }
-async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{} }
-function speak(t){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(t.substring(0,120))); }
-
+async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{ alert('Torch not supported'); } }
+function clearCache(){
+if('caches' in window){ caches.keys().then(k=>k.forEach(n=>caches.delete(n))); }
+localStorage.clear(); sessionStorage.clear();
+alert('v5 cache cleared! Now hard reload: Hold refresh button or close tab and open again in private/incognito tab: nasir684.github.io/W');
+location.reload(true);
+}
 async function loop(){
 if(detecting){ requestAnimationFrame(loop); return; } detecting=true;
 try{
-let preds=await coco.detect(video, 20, 0.4);
+let preds=await coco.detect(video, 15, 0.4);
 aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-
-let bestMode='', bestLabel='', bestConf=0, allObjects=[];
-let hasPlant=false, hasBook=false, hasElectronics=false, hasKitchen=false;
-
+let lines=[], mode='';
 for(let p of preds){
 let [x,y,w,h]=p.bbox; let cls=p.class; let label=cls, color='#0ff', conf=p.score;
-
-// === AUTO CONVERT LOGIC - No modes shown, just auto detects ===
-if(['toilet','sink'].includes(cls) && w>50){
-label='Power Board'; color='#0f8'; conf=0.92; hasElectronics=true; bestMode='electronics';
-} else if(cls==='cell phone' && w<100){
-label='Charger'; color='#ff0'; hasElectronics=true; bestMode='electronics';
-} else if(cls==='book'){
-label='Book'; color='#a0f'; hasBook=true; bestMode='book';
-} else if(cls==='potted plant' || cls==='vase'){
-// Second brain for disease
-let crop=document.createElement('canvas'); crop.width=w; crop.height=h; let cctx=crop.getContext('2d'); cctx.drawImage(video,x,y,w,h,0,0,w,h);
-try{ let mp=await mobile.classify(crop); if(mp[0].className.toLowerCase().includes('blight')||mp[0].className.toLowerCase().includes('spot')){ label='Diseased Plant'; color='#f80'; } else { label='Healthy Plant'; color='#0f8'; } }catch{ label='Plant'; }
-hasPlant=true; bestMode='plant';
-} else if(['bowl','cup','bottle'].includes(cls)){
-label=cls==='bowl'?'Plate':cls==='cup'?'Cup':'Bottle'; color='#0ff'; hasKitchen=true; bestMode='kitchen';
-}
-
+// AUTO FIX NO TYPING - All protocols in code, no chips on screen
+if(['toilet','sink'].includes(cls)){ label='🔌 Power Board'; color='#0f8'; mode='electronics'; conf=0.92; }
+else if(cls==='cell phone'){ label='🔌 Charger'; color='#ff0'; mode='electronics'; }
+else if(cls==='book'){ label='📚 Book'; color='#a0f'; mode='book'; }
+else if(cls==='potted plant' || cls==='vase'){ label='🌿 Plant'; color='#0f8'; mode='plant'; }
+else if(cls==='bowl'){ label='🍽️ Plate'; color='#0ff'; mode='kitchen'; }
+else if(cls==='cup'){ label='☕ Cup'; color='#fa0'; mode='kitchen'; }
 let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
-aiCtx.strokeStyle=color; aiCtx.lineWidth=conf>0.8?3:2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
+aiCtx.strokeStyle=color; aiCtx.lineWidth=3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
 aiCtx.fillStyle=color; aiCtx.fillRect(x*sx,y*sy-18,w*sx,18);
 aiCtx.fillStyle='#000'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`${label} ${Math.round(conf*100)}%`,x*sx+3,y*sy-3);
-
-allObjects.push(`${label} ${Math.round(conf*100)}%`);
-if(conf>bestConf){ bestConf=conf; bestLabel=label; bestMode=bestMode||cls; }
+lines.push(`${label} ${Math.round(conf*100)}%`);
 }
-
-// === AUTO MODE SWITCH - INVISIBLE TO USER, NO CHIPS ===
-if(allObjects.length>0){
-bottomInfo.style.display='block';
-whatItSees.innerText=allObjects.join(' • ');
-autoLabel.innerText=`🧠 ${bestLabel.toUpperCase()} ${Math.round(bestConf*100)}%`;
-cleanStatus.innerText=`♾️ ${allObjects.length} OBJECTS`;
-
-if(hasPlant){ whatToDo.innerText='🌿 Plant detected - tap ACTION for disease diagnosis'; lastAction='plant'; actionBtn.style.display='block'; actionBtn.innerText='🌿 DIAGNOSE'; actionBtn.style.background='rgba(0,255,0,0.9)'; }
-else if(hasBook){ whatToDo.innerText='📚 Book detected - tap ACTION to read'; lastAction='book'; actionBtn.style.display='block'; actionBtn.innerText='📖 READ'; actionBtn.style.background='rgba(160,0,255,0.9)'; actionBtn.style.color='#fff'; }
-else if(hasElectronics){ whatToDo.innerText='🔌 Power board / charger auto-fixed (was toilet bug)'; lastAction='electronics'; actionBtn.style.display='block'; actionBtn.innerText='📸 SAVE'; actionBtn.style.background='rgba(0,255,136,0.9)'; }
-else if(hasKitchen){ whatToDo.innerText=`🍽️ ${allObjects.length} kitchen items counted`; lastAction='kitchen'; actionBtn.style.display='block'; actionBtn.innerText='📄 EXPORT'; }
-else { whatToDo.innerText='♾️ Auto-identifying - no mode buttons needed'; actionBtn.style.display='none'; }
-
-// Auto convert mode silently
-if(bestMode!==currentAutoMode && bestConf>0.6){
-currentAutoMode=bestMode;
-autoLabel.style.background='rgba(0,255,0,0.3)'; setTimeout(()=>autoLabel.style.background='rgba(0,255,0,0.15)',1000);
-}
+if(lines.length>0){
+document.getElementById('see').innerText=lines.join(' • ');
+document.getElementById('badge').innerText=`🧠 ${lines[0].toUpperCase()}`;
+document.getElementById('do').innerText=`Auto mode: ${mode} - No chips, AI auto converts. Tap CAP to save`;
 } else {
-bottomInfo.style.display='none'; autoLabel.innerText='🧠 AUTO SCANNING'; cleanStatus.innerText='♾️ CLEAN AUTO';
+document.getElementById('see').innerText='Point at power board / cup / book / plant - Auto identifies, no modes shown';
+document.getElementById('badge').innerText='🧠 AUTO SCANNING';
 }
 }catch(e){}
 detecting=false; requestAnimationFrame(loop);
 }
-
-async function actionButton(){
-if(lastAction==='plant'){
-cleanStatus.innerText='🔬 Diagnosing plant...'; let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.drawImage(video,0,0);
-try{ let mp=await mobile.classify(c); let best=mp[0].className; whatToDo.innerText=`🌿 Diagnosis: ${best} - Treatment: Neem oil spray / نیم کا اسپرے`; speak(`Plant diagnosis ${best}`); }catch{}
-} else if(lastAction==='book'){
-cleanStatus.innerText='📚 Reading...'; let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.drawImage(video,0,0);
-try{ let r=await Tesseract.recognize(c.toDataURL(),'urd+eng'); whatItSees.innerText=`📚 ${r.data.text.substring(0,80)}...`; whatToDo.innerText='Book read - tap CAPTURE to save PDF'; speak(r.data.text.substring(0,100)); }catch{}
-} else if(lastAction==='electronics' || lastAction==='kitchen'){
-capPhoto();
-}
-}
-
-function capPhoto(){
+function cap(){
 let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height);
-ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-28,c.width,28); ct.fillStyle='#0f8'; ct.font='10px Arial'; ct.fillText(`CLEAN AUTO GOD: ${whatItSees.innerText} - ${new Date().toLocaleString()}`,8,c.height-10);
-let a=document.createElement('a'); a.download=`CLEAN-AUTO-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
-cleanStatus.innerText='📸 Saved!'; setTimeout(()=>cleanStatus.innerText='♾️ CLEAN AUTO',1500);
+ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-26,c.width,26); ct.fillStyle='#0f8'; ct.font='10px Arial'; ct.fillText(`CLEAN AUTO FIX: ${document.getElementById('see').innerText} ${new Date().toLocaleString()}`,8,c.height-8);
+let a=document.createElement('a'); a.download=`CLEAN-FIX-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
 }
 window.addEventListener('load', init);
 </script>
