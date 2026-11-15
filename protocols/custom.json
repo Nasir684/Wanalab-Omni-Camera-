@@ -1,0 +1,20 @@
+[
+  {
+    "id": "custom-uvc-device",
+    "name": "Custom UVC Device (User Add)",
+    "type": "UVC",
+    "mode": "auto",
+    "description": "User can add own UVC ID here",
+    "status": "template"
+  },
+  {
+    "id": "custom-wifi-camera",
+    "name": "Custom WiFi Camera (User Add)",
+    "type": "WIFI",
+    "mode": "auto",
+    "ip": "192.168.0.1",
+    "url": "http://192.168.0.1/video",
+    "description": "Add your WiFi camera IP",
+    "status": "template"
+  }
+]
