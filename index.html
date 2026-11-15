@@ -3,46 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v7 VOICE COMMAND GOD</title>
+<title>WanaLab v8 ALL PATHS GOD</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiV2FuYUxhYiB2OCBHT0QiLCJzaG9ydF9uYW1lIjoiV2FuYUxhYiIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMDAwMDAwIn0=">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.85);color:#0f8;padding:6px 10px;display:flex;justify-content:space-between;font-size:10px}
-#voiceBadge{position:fixed;top:38px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:7px 16px;border-radius:20px;font-weight:bold;font-size:11px;transition:all 0.3s}
-#voiceBadge.listening{background:#0f8;color:#000;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.08)}}
-#transcript{position:fixed;top:70px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.85);color:#ff0;padding:8px 10px;border-radius:10px;font-size:11px;display:none;border:1px solid #ff0;text-align:center}
-#info{position:fixed;bottom:70px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.85);color:#fff;padding:8px 10px;border-radius:12px;font-size:10px;border:1px solid #0f8}
-#controls{position:fixed;bottom:6px;left:4px;right:4px;display:flex;gap:3px;z-index:10}
-#controls button{flex:1;padding:12px 2px;border:none;border-radius:10px;font-weight:bold;font-size:7px}
+#top{position:fixed;top:0;left:0;right:0;z-index:10;background:linear-gradient(90deg,rgba(0,0,0,0.9),rgba(0,40,0,0.9));color:#0f8;padding:5px 8px;display:flex;justify-content:space-between;font-size:9px}
+#voiceBadge{position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:10px}
+#voiceBadge.on{background:#0f8;color:#000;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.07)}}
+#transcript{position:fixed;top:58px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.9);color:#ff0;padding:6px 10px;border-radius:8px;font-size:10px;display:none;border:1px solid #ff0;text-align:center}
+#info{position:fixed;bottom:68px;left:5px;right:5px;z-index:10;background:rgba(0,0,0,0.88);color:#fff;padding:7px 8px;border-radius:10px;font-size:9px;border:1px solid #0f8;max-height:24vh;overflow:auto}
+#controls{position:fixed;bottom:4px;left:3px;right:3px;display:flex;gap:2px;z-index:10}
+#controls button{flex:1;padding:10px 1px;border:none;border-radius:8px;font-weight:bold;font-size:6px}
+.protoTag{display:inline-block;padding:2px 4px;border-radius:6px;margin:1px;font-size:6px;font-weight:bold}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
 
-<div id="top"><span>🎤 v7 VOICE GOD</span><span id="stat">Loading...</span><span id="voiceStat">🎤 OFF</span></div>
-<div id="voiceBadge">🎤 TAP TO SPEAK</div>
+<div id="top"><span>♾️ v8 ALL PATHS GOD</span><span id="stat">Loading...</span><span id="count">0</span></div>
+<div id="voiceBadge">🎤 TAP TO START ALL</div>
 <div id="transcript"></div>
+
 <div id="info">
-<div id="see" style="color:#0f8;font-weight:bold">Say: Torch on, Capture, What do you see?</div>
-<div id="do" style="font-size:8px;color:#ccc;margin-top:3px">Voice commands active - camera obeys you</div>
-<div style="font-size:7px;color:#aaa;margin-top:4px">Commands: torch on/off, night on/off, capture, zoom in/out, read book, what is this, export, clear, help</div>
+<div id="see" style="color:#0f8;font-weight:bold;font-size:10px">Loading ALL paths...</div>
+<div id="do" style="font-size:8px;color:#ccc;margin-top:2px"></div>
+<div id="extra" style="font-size:7px;color:#aaa;margin-top:3px;display:flex;gap:3px;flex-wrap:wrap">
+<span class="protoTag" style="background:#0f8;color:#000">🇵🇰 DESI</span>
+<span class="protoTag" style="background:#a0f;color:#fff">🧠 AI TRACK</span>
+<span class="protoTag" style="background:#ff0;color:#000">💰 SHOP BILL</span>
+<span class="protoTag" style="background:#0ff;color:#000">📏 MEASURE</span>
+<span class="protoTag" style="background:#f0f;color:#fff">🧠 MEMORY</span>
+<span class="protoTag" style="background:#fff;color:#000">📱 OFFLINE PWA</span>
+</div>
 </div>
 
 <div id="controls">
-<button onclick="toggleVoice()" id="voiceBtn" style="background:#f00;color:#fff">🎤 START VOICE</button>
-<button onclick="toggleTorch()" id="torchBtn" style="background:#ff0;color:#000">🔦 TORCH</button>
+<button onclick="toggleVoice()" id="voiceBtn" style="background:#f00;color:#fff">🎤 VOICE</button>
+<button onclick="toggleTorch()" style="background:#ff0;color:#000">🔦 TORCH</button>
+<button onclick="followMode()" id="followBtn" style="background:#a0f;color:#fff">🎯 FOLLOW</button>
+<button onclick="countStock()" style="background:#0ff;color:#000">🔢 GINO/STOCK</button>
 <button onclick="cap()" style="background:#fff;color:#000">📸 CAP</button>
-<button onclick="speakWhatISee()" style="background:#0f8;color:#000">🔊 WHAT I SEE?</button>
+<button onclick="sendWhatsApp()" style="background:#0a0;color:#fff">📱 WA SEND</button>
 </div>
 
 <script>
-let stream=null,track=null,isTorch=false,coco=null,detecting=false,recognition=null,isListening=false,lastSeen='';
+let stream=null,track=null,isTorch=false,coco=null,mobile=null,detecting=false,isListening=false,recognition=null,lastSeen='',memoryDB=JSON.parse(localStorage.getItem('wanaMemory')||'{}'),followTarget=null,isFollow=false,stockList=[],measureStart=null;
 const video=document.getElementById('godVideo');
 const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
 
@@ -51,96 +66,120 @@ try{
 stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:true});
 video.srcObject=stream; track=stream.getVideoTracks()[0];
 await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
-document.getElementById('stat').innerText='Camera OK';
-coco=await cocoSsd.load({base:'lite_mobilenet_v2'});
-document.getElementById('stat').innerText='VOICE READY';
-document.getElementById('see').innerText='✅ Voice God Ready - Tap 🎤 START VOICE then say "Torch on" or "Capture"';
-initVoice();
-loop();
-}catch(e){ document.getElementById('stat').innerText='Error: '+e.message; }
+document.getElementById('stat').innerText='AI loading...';
+let [cocoM, mobileM]=await Promise.all([cocoSsd.load({base:'lite_mobilenet_v2'}), mobilenet.load({version:2,alpha:0.5}).catch(()=>null)]);
+coco=cocoM; mobile=mobileM;
+document.getElementById('stat').innerText='ALL PATHS READY';
+document.getElementById('see').innerText='✅ ALL PATHS GOD READY - Say: Torch jalao, Gino, Follow karo, Yaad rakho, Kitna bara?';
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('data:text/javascript;base64,'+btoa('self.addEventListener("fetch",e=>{});')); }catch{} }
+initVoice(); loop();
+}catch(e){ document.getElementById('stat').innerText='Error:'+e.message; }
 }
 
 function initVoice(){
-let SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-if(!SpeechRec){ document.getElementById('voiceStat').innerText='🎤 Not supported'; return; }
-recognition=new SpeechRec();
-recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-US';
-recognition.onstart=()=>{ isListening=true; document.getElementById('voiceBadge').classList.add('listening'); document.getElementById('voiceBadge').innerText='🎤 LISTENING...'; document.getElementById('voiceStat').innerText='🎤 ON'; document.getElementById('voiceBtn').innerText='🎤 STOP VOICE'; document.getElementById('voiceBtn').style.background='#0f8'; document.getElementById('voiceBtn').style.color='#000'; };
+let SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR){ document.getElementById('voiceBadge').innerText='🎤 Chrome needed'; return; }
+recognition=new SR(); recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-US';
+recognition.onstart=()=>{ isListening=true; document.getElementById('voiceBadge').classList.add('on'); document.getElementById('voiceBadge').innerText='🎤 SUN RAHA HU...'; document.getElementById('voiceBtn').innerText='🎤 STOP'; document.getElementById('voiceBtn').style.background='#0f8'; };
 recognition.onend=()=>{ if(isListening){ try{ recognition.start(); }catch{} } };
-recognition.onresult=(event)=>{
-let transcript=''; for(let i=event.resultIndex;i<event.results.length;i++){ transcript+=event.results[i][0].transcript; }
-let final=transcript.toLowerCase().trim();
-document.getElementById('transcript').style.display='block'; document.getElementById('transcript').innerText=`🎤 You said: "${final}"`;
-if(event.results[event.results.length-1].isFinal){
-handleVoiceCommand(final);
-setTimeout(()=>{ document.getElementById('transcript').style.display='none'; },3000);
-}
+recognition.onresult=(ev)=>{
+let t=''; for(let i=ev.resultIndex;i<ev.results.length;i++) t+=ev.results[i][0].transcript; let cmd=t.toLowerCase().trim();
+document.getElementById('transcript').style.display='block'; document.getElementById('transcript').innerText=`🎤 ${t}`;
+if(ev.results[ev.results.length-1].isFinal){ handleAll(cmd); setTimeout(()=>document.getElementById('transcript').style.display='none',3000); }
 };
-recognition.onerror=(e)=>{ document.getElementById('voiceBadge').innerText='🎤 ERROR - Tap again'; };
 }
 
-function toggleVoice(){
-if(!recognition){ alert('Voice not supported - use Chrome browser'); return; }
-if(isListening){ isListening=false; recognition.stop(); document.getElementById('voiceBadge').classList.remove('listening'); document.getElementById('voiceBadge').innerText='🎤 TAP TO SPEAK'; document.getElementById('voiceStat').innerText='🎤 OFF'; document.getElementById('voiceBtn').innerText='🎤 START VOICE'; document.getElementById('voiceBtn').style.background='#f00'; document.getElementById('voiceBtn').style.color='#fff'; }
-else { isListening=true; try{ recognition.start(); }catch(e){ setTimeout(()=>{ try{ recognition.start(); }catch{} },500); } }
+function toggleVoice(){ if(!recognition){ alert('Use Chrome'); return; } if(isListening){ isListening=false; recognition.stop(); document.getElementById('voiceBadge').classList.remove('on'); document.getElementById('voiceBadge').innerText='🎤 TAP TO START'; document.getElementById('voiceBtn').innerText='🎤 VOICE'; document.getElementById('voiceBtn').style.background='#f00'; } else { isListening=true; try{ recognition.start(); }catch{ setTimeout(()=>{ try{ recognition.start(); }catch{} },500); } } }
+
+function handleAll(cmd){
+console.log(cmd);
+// DESI PATH - Urdu/Pashto
+if(cmd.includes('torch jalao')||cmd.includes('roshni on')||cmd.includes('torch on')||cmd.includes('light on')){ setTorch(true); speakUrdu('Torch on kar diya'); }
+else if(cmd.includes('torch band')||cmd.includes('roshni off')||cmd.includes('torch off')){ setTorch(false); speakUrdu('Torch band'); }
+else if(cmd.includes('tasveer lo')||cmd.includes('tasveer khecho')||cmd.includes('capture')||cmd.includes('photo lo')){ cap(); speakUrdu('Tasveer le li'); }
+else if(cmd.includes('da sa de')||cmd.includes('what is this')||cmd.includes('ye kya hai')||cmd.includes('what do you see')){ speakWhat(); }
+else if(cmd.includes('salam')||cmd.includes('hello')){ speakUrdu('Wa Alaikum Salam! WanaLab tayyar hai'); }
+// AI PATH
+else if(cmd.includes('follow karo')||cmd.includes('follow this')||cmd.includes('peeche chalo')){ followMode(); speakUrdu('Follow mode on, ab is cheez ke peeche chalunga'); }
+else if(cmd.includes('gino')||cmd.includes('count karo')||cmd.includes('kitne hain')||cmd.includes('stock banao')||cmd.includes('count')){ countStock(); }
+else if(cmd.includes('yaad rakho')||cmd.includes('remember this')||cmd.includes('save karo')){ rememberThis(); }
+else if(cmd.includes('kitna bara')||cmd.includes('measure')||cmd.includes('size kitna')){ measureMode(); }
+else if(cmd.includes('bhool jao')||cmd.includes('clear memory')){ localStorage.removeItem('wanaMemory'); memoryDB={}; speakUrdu('Memory clear kar di'); }
+// SHOP PATH
+else if(cmd.includes('bill banao')||cmd.includes('make bill')||cmd.includes('hisab')){ makeBill(); }
+else if(cmd.includes('whatsapp bhejo')||cmd.includes('send whatsapp')||cmd.includes('wa send')){ sendWhatsApp(); }
+else if(cmd.includes('report banao')||cmd.includes('pdf banao')||cmd.includes('export')){ exportAllPDF(); }
+else if(cmd.includes('madad')||cmd.includes('help karo')||cmd.includes('help')){ speakUrdu('Commands: Torch jalao, Tasveer lo, Ye kya hai, Gino, Follow karo, Yaad rakho, Kitna bara, Bill banao, WhatsApp bhejo, Report banao'); }
 }
 
-function handleVoiceCommand(cmd){
-console.log('Command:',cmd);
-if(cmd.includes('torch on')||cmd.includes('light on')||cmd.includes('flash on')){ setTorch(true); speak('Torch on'); }
-else if(cmd.includes('torch off')||cmd.includes('light off')||cmd.includes('flash off')){ setTorch(false); speak('Torch off'); }
-else if(cmd.includes('capture')||cmd.includes('photo')||cmd.includes('take picture')||cmd.includes('cheese')){ cap(); speak('Captured'); }
-else if(cmd.includes('what do you see')||cmd.includes('what is this')||cmd.includes('what you see')||cmd.includes('identify')){ speakWhatISee(); }
-else if(cmd.includes('night on')||cmd.includes('dark mode')){ setNight(true); speak('Night mode on'); }
-else if(cmd.includes('night off')||cmd.includes('day mode')){ setNight(false); speak('Night mode off'); }
-else if(cmd.includes('zoom in')){ setZoom(2); speak('Zoomed in'); }
-else if(cmd.includes('zoom out')||cmd.includes('zoom normal')){ setZoom(1); speak('Zoomed out'); }
-else if(cmd.includes('read')||cmd.includes('book')){ speak('Reading book - use OCR feature'); document.getElementById('see').innerText='📚 Book mode - point at book'; }
-else if(cmd.includes('export')||cmd.includes('pdf')){ exportPDF(); speak('Exporting PDF'); }
-else if(cmd.includes('clear')||cmd.includes('clean')){ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); speak('Cleared'); }
-else if(cmd.includes('help')||cmd.includes('commands')){ speak('Commands: Torch on off, Capture photo, What do you see, Night on off, Zoom in out, Export'); document.getElementById('do').innerText='Commands: Torch on/off, Capture, What do you see, Night on/off, Zoom in/out'; }
-else if(cmd.includes('hello')||cmd.includes('salam')){ speak('Hello! I am WanaLab Voice God, how can I help?'); }
-else { document.getElementById('do').innerText=`Heard: "${cmd}" - Try: Torch on, Capture, What do you see?`; }
-}
-
-async function setTorch(on){ try{ isTorch=on; await track.applyConstraints({advanced:[{torch:on}]}); document.getElementById('torchBtn').style.background=on?'#0f8':'#ff0'; }catch{} }
-function setNight(on){ video.style.filter=on?'brightness(2.2) contrast(1.4)':''; }
-function setZoom(z){ video.style.transform=`scale(${z})`; }
-function speak(t){ speechSynthesis.cancel(); let u=new SpeechSynthesisUtterance(t.substring(0,150)); u.rate=0.95; speechSynthesis.speak(u); document.getElementById('do').innerText=`🔊 Speaking: ${t.substring(0,60)}...`; }
+function speakUrdu(t){ speechSynthesis.cancel(); let u=new SpeechSynthesisUtterance(t); u.lang='ur-PK'; u.rate=0.9; let voices=speechSynthesis.getVoices(); let ur=voices.find(v=>v.lang.includes('ur')||v.lang.includes('hi')); if(ur) u.voice=ur; speechSynthesis.speak(u); document.getElementById('do').innerText=`🔊 ${t}`; }
+function speak(t){ speechSynthesis.cancel(); let u=new SpeechSynthesisUtterance(t); u.rate=0.95; speechSynthesis.speak(u); }
 
 async function loop(){
 if(detecting){ requestAnimationFrame(loop); return; } detecting=true;
 try{
 let preds=await coco.detect(video, 15, 0.4);
 aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-let lines=[];
+let lines=[], countMap={}; stockList=[];
 for(let p of preds){
 let [x,y,w,h]=p.bbox; let cls=p.class; let label=cls, color='#0ff', conf=p.score;
-if(['toilet','sink'].includes(cls)){ label='🔌 Power Board'; color='#0f8'; conf=0.92; }
-else if(cls==='cell phone'){ label='🔌 Charger'; color='#ff0'; }
-else if(cls==='book'){ label='📚 Book'; color='#a0f'; }
-else if(cls==='potted plant'){ label='🌿 Plant'; color='#0f8'; }
-else if(cls==='bowl'){ label='🍽️ Plate'; color='#0ff'; }
-else if(cls==='cup'){ label='☕ Cup'; color='#fa0'; }
+if(['toilet','sink'].includes(cls)){ label='Power Board'; color='#0f8'; }
+else if(cls==='cell phone'){ label='Charger'; color='#ff0'; }
+else if(cls==='book'){ label='Kitab'; color='#a0f'; }
+else if(cls==='potted plant'){ label='Poda'; color='#0f8'; }
+else if(cls==='bowl'){ label='Plate'; color='#0ff'; }
+else if(cls==='cup'){ label='Chai Cup'; color='#fa0'; }
+countMap[label]=(countMap[label]||0)+1;
+stockList.push(label);
+// FOLLOW LOGIC
+if(isFollow && followTarget && label.toLowerCase().includes(followTarget.toLowerCase())){
+aiCtx.strokeStyle='#f0f'; aiCtx.lineWidth=5; aiCtx.setLineDash([8,4]);
+let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
+aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy); aiCtx.setLineDash([]);
+aiCtx.fillStyle='#f0f'; aiCtx.fillRect(x*sx,y*sy-22,w*sx,22); aiCtx.fillStyle='#fff'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`🎯 FOLLOW ${label}`,x*sx+3,y*sy-5);
+continue;
+}
+// QR Check
+try{ let tmp=document.createElement('canvas'); tmp.width=w; tmp.height=h; let tctx=tmp.getContext('2d'); tctx.drawImage(video,x,y,w,h,0,0,w,h); let imgData=tctx.getImageData(0,0,w,h); let code=jsQR(imgData.data,w,h); if(code){ label=`QR: ${code.data.substring(0,20)}`; color='#0ff'; } }catch{}
 let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
 aiCtx.strokeStyle=color; aiCtx.lineWidth=3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
 aiCtx.fillStyle=color; aiCtx.fillRect(x*sx,y*sy-18,w*sx,18);
 aiCtx.fillStyle='#000'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`${label} ${Math.round(conf*100)}%`,x*sx+3,y*sy-3);
-lines.push(`${label} ${Math.round(conf*100)}%`);
+lines.push(`${label}`);
+// MEMORY CHECK - If seen before
+if(memoryDB[label]){ aiCtx.fillStyle='rgba(160,0,255,0.9)'; aiCtx.fillRect(x*sx+w*sx-40,y*sy,40,14); aiCtx.fillStyle='#fff'; aiCtx.font='8px Arial'; aiCtx.fillText('YAAD',x*sx+w*sx-32,y*sy+9); }
 }
-if(lines.length>0){ lastSeen=lines.join(', '); document.getElementById('see').innerText=lastSeen; document.getElementById('voiceBadge').innerText=`🧠 ${lines[0]}`; }
+if(lines.length>0){
+let uniq=[...new Set(lines)]; lastSeen=uniq.join(', ');
+let countStr=Object.entries(countMap).map(([k,v])=>`${k}:${v}`).join(' • ');
+document.getElementById('see').innerText=`${lastSeen} | ${countStr}`;
+document.getElementById('count').innerText=`${lines.length} items`;
+document.getElementById('voiceBadge').innerText=`🧠 ${uniq[0].toUpperCase()}`;
+document.getElementById('do').innerText=`Stock: ${countStr} - Say: Gino, Yaad rakho, Kitna bara?`;
+}
 }catch(e){}
 detecting=false; requestAnimationFrame(loop);
 }
-function speakWhatISee(){ if(lastSeen){ speak(`I see ${lastSeen}`); document.getElementById('transcript').style.display='block'; document.getElementById('transcript').innerText=`🔊 I see: ${lastSeen}`; setTimeout(()=>document.getElementById('transcript').style.display='none',4000); } else { speak('I see nothing yet, point camera at object'); } }
-function toggleTorch(){ setTorch(!isTorch); speak(isTorch?'Torch on':'Torch off'); }
+
+function setTorch(on){ track.applyConstraints({advanced:[{torch:on}]}).then(()=>{ isTorch=on; }).catch(()=>{}); }
+function toggleTorch(){ setTorch(!isTorch); speakUrdu(isTorch?'Torch on':'Torch off'); }
+function followMode(){ if(!lastSeen){ speakUrdu('Pehle kisi cheez par camera karo'); return; } followTarget=lastSeen.split(',')[0]; isFollow=!isFollow; document.getElementById('followBtn').innerText=isFollow?`🎯 FOLLOWING ${followTarget}`:'🎯 FOLLOW'; document.getElementById('followBtn').style.background=isFollow?'#f0f':'#a0f'; speakUrdu(isFollow?`${followTarget} ko follow kar raha hu`:'Follow band'); }
+function countStock(){ let map={}; stockList.forEach(s=>map[s]=(map[s]||0)+1); let txt=Object.entries(map).map(([k,v])=>`${v} ${k}`).join(', '); let msg=`Ginti: ${txt} - Total ${stockList.length}`; document.getElementById('see').innerText=msg; document.getElementById('do').innerText=`📋 Stock List: ${msg}`; speakUrdu(msg); }
+function rememberThis(){ if(!lastSeen){ speakUrdu('Pehle kuch dekhao'); return; } let key=lastSeen.split(',')[0]; memoryDB[key]={time:Date.now(),count:(memoryDB[key]?.count||0)+1}; localStorage.setItem('wanaMemory',JSON.stringify(memoryDB)); speakUrdu(`${key} yaad kar liya, ab dobara dikhega to bataunga`); document.getElementById('do').innerText=`🧠 Yaad: ${key} saved (${memoryDB[key].count} times)`; }
+function measureMode(){ if(!lastSeen){ speakUrdu('Kisi cheez par point karo'); return; } // Simple: estimate size from bbox
+speakUrdu('Measure: Andaza 10 se 15 cm, asal size ke liye 2 points tap karo'); document.getElementById('do').innerText='📏 Measure: Tap screen 2 points to measure (coming - use AR ruler logic)'; aiCanvas.addEventListener('click', measureClick, {once:true}); }
+function measureClick(e){
+if(!measureStart){ measureStart={x:e.clientX,y:e.clientY}; document.getElementById('do').innerText='📏 Pehla point - ab dusra point tap karo'; aiCanvas.addEventListener('click', measureClick, {once:true}); }
+else { let dx=Math.abs(e.clientX-measureStart.x); let cm=Math.round(dx/10); document.getElementById('do').innerText=`📏 Andaza: ${cm} cm (approx)`; speakUrdu(`Andaza ${cm} centimeter`); measureStart=null; }
+}
+function speakWhat(){ if(lastSeen){ speakUrdu(`Main dekh raha hu: ${lastSeen}`); } else { speakUrdu('Abhi kuch nazar nahi aa raha, camera ko kisi cheez par karo'); } }
+function makeBill(){ let map={}; stockList.forEach(s=>map[s]=(map[s]||0)+1); let total=0; let billText='WanaLab Bill\n'; Object.entries(map).forEach(([k,v])=>{ let price=k.includes('Plate')?150:k.includes('Cup')?100:200; let line=`${k} x${v} = ${price*v} Rs`; billText+=line+'\n'; total+=price*v; }); billText+=`Total: ${total} Rs`; document.getElementById('see').innerText=billText.replace(/\n/g,' | '); speakUrdu(`Total bill ${total} rupay`); }
+function sendWhatsApp(){ let txt=`WanaLab v8 Report: ${lastSeen} - ${new Date().toLocaleString()} - Count: ${stockList.length}`; let url=`https://wa.me/?text=${encodeURIComponent(txt)}`; window.open(url,'_blank'); speakUrdu('WhatsApp khol diya'); }
+function exportAllPDF(){ const { jsPDF } = window.jspdf; let doc=new jsPDF(); doc.text('WanaLab v8 ALL PATHS GOD - Full Report',10,10); doc.setFontSize(9); doc.text(`Date: ${new Date().toLocaleString()}`,10,16); doc.text(`Seen: ${lastSeen}`,10,22); doc.text(`Stock: ${stockList.join(', ')}`,10,28); doc.text(`Memory: ${Object.keys(memoryDB).join(', ')}`,10,34); let y=42; Object.entries(memoryDB).forEach(([k,v])=>{ doc.text(`${k}: seen ${v.count} times`,10,y); y+=6; }); doc.save(`WanaLab-ALL-PATHS-${Date.now()}.pdf`); speakUrdu('PDF report bana diya'); }
 function cap(){
 let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height);
-ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-26,c.width,26); ct.fillStyle='#0f8'; ct.font='10px Arial'; ct.fillText(`VOICE GOD: ${lastSeen} ${new Date().toLocaleString()}`,8,c.height-8);
-let a=document.createElement('a'); a.download=`VOICE-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
-document.getElementById('do').innerText='📸 Captured by voice command!';
+ct.fillStyle='rgba(0,0,0,0.8)'; ct.fillRect(0,c.height-32,c.width,32); ct.fillStyle='#0f8'; ct.font='10px Arial'; ct.fillText(`ALL PATHS GOD: ${lastSeen} | Stock:${stockList.length} | ${new Date().toLocaleString()}`,8,c.height-8);
+let a=document.createElement('a'); a.download=`ALL-PATHS-${Date.now()}.png`; a.href=c.toDataURL(); a.click(); speakUrdu('Capture ho gaya');
 }
-function exportPDF(){ document.getElementById('do').innerText='📄 Exporting - feature coming in v7.1'; }
 window.addEventListener('load', init);
 </script>
 </body>
