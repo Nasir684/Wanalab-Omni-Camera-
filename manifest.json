@@ -1,7 +1,7 @@
 {
-  "name": "WanaLab - Desi AI Lab",
+  "name": "WanaLab - Desi AI Lab by Nasir Khan",
   "short_name": "WanaLab",
-  "description": "Desi AI: Urdu Voice, Stock Count, Follow, Bill, WhatsApp - Made in Dera Ismail Khan, Pakistan",
+  "description": "WanaLab Desi AI Lab by Nasir Khan - Urdu Voice, Stock Count, Follow, Bill, WhatsApp - Made in Pakistan",
   "start_url": "/Wanalab-Omni-Camera-/?source=pwa",
   "scope": "/Wanalab-Omni-Camera-/",
   "display": "standalone",
@@ -14,13 +14,13 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+      "src": "wanalab-icon-v81.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+      "src": "wanalab-icon-v81.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -32,14 +32,21 @@
       "short_name": "Voice",
       "description": "Start voice commands",
       "url": "/Wanalab-Omni-Camera-/?voice=1",
-      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png", "sizes": "96x96" }]
+      "icons": [{ "src": "wanalab-icon-v81.png", "sizes": "96x96" }]
     },
     {
       "name": "Count Stock",
       "short_name": "Gino",
       "description": "Count stock items",
       "url": "/Wanalab-Omni-Camera-/?count=1",
-      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png", "sizes": "96x96" }]
+      "icons": [{ "src": "wanalab-icon-v81.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "About WanaLab",
+      "short_name": "About",
+      "description": "About WanaLab by Nasir Khan",
+      "url": "/Wanalab-Omni-Camera-/?about=1",
+      "icons": [{ "src": "wanalab-icon-v81.png", "sizes": "96x96" }]
     }
   ]
 }
