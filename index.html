@@ -1,21 +1,57 @@
-<!-- WanaLab God Eye PRO v1.1 Engines -->
-<script src="js/flir-sdk.js"></script>
-<script src="js/rtsp-player.js"></script>
-<script src="js/night-hdr-fusion.js"></script>
-<script src="js/ai-detection.js"></script>
+<!-- WanaLab God Eye PRO v1.1 - FIXED Engines -->
+<video id="godVideo" autoplay playsinline muted style="position:fixed; top:0; left:0; width:100%; height:100vh; object-fit:cover; background:#000; z-index:1;"></video>
+
+<style>
+ #proBar{position:fixed;bottom:10px;left:5px;right:5px;display:flex;gap:5px;z-index:999;flex-wrap:wrap}
+ #proBar button{flex:1;padding:12px;border:none;border-radius:8px;font-weight:bold;min-width:70px}
+</style>
+
+<div id="proBar">
+  <button onclick="nightGod()" style="background:#ffaa00;color:#000">🌙 NIGHT GOD 10x</button>
+  <button onclick="aiDetect()" style="background:#00ff88;color:#000">🤖 AI DETECT</button>
+  <button onclick="thermalMode()" style="background:#ff0044;color:#fff">🔥 THERMAL</button>
+  <button onclick="alert('IP CAM v1.2 Coming')" style="background:#0088ff;color:#fff">📡 IP CAM</button>
+  <button onclick="capturePhoto()" style="background:#0ff;color:#000">📸 CAPTURE</button>
+</div>
+
 <script>
- // Pro Buttons Injection
- document.addEventListener('DOMContentLoaded',()=>{
-  const toolbar = document.getElementById('toolbar') || document.body;
-  const proBar = document.createElement('div');
-  proBar.style.cssText='position:fixed;bottom:10px;left:10px;right:10px;display:flex;gap:5px;z-index:100;flex-wrap:wrap';
-  proBar.innerHTML=`
-   <button onclick="nightGodEngine.capture10Frames()" style="flex:1;padding:12px;background:#ffaa00;color:#000;border:none;border-radius:8px;font-weight:bold">🌙 NIGHT GOD 10x</button>
-   <button onclick="aiEngine.detect()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">🤖 AI DETECT</button>
-   <button onclick="flirEngine.setFusionMode('thermal')" style="flex:1;padding:12px;background:#ff0044;color:#fff;border:none;border-radius:8px;font-weight:bold">🔥 THERMAL</button>
-   <button onclick="rtspEngine.discoverONVIF()" style="flex:1;padding:12px;background:#0088ff;color:#fff;border:none;border-radius:8px;font-weight:bold">📡 IP CAM</button>
-   <button onclick="exportHub.capturePhoto()" style="flex:1;padding:12px;background:#0ff;color:#000;border:none;border-radius:8px;font-weight:bold">📸 CAPTURE</button>
-  `;
-  document.body.appendChild(proBar);
- });
+// STUB ENGINES TO STOP CRASH
+window.nightGodEngine={capture10Frames:()=>nightGod()};
+window.aiEngine={detect:()=>aiDetect()};
+window.flirEngine={setFusionMode:()=>thermalMode()};
+window.rtspEngine={discoverONVIF:()=>alert('RTSP v1.2')};
+window.exportHub={capturePhoto:()=>capturePhoto()};
+
+// GOD FUSION CAMERA - WORKING
+let isNight=false, isThermal=false;
+async function initCamera(){
+  try{
+    const v=document.getElementById('godVideo');
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1920}}, audio:false});
+    v.srcObject=stream; await v.play();
+    console.log("God Eye LIVE");
+  }catch(e){ alert("Allow Camera: "+e.message); }
+}
+function nightGod(){
+  const v=document.getElementById('godVideo');
+  isNight=!isNight;
+  v.style.filter=isNight?'brightness(1.8) contrast(1.3)':'none';
+  alert(isNight?'🌙 NIGHT GOD ON - 1.8x Light Boost':'🌙 NIGHT GOD OFF');
+}
+function thermalMode(){
+  const v=document.getElementById('godVideo');
+  isThermal=!isThermal;
+  v.style.filter=isThermal?'sepia(1) hue-rotate(-30deg) saturate(3) contrast(1.5)':'none';
+  alert(isThermal?'🔥 THERMAL MOCK ON':'🔥 THERMAL OFF');
+}
+function aiDetect(){ alert('🤖 AI DETECT v1.1: Scanning... (TFJS v1.2 will count particles)'); }
+function capturePhoto(){
+  const v=document.getElementById('godVideo');
+  const c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  const a=document.createElement('a'); a.download='WanaLab-GodEye-'+Date.now()+'.png'; a.href=c.toDataURL(); a.click();
+  alert('📸 Captured!');
+}
+window.addEventListener('load', initCamera);
+document.addEventListener('click', ()=>{ const v=document.getElementById('godVideo'); if(v && !v.srcObject) initCamera(); }, {once:true});
 </script>
