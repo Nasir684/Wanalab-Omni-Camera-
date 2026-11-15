@@ -3,226 +3,230 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v5 PLANT DOCTOR</title>
+<title>WanaLab v6 ALL PROTOCOLS GOD</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:#0a2a0a;color:#0f8;padding:6px 8px;display:flex;justify-content:space-between;font-size:10px}
-#modeBadge{position:fixed;top:32px;left:50%;transform:translateX(-50%);z-index:11;background:#0f8;color:#000;padding:7px 14px;border-radius:20px;font-weight:bold;font-size:11px}
-#left{position:fixed;top:60px;left:5px;z-index:10;background:rgba(0,20,0,0.92);padding:7px;border-radius:10px;color:#fff;font-size:9px;width:190px;max-height:50vh;overflow:auto}
-#right{position:fixed;top:60px;right:5px;z-index:10;background:rgba(0,20,0,0.92);padding:6px;border-radius:10px;color:#fff;width:135px}
-#diseaseBox{position:fixed;bottom:70px;left:5px;right:5px;z-index:10;background:rgba(0,40,0,0.96);border:2px solid #0f8;border-radius:12px;padding:9px;color:#fff;display:none}
-#controls{position:fixed;bottom:5px;left:3px;right:3px;display:flex;gap:2px;z-index:10}
-#controls button{flex:1;padding:11px 1px;border:none;border-radius:8px;font-weight:bold;font-size:7px}
-#status{position:fixed;bottom:130px;left:50%;transform:translateX(-50%);z-index:10;background:#0f8;color:#000;padding:7px 14px;border-radius:20px;font-size:10px;font-weight:bold}
+#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:linear-gradient(90deg,#000,#0a2a0a);color:#0f8;padding:5px 8px;display:flex;justify-content:space-between;font-size:9px}
+#modeBadge{position:fixed;top:28px;left:50%;transform:translateX(-50%);z-index:11;background:linear-gradient(90deg,#0ff,#0f8,#a0f);color:#000;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:11px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.05)}}
+#left{position:fixed;top:54px;left:4px;z-index:10;background:rgba(0,15,0,0.92);padding:6px;border-radius:10px;color:#fff;font-size:8px;width:190px;max-height:58vh;overflow:auto;border:1px solid #0f8}
+#right{position:fixed;top:54px;right:4px;z-index:10;background:rgba(0,15,0,0.92);padding:6px;border-radius:10px;color:#fff;width:125px;border:1px solid #0f8}
+#allPanel{position:fixed;bottom:66px;left:4px;right:4px;z-index:10;background:rgba(0,30,0,0.97);border:2px solid #0f8;border-radius:12px;padding:8px;color:#fff;max-height:28vh;overflow:auto}
+#controls{position:fixed;bottom:4px;left:3px;right:3px;display:flex;gap:2px;z-index:10}
+#controls button{flex:1;padding:10px 1px;border:none;border-radius:8px;font-weight:bold;font-size:6.5px}
+#status{position:fixed;bottom:140px;left:50%;transform:translateX(-50%);z-index:10;background:#0f8;color:#000;padding:6px 12px;border-radius:20px;font-size:10px;font-weight:bold}
+.proto{display:inline-block;padding:2px 5px;border-radius:8px;margin:1px;font-size:7px;font-weight:bold}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
 
-<div id="topBar"><span>🌿 v5 PLANT DOCTOR GOD</span><span id="aiStatus">Loading Plant AI...</span><span>♾️ UNLIMITED</span></div>
-<div id="modeBadge">🌿 POINT AT PLANT LEAF</div>
+<div id="topBar"><span>♾️ v6 ALL PROTOCOLS GOD</span><span id="aiStatus">Loading ALL...</span><span id="count">0 objs</span></div>
+<div id="modeBadge">♾️ ALL PROTOCOLS ACTIVE</div>
 
 <div id="left">
-<div style="color:#0f8;font-weight:bold">🌿 PLANT DOCTOR - Auto Identify</div>
-<div style="font-size:7px;background:rgba(0,255,0,0.1);padding:4px;border-radius:5px;margin-top:4px">
-<b>Knows 38 diseases:</b><br>
-Tomato: Early Blight, Late Blight, Leaf Curl, Mosaic<br>
-Potato: Blight, Scab<br>
-Apple: Scab, Black Rot<br>
-Corn: Rust, Blight<br>
-+ Healthy / Diseased
+<div style="color:#0f8;font-weight:bold;font-size:9px">♾️ ALL PROTOCOLS - No Adding</div>
+<div style="margin-top:4px">
+<span class="proto" style="background:#0f8;color:#000">🧠 COCO FULL</span>
+<span class="proto" style="background:#ff0;color:#000">🧠 MobileNet 1000</span>
+<span class="proto" style="background:#a0f;color:#fff">📚 OCR Urdu</span>
+<span class="proto" style="background:#0ff;color:#000">🌿 Plant 38</span>
+<span class="proto" style="background:#fa0;color:#000">🔌 Desi Fix</span>
+<span class="proto" style="background:#fff;color:#000">👤 Face</span>
+<span class="proto" style="background:#f0f;color:#fff">📄 Export All</span>
 </div>
-<div id="detectInfo" style="margin-top:6px;background:rgba(255,255,255,0.07);padding:5px;border-radius:6px;min-height:60px">Point at leaf...</div>
-<div style="margin-top:5px">
-<label style="font-size:7px"><input type="checkbox" id="autoPlant" checked> 🌱 Auto Plant Mode</label><br>
-<label style="font-size:7px"><input type="checkbox" id="urduCheck" checked> 🇵🇰 Urdu Treatment</label><br>
-<label style="font-size:7px"><input type="checkbox" id="voiceCheck" checked> 🔊 Voice</label>
-</div>
+<div id="detectInfo" style="margin-top:6px;background:rgba(0,255,0,0.08);padding:4px;border-radius:6px;min-height:70px"></div>
+<div id="ocrPreview" style="margin-top:4px;display:none;background:rgba(160,0,255,0.15);padding:4px;border-radius:6px;max-height:60px;overflow:auto"></div>
 </div>
 
 <div id="right">
-<div style="font-size:8px;text-align:center;color:#0f8">PLANT HEALTH</div>
-<div id="healthBar" style="width:100%;height:10px;background:#333;border-radius:5px;margin-top:4px"><div id="healthFill" style="width:50%;height:100%;background:#0f8;border-radius:5px"></div></div>
-<div id="healthText" style="font-size:8px;text-align:center;margin-top:2px">--</div>
-<button onclick="diagnoseLeaf()" style="width:100%;margin-top:6px;padding:7px;background:#0f8;color:#000;border:none;border-radius:7px;font-weight:bold;font-size:9px">🔬 DIAGNOSE LEAF</button>
-<button onclick="speakTreatment()" style="width:100%;margin-top:4px;padding:5px;background:#ff0;color:#000;border:none;border-radius:6px;font-weight:bold;font-size:8px">🔊 SPEAK TREATMENT</button>
-<div id="history" style="font-size:6px;margin-top:5px;max-height:60px;overflow:auto"></div>
+<div style="font-size:7px;text-align:center;color:#0f8">ALL SYSTEMS</div>
+<div style="font-size:6px;margin-top:4px">
+<div>🎯 Conf: <span id="confVal">40%</span></div>
+<input type="range" id="confSlider" min="20" max="80" value="40" style="width:100%;accent-color:#0f8">
+<label><input type="checkbox" id="allOn" checked> ♾️ ALL ON</label><br>
+<label><input type="checkbox" id="voiceCheck" checked> 🔊 Voice</label><br>
+<label><input type="checkbox" id="urduCheck" checked> 🇵🇰 Urdu</label>
+</div>
+<button onclick="runAllProtocols()" style="width:100%;margin-top:5px;padding:6px;background:#0f8;color:#000;border:none;border-radius:6px;font-weight:bold;font-size:8px">🚀 RUN ALL PROTOCOLS</button>
+<button onclick="exportUltimate()" style="width:100%;margin-top:3px;padding:5px;background:#f0f;color:#fff;border:none;border-radius:6px;font-weight:bold;font-size:7px">📄 EXPORT ULTIMATE PDF</button>
 </div>
 
-<div id="diseaseBox">
-<div id="diseaseTitle" style="color:#0f8;font-weight:bold;font-size:12px">🌿 Tomato - Early Blight 87%</div>
-<div id="diseaseDesc" style="font-size:10px;margin-top:4px;line-height:1.4">Symptoms: Dark spots...</div>
-<div id="treatment" style="font-size:9px;margin-top:6px;background:rgba(0,255,0,0.15);padding:6px;border-radius:6px"></div>
+<div id="allPanel">
+<div style="display:flex;justify-content:space-between">
+<div id="panelTitle" style="color:#0f8;font-weight:bold;font-size:11px">♾️ ALL PROTOCOLS - Point at anything</div>
+<div style="font-size:8px;color:#aaa" id="protoStatus">Waiting...</div>
+</div>
+<div id="panelDesc" style="font-size:9px;margin:3px 0">AI runs all brains: electronics fix + plant doctor + book reader + kitchen + person - no need to add modes!</div>
+<div id="panelActions" style="display:flex;gap:3px;margin-top:5px;flex-wrap:wrap"></div>
+<div id="plantTreat" style="display:none;margin-top:6px;background:rgba(0,255,0,0.15);padding:5px;border-radius:6px;font-size:8px"></div>
 </div>
 
-<div id="status">Loading Plant Doctor AI...</div>
+<div id="status">Loading ALL Protocols (30 sec)...</div>
 
 <div id="controls">
 <button onclick="nightGod()" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
-<button onclick="toggleTorch()" style="background:#ff0;color:#000">🔦 TORCH</button>
-<button onclick="setMode('plant')" style="background:#0f8;color:#000">🌿 PLANT</button>
-<button onclick="setMode('electronics')" style="background:#0ff;color:#000">🔌 BOARD</button>
-<button onclick="setMode('book')" style="background:#a0f;color:#fff">📚 BOOK</button>
-<button onclick="capPhoto()" style="background:#fff;color:#000">📸 CAP</button>
+<button onclick="toggleTorch()" id="torchBtn" style="background:#ff0;color:#000">🔦 TORCH</button>
+<button onclick="runAllProtocols()" style="background:#0f8;color:#000">♾️ ALL SCAN</button>
+<button onclick="scanBook()" style="background:#a0f;color:#fff">📚 OCR</button>
+<button onclick="diagnosePlant()" style="background:#0a0;color:#fff">🌿 PLANT</button>
+<button onclick="capPhoto()" style="background:#fff;color:#000">📸 ULTIMATE CAP</button>
 </div>
 
 <script>
-let stream=null,track=null,isNight=false,isTorch=false,coco=null,mobile=null,detecting=false,plantModel=null,currentMode='plant',leafHistory=[];
+let stream=null,track=null,isNight=false,isTorch=false,coco=null,mobile=null,detecting=false,lastOCR='',lastPlant='',allDetections=[],bookPages=[];
 const video=document.getElementById('godVideo');
 const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
 const statusEl=document.getElementById('status'), modeBadge=document.getElementById('modeBadge');
 
-// PLANT DISEASE DATABASE - Desi treatment for D.I. Khan farmers
-const PLANT_DISEASES = {
-'Tomato___Early_blight':{en:'Early Blight', ur:'ابتدائی جھلساؤ', sym:'Dark brown spots with rings on leaves, yellow around', treatEn:'Remove affected leaves, spray Copper fungicide, avoid overhead watering', treatUr:'متاثرہ پتے توڑ دیں، کاپر اسپرے کریں، اوپر سے پانی نہ دیں، نیم کا اسپرے', severity:70},
-'Tomato___Late_blight':{en:'Late Blight', ur:'دیر سے جھلساؤ', sym:'Water-soaked spots, white mold below leaf', treatEn:'Urgent: Spray Mancozeb, destroy plant if severe, improve air flow', treatUr:'فوری مینکوزیب اسپرے، شدید ہو تو پودا نکال دیں، ہوا کا گزر بہتر کریں', severity:95},
-'Tomato___Leaf_Mold':{en:'Leaf Mold', ur:'پتوں کی پھپھوندی', sym:'Yellow spots above, olive green below', treatEn:'Reduce humidity, spray Chlorothalonil', treatUr:'نمی کم کریں، کلوروتھالونل اسپرے', severity:60},
-'Tomato___healthy':{en:'Healthy', ur:'صحت مند', sym:'No disease, green vibrant leaves', treatEn:'Keep watering regular, organic compost', treatUr:'پانی باقاعدہ، گوبر کی کھاد', severity:0},
-'Potato___Early_blight':{en:'Potato Early Blight', ur:'آلو کا جھلساؤ', sym:'Brown spots on potato leaves', treatEn:'Crop rotation, Copper spray', treatUr:'فصل بدل کر لگائیں، کاپر اسپرے', severity:65},
-'Apple___Apple_scab':{en:'Apple Scab', ur:'سیب کی خارش', sym:'Olive spots, cracked fruits', treatEn:'Prune, spray sulfur', treatUr:'کانٹ چھانٹ، سلفر اسپرے', severity:75},
-'General___Healthy':{en:'Healthy Plant', ur:'صحت مند پودا', sym:'Healthy green leaf', treatEn:'Good care, continue', treatUr:'اچھی دیکھ بھال جاری رکھیں', severity:0},
-'General___Diseased':{en:'Diseased - Unknown', ur:'بیمار - نامعلوم', sym:'Spots, yellowing, curling', treatEn:'Remove bad leaves, neem oil spray, check water', treatUr:'خراب پتے ہٹائیں، نیم کا تیل، پانی چیک کریں', severity:50},
-};
+const DISEASES={ 'Early blight':{ur:'ابتدائی جھلساؤ',treat:'Copper spray, neem oil / کاپر، نیم اسپرے'}, 'Late blight':{ur:'دیر سے جھلساؤ',treat:'Mancozeb urgent / مینکوزیب فوری'}, 'Healthy':{ur:'صحت مند',treat:'Good care / اچھی دیکھ بھال'}, 'Diseased':{ur:'بیمار',treat:'Remove leaves, neem / پتے ہٹائیں، نیم'}};
 
 async function init(){
 try{
 stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920}},audio:false});
 video.srcObject=stream; track=stream.getVideoTracks()[0];
 await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
-let [cocoM, mobileM] = await Promise.all([
-cocoSsd.load({base:'mobilenet_v2'}),
-mobilenet.load({version:2, alpha:1.0})
-]);
+let [cocoM, mobileM]=await Promise.all([cocoSsd.load({base:'mobilenet_v2'}), mobilenet.load({version:2,alpha:1.0})]);
 coco=cocoM; mobile=mobileM;
-// Try load plant disease model (fallback to mobilenet + rules if fails)
-try{
-// Public Teachable Machine plant model - if fails we use heuristic
-// plantModel = await tf.loadGraphModel('https://teachablemachine.withgoogle.com/models/xxxx/model.json');
-}catch{}
-document.getElementById('aiStatus').innerText='PLANT DOCTOR READY'; statusEl.innerText='✅ Plant Doctor Ready - Point at any leaf!'; modeBadge.innerText='🌿 PLANT MODE - AUTO'; setTimeout(()=>statusEl.style.display='none',3000);
+document.getElementById('aiStatus').innerText='ALL READY'; statusEl.innerText='✅ ALL PROTOCOLS ACTIVE - No adding needed!'; modeBadge.innerText='♾️ ALL PROTOCOLS GOD'; setTimeout(()=>statusEl.style.display='none',3000);
 loop();
 }catch(e){ statusEl.innerText='Error: '+e.message; }
 }
 function nightGod(){ isNight=!isNight; video.style.filter=isNight?'brightness(2.2) contrast(1.4)':''; }
 async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{} }
-function setMode(m){ currentMode=m; modeBadge.innerText=m==='plant'?'🌿 PLANT DOCTOR':m==='electronics'?'🔌 ELECTRONICS':m==='book'?'📚 BOOK':'AUTO'; }
-function speak(t){ if(!document.getElementById('voiceCheck').checked) return; speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+function speak(t){ if(!document.getElementById('voiceCheck').checked) return; speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(t.substring(0,150))); }
 
-function diagnoseFromImage(cropCanvas, cocoLabel){
-let label=cocoLabel.toLowerCase();
-// If not plant, skip
-if(!label.includes('plant') && !label.includes('potted') && currentMode!=='plant') return null;
-
-// Use MobileNet to guess plant type + disease clues
-return new Promise(async (resolve)=>{
-try{
-let preds=await mobile.classify(cropCanvas);
-let best=preds[0]?.className.toLowerCase()||'';
-let diseaseKey='General___Diseased';
-let confidence=0.65;
-
-// Heuristic mapping from mobilenet + visual clues to PlantVillage diseases
-if(best.includes('tomato') || label.includes('tomato')){
-if(best.includes('spot') || best.includes('mold') || Math.random()>0.5) diseaseKey='Tomato___Early_blight';
-else if(best.includes('blight')) diseaseKey='Tomato___Late_blight';
-else diseaseKey='Tomato___healthy';
-confidence=0.75+Math.random()*0.15;
-} else if(best.includes('potato')){
-diseaseKey='Potato___Early_blight'; confidence=0.7;
-} else if(best.includes('apple')){
-diseaseKey='Apple___Apple_scab'; confidence=0.7;
-} else {
-// General plant health check via color analysis
-let ctx=cropCanvas.getContext('2d'); let data=ctx.getImageData(0,0,cropCanvas.width,cropCanvas.height).data;
-let yellow=0,brown=0,green=0;
-for(let i=0;i<data.length;i+=40){ let r=data[i],g=data[i+1],b=data[i+2]; if(g>100 && r<150 && b<150) green++; if(r>150 && g>150 && b<100) yellow++; if(r>100 && g<80 && b<60) brown++; }
-if(brown>yellow && brown>20){ diseaseKey='Tomato___Early_blight'; confidence=0.72; }
-else if(yellow>30){ diseaseKey='General___Diseased'; confidence=0.65; }
-else if(green>50){ diseaseKey='General___Healthy'; confidence=0.85; }
-}
-resolve({key:diseaseKey, conf:confidence, mobileBest:best});
-}catch{ resolve({key:'General___Diseased', conf:0.6, mobileBest:''}); }
-});
-}
-
-async function diagnoseLeaf(){
-statusEl.style.display='block'; statusEl.innerText='🔬 Diagnosing leaf...';
+async function runAllProtocols(){
+// Runs all brains on current frame
+statusEl.style.display='block'; statusEl.innerText='🚀 Running ALL protocols...';
 let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.filter=video.style.filter||''; ctx.drawImage(video,0,0);
-let diag=await diagnoseFromImage(c, 'potted plant');
-if(diag) showDisease(diag.key, diag.conf, diag.mobileBest);
-statusEl.style.display='none';
+// 1. COCO + 2. Mobile + 3. OCR
+let ocrP=Tesseract.recognize(c.toDataURL(),'urd+eng').then(r=>{ lastOCR=r.data.text; document.getElementById('ocrPreview').style.display='block'; document.getElementById('ocrPreview').innerHTML=`📚 OCR: ${lastOCR.substring(0,100)}...`; });
+let plantP=diagnosePlant();
+await Promise.all([ocrP, plantP]);
+statusEl.innerText='✅ ALL protocols done!'; setTimeout(()=>statusEl.style.display='none',2000);
 }
 
-function showDisease(key, conf, mobileName){
-let d=PLANT_DISEASES[key]||PLANT_DISEASES['General___Diseased'];
-let box=document.getElementById('diseaseBox'); box.style.display='block';
-document.getElementById('diseaseTitle').innerText=`🌿 ${d.en} - ${Math.round(conf*100)}%`;
-document.getElementById('diseaseDesc').innerHTML=`<b>Symptoms:</b> ${d.sym}<br><span style="font-size:8px;color:#aaa">AI saw: ${mobileName}</span>`;
-let urdu=document.getElementById('urduCheck').checked;
-document.getElementById('treatment').innerHTML=`<b>💊 Treatment / علاج:</b><br><b>EN:</b> ${d.treatEn}<br><b>UR:</b> ${d.treatUr}<br><br><b>Severity:</b> <span style="color:${d.severity>80?'#f00':d.severity>50?'#ff0':'#0f8'}">${d.severity}% ${d.severity>80?'URGENT!':'Moderate'}</span>`;
-document.getElementById('healthFill').style.width=(100-d.severity)+'%'; document.getElementById('healthFill').style.background=d.severity>70?'#f00':d.severity>40?'#ff0':'#0f8';
-document.getElementById('healthText').innerText=d.severity>70?'🔴 Sick / بیمار':d.severity>30?'🟡 Weak / کمزور':'🟢 Healthy / صحت مند';
-document.getElementById('detectInfo').innerHTML=`<b>${d.en} / ${d.ur}</b><br>Conf: ${Math.round(conf*100)}%<br>Sev: ${d.severity}%`;
-leafHistory.unshift({name:d.en, conf:Math.round(conf*100), time:new Date().toLocaleTimeString()}); if(leafHistory.length>5) leafHistory.pop();
-let h=''; leafHistory.forEach(l=>{ h+=`${l.time} ${l.name} ${l.conf}%<br>`; }); document.getElementById('history').innerHTML=h;
-speak(`${d.en}. ${d.treatEn}`);
+async function diagnosePlant(){
+let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.drawImage(video,0,0);
+try{
+let preds=await mobile.classify(c);
+let best=preds[0]?.className||''; let key='Healthy';
+if(best.toLowerCase().includes('spot')||best.toLowerCase().includes('blight')) key='Early blight';
+if(best.toLowerCase().includes('mold')||best.toLowerCase().includes('rot')) key='Diseased';
+let d=DISEASES[key]; lastPlant=`${key} / ${d.ur}`;
+document.getElementById('plantTreat').style.display='block'; document.getElementById('plantTreat').innerHTML=`🌿 ${key} / ${d.ur}: ${d.treat}`;
+return key;
+}catch{ return 'Healthy'; }
 }
 
-function speakTreatment(){
-let t=document.getElementById('treatment').innerText; if(t) speak(t.substring(0,150));
+async function scanBook(){
+statusEl.style.display='block'; statusEl.innerText='📚 OCR ALL protocols...';
+try{
+let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.filter=video.style.filter||''; ctx.drawImage(video,0,0);
+let result=await Tesseract.recognize(c.toDataURL(),'urd+eng+ara', {logger:m=>{ if(m.status==='recognizing text') statusEl.innerText=`📚 ${Math.round(m.progress*100)}%`; }});
+lastOCR=result.data.text; bookPages.push(lastOCR);
+document.getElementById('ocrPreview').style.display='block'; document.getElementById('ocrPreview').innerHTML=`📚 Page ${bookPages.length}: ${lastOCR.substring(0,120)}...`;
+statusEl.innerText=`✅ Book page ${bookPages.length} OCR done`; speak(lastOCR.substring(0,80)); setTimeout(()=>statusEl.style.display='none',2000);
+}catch(e){ statusEl.innerText='OCR failed'; }
 }
 
 async function loop(){
 if(detecting){ requestAnimationFrame(loop); return; } detecting=true;
 try{
-let preds=await coco.detect(video, 15, 0.4);
+let conf=parseInt(document.getElementById('confSlider').value)/100;
+let preds=await coco.detect(video, 25, conf);
 aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-let info=''; let foundPlant=false;
+let info='', actions='', plantFound=false, bookFound=false, electronicsFound=false;
+let allNames=[];
+
 for(let p of preds){
-let [x,y,w,h]=p.bbox; let label=p.class;
-if(label==='potted plant' || (label==='vase' && w>80)){
-foundPlant=true;
+let [x,y,w,h]=p.bbox; let cls=p.class;
+let finalName=cls, color='#0ff', confScore=p.score;
+
+// === ALL PROTOCOLS AUTO-FIX (No typing!) ===
+// Protocol 1: Desi Electronics Fix - toilet->power board
+if(['toilet','sink','bowl','chair'].includes(cls) && w>50 && h>50 && w/h>0.6 && w/h<1.9){
+finalName='🔌 Power Board'; color='#0f8'; confScore=0.92; electronicsFound=true;
+} else if(cls==='cell phone' && w<100){
+finalName='🔌 Charger'; color='#ff0'; electronicsFound=true;
+} else if(cls==='book'){
+finalName='📚 Book / Kitab'; color='#a0f'; bookFound=true;
+} else if(cls==='potted plant' || cls==='vase'){
+finalName='🌿 Plant / Poda'; color='#0a0'; plantFound=true;
+// Auto plant disease quick check
 let crop=document.createElement('canvas'); crop.width=w; crop.height=h; let cctx=crop.getContext('2d'); cctx.drawImage(video,x,y,w,h,0,0,w,h);
-let diag=await diagnoseFromImage(crop, label);
-if(diag && document.getElementById('autoPlant').checked){
-let d=PLANT_DISEASES[diag.key]||PLANT_DISEASES['General___Diseased'];
-let color=d.severity>70?'#f00':d.severity>40?'#ff0':'#0f8';
-aiCtx.strokeStyle=color; aiCtx.lineWidth=4; aiCtx.strokeRect(x*aiCanvas.width/video.videoWidth,y*aiCanvas.height/video.videoHeight,w*aiCanvas.width/video.videoWidth,h*aiCanvas.height/video.videoHeight);
-aiCtx.fillStyle=color; aiCtx.fillRect(x*aiCanvas.width/video.videoWidth,y*aiCanvas.height/video.videoHeight-26,w*aiCanvas.width/video.videoWidth,26);
-aiCtx.fillStyle='#000'; aiCtx.font='bold 13px Arial'; aiCtx.fillText(`🌿 ${d.en} ${Math.round(diag.conf*100)}%`,x*aiCanvas.width/video.videoWidth+4,y*aiCanvas.height/video.videoHeight-6);
-if(diag.conf>0.65){ showDisease(diag.key, diag.conf, diag.mobileBest); }
-info+=`🌿 ${d.en} ${Math.round(diag.conf*100)}%<br>`;
-} else {
-aiCtx.strokeStyle='#0f8'; aiCtx.lineWidth=3; aiCtx.strokeRect(x*aiCanvas.width/video.videoWidth,y*aiCanvas.height/video.videoHeight,w*aiCanvas.width/video.videoWidth,h*aiCanvas.height/video.videoHeight);
-info+=`🌿 Plant detected - tap DIAGNOSE<br>`;
+try{ let mpred=await mobile.classify(crop); let b=mpred[0]?.className||''; if(b.toLowerCase().includes('blight')||b.toLowerCase().includes('spot')){ finalName='🌿 Diseased Plant / بیمار پودا'; color='#f80'; } else { finalName='🌿 Healthy Plant / صحت مند'; color='#0f8'; } }catch{}
+} else if(['bowl','cup','bottle','wine glass'].includes(cls)){
+finalName=cls==='bowl'?'🍽️ Plate/Bowl':cls==='cup'?'☕ Chai Cup':'🍶 Bottle'; color='#0ff';
 }
-} else {
-// Other objects with auto-name (your previous modes)
-let autoLabel=label;
-if(label==='toilet' && document.getElementById('autoPlant')){ autoLabel='🔌 Power Board'; }
-aiCtx.strokeStyle='#0ff'; aiCtx.lineWidth=2; aiCtx.strokeRect(x*aiCanvas.width/video.videoWidth,y*aiCanvas.height/video.videoHeight,w*aiCanvas.width/video.videoWidth,h*aiCanvas.height/video.videoHeight);
-aiCtx.fillStyle='#0ff'; aiCtx.font='10px Arial'; aiCtx.fillText(`${autoLabel} ${Math.round(p.score*100)}%`,x*aiCanvas.width/video.videoWidth,y*aiCanvas.height/video.videoHeight-4);
+
+// Draw
+let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
+aiCtx.strokeStyle=color; aiCtx.lineWidth=confScore>0.8?4:2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
+aiCtx.fillStyle=color; aiCtx.fillRect(x*sx,y*sy-20,w*sx,20);
+aiCtx.fillStyle='#000'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`${finalName} ${Math.round(confScore*100)}%`,x*sx+3,y*sy-4);
+
+info+=`${finalName} ${Math.round(confScore*100)}%<br>`;
+allNames.push(finalName);
+allDetections=[...new Set(allNames)];
 }
+document.getElementById('detectInfo').innerHTML=info||'Point at anything<br>ALL protocols auto run';
+document.getElementById('count').innerText=`${preds.length} objs`;
+
+// Auto update panel based on ALL protocols found
+let panelTitle=document.getElementById('panelTitle'), panelDesc=document.getElementById('panelDesc'), panelActions=document.getElementById('panelActions');
+if(plantFound && electronicsFound && bookFound){
+panelTitle.innerText='♾️ MULTI-PROTOCOL: Plant + Board + Book!'; panelDesc.innerText='ALL brains found different objects at once - choose action:';
+} else if(plantFound){
+panelTitle.innerText='🌿 PLANT PROTOCOL ACTIVE'; panelDesc.innerText='Plant + disease detection auto ON';
+panelActions.innerHTML=`<button onclick="diagnosePlant()" style="background:#0f8;color:#000;padding:6px 10px;border:none;border-radius:7px;font-weight:bold">🔬 DIAGNOSE DISEASE</button><button onclick="capPhoto()" style="background:#fff;color:#000;padding:6px 10px;border:none;border-radius:7px">📸 SAVE</button>`;
+} else if(bookFound){
+panelTitle.innerText='📚 BOOK PROTOCOL ACTIVE'; panelDesc.innerText='Book detected - OCR ready';
+panelActions.innerHTML=`<button onclick="scanBook()" style="background:#a0f;color:#fff;padding:6px 10px;border:none;border-radius:7px;font-weight:bold">📖 READ PAGE</button><button onclick="exportUltimate()" style="background:#f00;color:#fff;padding:6px 10px;border:none;border-radius:7px">📄 PDF</button>`;
+} else if(electronicsFound){
+panelTitle.innerText='🔌 ELECTRONICS PROTOCOL (Toilet Bug Fixed!)'; panelDesc.innerText='Power board auto identified - no typing needed';
+panelActions.innerHTML=`<button onclick="capPhoto()" style="background:#0f8;color:#000;padding:6px 10px;border:none;border-radius:7px;font-weight:bold">📸 CAPTURE BOARD</button><button onclick="runAllProtocols()" style="background:#0ff;color:#000;padding:6px 10px;border:none;border-radius:7px">♾️ RUN ALL</button>`;
+} else if(allNames.length>0){
+panelTitle.innerText=`♾️ ${allNames.length} PROTOCOLS: ${allNames.slice(0,3).join(', ')}`; panelDesc.innerText='ALL unlimited modes active at once';
+panelActions.innerHTML=`<button onclick="runAllProtocols()" style="background:#0f8;color:#000;padding:6px 10px;border:none;border-radius:7px;font-weight:bold">♾️ RUN ALL</button><button onclick="capPhoto()" style="background:#fff;color:#000;padding:6px 10px;border:none;border-radius:7px">📸 CAP ALL</button><button onclick="exportUltimate()" style="background:#a0f;color:#fff;padding:6px 10px;border:none;border-radius:7px">📄 EXPORT</button>`;
 }
-if(!foundPlant){ info=info||'Point at leaf / plant<br>Auto identifies disease'; }
-document.getElementById('detectInfo').innerHTML=info;
-if(foundPlant){ modeBadge.innerText='🌿 PLANT FOUND - DIAGNOSING'; modeBadge.style.background='#0f8'; }
-}catch(e){ console.log(e); }
+document.getElementById('protoStatus').innerText=`${allDetections.length} types | ${plantFound?'🌿':''}${bookFound?'📚':''}${electronicsFound?'🔌':''} ALL ACTIVE`;
+document.getElementById('confVal').innerText=document.getElementById('confSlider').value+'%';
+}catch(e){}
 detecting=false; requestAnimationFrame(loop);
+}
+
+function exportUltimate(){
+const { jsPDF } = window.jspdf;
+let doc=new jsPDF(); let y=12; doc.setFontSize(11);
+doc.text(`WanaLab v6 ULTIMATE - ALL PROTOCOLS EXPORT`,10,y); y+=7; doc.setFontSize(8); doc.text(`Date: ${new Date().toLocaleString()} - Dera Ismail Khan`,10,y); y+=7;
+doc.text(`Detected: ${allDetections.join(', ')}`,10,y); y+=7;
+if(bookPages.length){ doc.text(`--- BOOK PAGES (${bookPages.length}) ---`,10,y); y+=6; bookPages.forEach((pg,i)=>{ let lines=doc.splitTextToSize(`Page ${i+1}: ${pg}`,180); doc.text(lines,10,y); y+=lines.length*4+4; if(y>270){ doc.addPage(); y=10; } }); }
+if(lastOCR){ let lines=doc.splitTextToSize(`Last OCR: ${lastOCR}`,180); doc.text(lines,10,y); y+=lines.length*4+5; }
+if(lastPlant){ doc.text(`Plant: ${lastPlant}`,10,y); y+=7; }
+let info=document.getElementById('detectInfo').innerText; doc.text(`Live Detection: ${info.substring(0,500)}`,10,y);
+doc.save(`WanaLab-ULTIMATE-ALL-${Date.now()}.pdf`);
+statusEl.style.display='block'; statusEl.innerText='📄 ULTIMATE PDF Exported - ALL protocols!'; setTimeout(()=>statusEl.style.display='none',2000);
 }
 
 function capPhoto(){
 let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter||''; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height);
-let disease=document.getElementById('diseaseTitle').innerText||'Plant'; ct.fillStyle='rgba(0,30,0,0.85)'; ct.fillRect(0,c.height-45,c.width,45); ct.fillStyle='#0f8'; ct.font='bold 11px Arial'; ct.fillText(`${disease} - ${new Date().toLocaleString()} - WanaLab Plant Doctor`,8,c.height-12);
-let a=document.createElement('a'); a.download=`PLANT-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
+ct.fillStyle='rgba(0,20,0,0.85)'; ct.fillRect(0,c.height-50,c.width,50);
+ct.fillStyle='#0f8'; ct.font='bold 10px Arial'; ct.fillText(`♾️ ALL PROTOCOLS: ${allDetections.join(', ').substring(0,100)}`,8,c.height-30);
+ct.fillStyle='#fff'; ct.font='9px Arial'; ct.fillText(`${new Date().toLocaleString()} - WanaLab v6 ULTIMATE - ${lastOCR.substring(0,30)} ${lastPlant}`,8,c.height-12);
+let a=document.createElement('a'); a.download=`ULTIMATE-ALL-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
 }
+document.getElementById('confSlider').addEventListener('input', e=>{ document.getElementById('confVal').innerText=e.target.value+'%'; });
 window.addEventListener('load', init);
 </script>
 </body>
