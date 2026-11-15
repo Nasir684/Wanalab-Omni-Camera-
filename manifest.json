@@ -1,27 +1,80 @@
 {
-  "name": "WanaLab Wana-Omni-Camera God Eye v1.0 Global",
-  "short_name": "God Eye",
-  "description": "All-in-One Offline: Book Scanner + Microscope 1000x + Telescope + Night Vision + Thermal + 3D + Translate + USB Endoscope + IP Cam | Founder Nasir Khan",
-  "start_url": "./index.html",
+  "name": "WanaLab - Desi AI Lab",
+  "short_name": "WanaLab",
+  "description": "Desi AI: Urdu Voice, Stock Count, Follow, Bill, WhatsApp - Made in Dera Ismail Khan, Pakistan",
+  "start_url": "/W/?source=pwa",
+  "scope": "/W/",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#22d3ee",
+  "display_override": ["standalone", "fullscreen"],
   "orientation": "any",
-  "categories": ["photo", "utilities", "education", "medical", "productivity"],
+  "background_color": "#000000",
+  "theme_color": "#00ff88",
+  "categories": ["productivity", "utilities", "business"],
+  "lang": "en-PK",
+  "dir": "ltr",
   "icons": [
     {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
+      "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-512.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
-  "keywords": ["book scanner", "microscope", "telescope", "night vision", "thermal", "WanaLab", "God Eye"],
-  "author": "Nasir Khan",
-  "contact": "Nasir@wanalab.org"
+  "screenshots": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Voice Search",
+      "short_name": "Voice",
+      "description": "Start voice commands",
+      "url": "/W/?voice=1",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Count Stock",
+      "short_name": "Gino",
+      "description": "Count stock items",
+      "url": "/W/?count=1",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/4712/4712109.png", "sizes": "96x96" }]
+    }
+  ],
+  "permissions": ["camera", "microphone"],
+  "handle_links": "preferred",
+  "launch_handler": { "client_mode": "auto" }
 }
