@@ -1,54 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WanaLab Wana-Omni-Camera God Eye v1.0 Global - Book Scanner + Microscope 1000x + Telescope + Night Vision + Thermal</title>
-<meta name="description" content="WanaLab Wana-Omni-Camera God Eye v1.0 Global - All-in-One Offline PWA: Book Scanner + Microscope 1000x + Telescope + Night Vision + Thermal + 3D + Translate + USB Endoscope + IP Cam. Founder Nasir Khan. Nasir@wanalab.org">
-<meta name="keywords" content="WanaLab, God Eye, book scanner, microscope 1000x, usb microscope, telescope app, night vision, thermal flir, 3D measure, translate, safety, endoscope, ip camera rtsp">
-<meta name="author" content="Nasir Khan, WanaLab">
-<meta name="theme-color" content="#22d3ee">
-<link rel="manifest" href="manifest.json">
-<style>
-body{margin:0;background:#020617;color:#e2e8f0;font-family:system-ui,sans-serif;overflow:hidden}
-#camera{width:100vw;height:100vh;object-fit:cover}
-#godBar{display:flex;gap:6px;overflow-x:auto;padding:8px;background:#0f172a;position:fixed;bottom:0;left:0;right:0;z-index:10}
-#godBar button,#godBar a{white-space:nowrap;padding:8px 12px;border-radius:20px;border:1px solid #334155;background:#1e293b;color:#fff;text-decoration:none;font-size:12px}
-#godBar button.active{background:#22d3ee;color:#000;font-weight:bold}
-#overlay{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#000c;color:#22d3ee;padding:6px 14px;border-radius:20px;font-size:10px;z-index:9}
-#universe{position:fixed;top:40px;left:10px;right:10px;background:#22d3ee22;border:1px solid #22d3ee;color:#22d3ee;padding:4px 10px;border-radius:20px;font-size:10px;z-index:9;text-align:center}
-#shutter{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:74px;height:74px;border-radius:50%;background:#fff;border:4px solid #22d3ee;z-index:10}
-</style>
-</head>
-<body>
-<video id="camera" autoplay playsinline muted></video>
-<canvas id="canvas" style="display:none"></canvas>
-<div id="overlay">WANALAB | GOD EYE v1.0 | GLOBAL | Nasir@wanalab.org</div>
-<div id="universe">OFFLINE CORE ACTIVE | Connect for Protocol Universe (24 Protocols)</div>
-<div id="godBar">
-<button class="active" onclick="setMode('auto')">Auto</button>
-<button onclick="setMode('book')">📚 Book</button>
-<button onclick="setMode('micro')">🔬 Micro</button>
-<button onclick="setMode('tele')">🔭 Tele</button>
-<button onclick="setMode('night')">🌙 Night</button>
-<button onclick="setMode('thermal')">🔥 Thermal</button>
-<button onclick="setMode('measure')">📏 3D</button>
-<button onclick="setMode('translate')">🗣️ Trans</button>
-<a href="pages/devices.html">🔌 Devices</a>
-<a href="pages/export.html">📤 Export</a>
-<a href="pages/pricing.html">💰 $0</a>
-</div>
-<button id="shutter" onclick="capture()"></button>
-<script src="js/protocol-universe.js"></script>
-<script src="js/device-hub.js"></script>
-<script src="js/fusion-engine.js"></script>
-<script src="js/export-hub.js"></script>
+<!-- WanaLab God Eye PRO v1.1 Engines -->
+<script src="js/flir-sdk.js"></script>
+<script src="js/rtsp-player.js"></script>
+<script src="js/night-hdr-fusion.js"></script>
+<script src="js/ai-detection.js"></script>
 <script>
-let currentMode='auto';
-window.VERSION={brand:"WanaLab",product:"Wana-Omni-Camera",version:"God Eye v1.0",founder:"Nasir Khan",email:"Nasir@wanalab.org"};
-function setMode(m){currentMode=m;document.querySelectorAll('#godBar button').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');document.getElementById('overlay').innerText=`GOD EYE | ${m.toUpperCase()} | GLOBAL`;}
-async function capture(){const v=document.getElementById('camera');const c=document.getElementById('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);const blob=await new Promise(r=>c.toBlob(r,'image/png'));const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=`GodEye-${currentMode}-${Date.now()}.png`;a.href=url;a.click();}
-(async()=>{try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('camera').srcObject=s;}catch{}})();
+ // Pro Buttons Injection
+ document.addEventListener('DOMContentLoaded',()=>{
+  const toolbar = document.getElementById('toolbar') || document.body;
+  const proBar = document.createElement('div');
+  proBar.style.cssText='position:fixed;bottom:10px;left:10px;right:10px;display:flex;gap:5px;z-index:100;flex-wrap:wrap';
+  proBar.innerHTML=`
+   <button onclick="nightGodEngine.capture10Frames()" style="flex:1;padding:12px;background:#ffaa00;color:#000;border:none;border-radius:8px;font-weight:bold">🌙 NIGHT GOD 10x</button>
+   <button onclick="aiEngine.detect()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">🤖 AI DETECT</button>
+   <button onclick="flirEngine.setFusionMode('thermal')" style="flex:1;padding:12px;background:#ff0044;color:#fff;border:none;border-radius:8px;font-weight:bold">🔥 THERMAL</button>
+   <button onclick="rtspEngine.discoverONVIF()" style="flex:1;padding:12px;background:#0088ff;color:#fff;border:none;border-radius:8px;font-weight:bold">📡 IP CAM</button>
+   <button onclick="exportHub.capturePhoto()" style="flex:1;padding:12px;background:#0ff;color:#000;border:none;border-radius:8px;font-weight:bold">📸 CAPTURE</button>
+  `;
+  document.body.appendChild(proBar);
+ });
 </script>
-</body>
-</html>
