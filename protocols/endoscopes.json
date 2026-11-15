@@ -1,0 +1,32 @@
+[
+  {
+    "id": "generic-endoscope-5m-1080p",
+    "name": "Generic USB Endoscope 5m 1080p",
+    "type": "UVC",
+    "mode": "micro",
+    "description": "5m flexible endoscope 1080p Type-C - Inspection camera",
+    "resolution": "1920x1080",
+    "length": "5m",
+    "led": "6 LEDs adjustable",
+    "connection": "USB-C OTG",
+    "status": "working"
+  },
+  {
+    "id": "depstech-endoscope-wf028",
+    "name": "DEPSTECH WF028 Dual Lens Endoscope",
+    "type": "WIFI",
+    "mode": "micro",
+    "ip": "192.168.10.1",
+    "description": "WiFi endoscope dual lens",
+    "status": "working"
+  },
+  {
+    "id": "teslong-endoscope",
+    "name": "Teslong NTS500 Endoscope",
+    "type": "UVC",
+    "mode": "micro",
+    "vendorIds": [1133],
+    "description": "Teslong inspection camera",
+    "status": "working"
+  }
+]
