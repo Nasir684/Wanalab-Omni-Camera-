@@ -1,0 +1,4 @@
+[
+  {"id":"macro-clip-100x","name":"Macro Clip 100x Mobile","type":"CLIP","mode":"macro","description":"Universal clip macro lens","status":"working"},
+  {"id":"wide-clip-0.45x","name":"Wide Clip 0.45x","type":"CLIP","mode":"wide","description":"Wide angle clip","status":"working"}
+]
