@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v8.1 - Desi AI Lab</title>
-<meta name="description" content="Desi AI Lab - Urdu Voice, Stock Count, Follow, Bill, WhatsApp. Made in Dera Ismail Khan">
+<title>WanaLab v8.2 - Desi AI Lab by Nasir Khan</title>
+<meta name="description" content="WanaLab - Desi AI Lab by Nasir Khan. Urdu Voice, Stock Count, Follow, Bill, WhatsApp. Made in Pakistan">
 <meta name="theme-color" content="#00ff88">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="WanaLab">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
-<link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
+<link rel="apple-touch-icon" href="wanalab-icon-v81.png">
+<link rel="icon" type="image/png" href="wanalab-icon-v81.png">
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
@@ -22,7 +22,7 @@
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#top{position:fixed;top:0;left:0;right:0;z-index:10;background:linear-gradient(90deg,rgba(0,0,0,0.9),rgba(0,40,0,0.9));color:#0f8;padding:5px 8px;display:flex;justify-content:space-between;font-size:9px}
+#top{position:fixed;top:0;left:0;right:0;z-index:10;background:linear-gradient(90deg,rgba(0,0,0,0.9),rgba(0,40,0,0.9));color:#0f8;padding:6px 8px;display:flex;justify-content:space-between;font-size:9px}
 #voiceBadge{position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:10px}
 #voiceBadge.on{background:#0f8;color:#000;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.07)}}
@@ -38,7 +38,7 @@ body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
 
-<div id="top"><span>♾️ v8.1 PLAY STORE READY</span><span id="stat">Loading...</span><span id="count">0</span></div>
+<div id="top"><span onclick="showAbout()" style="cursor:pointer">♾️ v8.2 WanaLab - By Nasir Khan</span><span id="stat">Loading...</span><span onclick="showAbout()" style="background:#00ff88;color:#000;padding:2px 6px;border-radius:10px;cursor:pointer">ℹ️ ABOUT</span></div>
 <div id="voiceBadge">🎤 TAP TO START ALL</div>
 <button id="installBtn" onclick="installPWA()">📲 INSTALL APP</button>
 <div id="transcript"></div>
@@ -65,11 +65,41 @@ body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 <button onclick="sendWhatsApp()" style="background:#0a0;color:#fff">📱 WA</button>
 </div>
 
+<!-- ABOUT PAGE - Shows ownership -->
+<div id="aboutPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:100;overflow:auto;padding:15px;color:#fff;font-family:Arial">
+  <div style="max-width:400px;margin:20px auto;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:16px;padding:18px">
+    <div style="text-align:center">
+      <img src="wanalab-icon-v81.png" style="width:90px;height:90px;border-radius:20px;border:2px solid #00ff88;background:#001a0a">
+      <h2 style="color:#00ff88;margin:10px 0 2px">WanaLab</h2>
+      <p style="color:#aaa;font-size:11px">Desi AI Lab - v8.2 PLAY STORE READY</p>
+      <div style="background:rgba(0,255,136,0.1);border-radius:10px;padding:8px;margin:10px 0;font-size:9px;color:#0f8">🇵🇰 Made in Pakistan - By WanaLab</div>
+    </div>
+    <h3 style="color:#00ff88;font-size:12px;margin:12px 0 6px">👨‍💻 Developer</h3>
+    <p style="font-size:11px;line-height:1.5"><b>Nasir Khan</b> - Founder of WanaLab<br>AI Developer - WanaLab Desi AI Lab<br>Building AI for Businesses</p>
+    <h3 style="color:#00ff88;font-size:12px;margin:12px 0 6px">📱 What is WanaLab?</h3>
+    <p style="font-size:10px;line-height:1.5;color:#ccc">WanaLab is Desi AI app with Urdu Voice Commands, Stock Counting (Gino), Follow Mode, Bill Maker, WhatsApp Report, Memory. Made for shops. Works offline. PWA ready for Play Store.</p>
+    <h3 style="color:#00ff88;font-size:12px;margin:12px 0 6px">✨ Features</h3>
+    <div style="font-size:9px;display:flex;flex-wrap:wrap;gap:4px">
+      <span style="background:#00ff88;color:#000;padding:3px 6px;border-radius:6px">🎤 Urdu Voice</span>
+      <span style="background:#a0f;color:#fff;padding:3px 6px;border-radius:6px">🔢 Gino Count</span>
+      <span style="background:#ff0;color:#000;padding:3px 6px;border-radius:6px">🎯 Follow AI</span>
+      <span style="background:#0ff;color:#000;padding:3px 6px;border-radius:6px">💰 Bill Maker</span>
+      <span style="background:#0a0;color:#fff;padding:3px 6px;border-radius:6px">📱 WhatsApp</span>
+    </div>
+    <h3 style="color:#00ff88;font-size:12px;margin:12px 0 6px">📞 Contact</h3>
+    <p style="font-size:10px">GitHub: github.com/nasir684<br>App: nasir684.github.io/Wanalab-Omni-Camera-/</p>
+    <h3 style="color:#00ff88;font-size:12px;margin:12px 0 6px">© Copyright</h3>
+    <p style="font-size:9px;color:#888">© 2026 WanaLab - Desi AI Lab<br>Developed by Nasir Khan - WanaLab<br>All rights reserved.</p>
+    <button onclick="hideAbout()" style="width:100%;margin-top:14px;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold;font-size:12px">✅ BACK TO CAMERA</button>
+  </div>
+</div>
+
 <script>
 let stream=null,track=null,isTorch=false,coco=null,mobile=null,detecting=false,isListening=false,recognition=null,lastSeen='',memoryDB=JSON.parse(localStorage.getItem('wanaMemory')||'{}'),followTarget=null,isFollow=false,stockList=[],measureStart=null,deferredPrompt=null;
 const video=document.getElementById('godVideo');
 const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
-
+function showAbout(){document.getElementById('aboutPage').style.display='block';}
+function hideAbout(){document.getElementById('aboutPage').style.display='none';}
 async function init(){
 try{
 stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:true});
@@ -78,16 +108,14 @@ await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.video
 document.getElementById('stat').innerText='AI loading...';
 let [cocoM, mobileM]=await Promise.all([cocoSsd.load({base:'lite_mobilenet_v2'}), mobilenet.load({version:2,alpha:0.5}).catch(()=>null)]);
 coco=cocoM; mobile=mobileM;
-document.getElementById('stat').innerText='ALL PATHS READY';
-document.getElementById('see').innerText='✅ v8.1 PLAY STORE READY - Say: Torch jalao, Gino, Follow karo, Yaad rakho';
+document.getElementById('stat').innerText='READY';
+document.getElementById('see').innerText='✅ v8.2 By Nasir Khan - Say: Torch jalao, Gino, Follow karo';
 initVoice(); loop();
-// PWA Service Worker
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').then(()=>{ console.log('PWA Ready'); document.getElementById('stat').innerText='PWA READY'; }).catch(()=>{}); }
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').then(()=>{ document.getElementById('stat').innerText='PWA READY'; }).catch(()=>{}); }
 }catch(e){ document.getElementById('stat').innerText='Error:'+e.message; }
 }
-window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn').style.display='block'; document.getElementById('voiceBadge').innerText='📲 INSTALL APP READY!'; });
-function installPWA(){ if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(choice=>{ if(choice.outcome==='accepted'){ document.getElementById('installBtn').style.display='none'; } deferredPrompt=null; }); } else { alert('Chrome Menu > Add to Home Screen to install WanaLab like real app!'); } }
-
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn').style.display='block'; });
+function installPWA(){ if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(choice=>{ if(choice.outcome==='accepted'){ document.getElementById('installBtn').style.display='none'; } deferredPrompt=null; }); } else { alert('Chrome Menu > Add to Home Screen'); } }
 function initVoice(){
 let SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR){ document.getElementById('voiceBadge').innerText='🎤 Chrome needed'; return; }
 recognition=new SR(); recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-US';
@@ -101,22 +129,22 @@ if(ev.results[ev.results.length-1].isFinal){ handleAll(cmd); setTimeout(()=>docu
 }
 function toggleVoice(){ if(!recognition){ alert('Use Chrome'); return; } if(isListening){ isListening=false; recognition.stop(); document.getElementById('voiceBadge').classList.remove('on'); document.getElementById('voiceBadge').innerText='🎤 TAP TO START'; document.getElementById('voiceBtn').innerText='🎤 VOICE'; document.getElementById('voiceBtn').style.background='#f00'; } else { isListening=true; try{ recognition.start(); }catch{ setTimeout(()=>{ try{ recognition.start(); }catch{} },500); } } }
 function handleAll(cmd){
-if(cmd.includes('torch jalao')||cmd.includes('roshni on')||cmd.includes('torch on')||cmd.includes('light on')){ setTorch(true); speakUrdu('Torch on kar diya'); }
-else if(cmd.includes('torch band')||cmd.includes('roshni off')||cmd.includes('torch off')){ setTorch(false); speakUrdu('Torch band'); }
-else if(cmd.includes('tasveer lo')||cmd.includes('tasveer khecho')||cmd.includes('capture')||cmd.includes('photo lo')){ cap(); speakUrdu('Tasveer le li'); }
-else if(cmd.includes('da sa de')||cmd.includes('what is this')||cmd.includes('ye kya hai')||cmd.includes('what do you see')){ speakWhat(); }
+if(cmd.includes('torch jalao')||cmd.includes('torch on')||cmd.includes('light on')){ setTorch(true); speakUrdu('Torch on'); }
+else if(cmd.includes('torch band')||cmd.includes('torch off')){ setTorch(false); speakUrdu('Torch band'); }
+else if(cmd.includes('tasveer lo')||cmd.includes('capture')||cmd.includes('photo lo')){ cap(); speakUrdu('Tasveer le li'); }
+else if(cmd.includes('da sa de')||cmd.includes('what is this')||cmd.includes('ye kya hai')){ speakWhat(); }
 else if(cmd.includes('salam')||cmd.includes('hello')){ speakUrdu('Wa Alaikum Salam! WanaLab tayyar hai'); }
-else if(cmd.includes('follow karo')||cmd.includes('follow this')||cmd.includes('peeche chalo')){ followMode(); speakUrdu('Follow mode on'); }
-else if(cmd.includes('gino')||cmd.includes('count karo')||cmd.includes('kitne hain')||cmd.includes('stock banao')||cmd.includes('count')){ countStock(); }
-else if(cmd.includes('yaad rakho')||cmd.includes('remember this')||cmd.includes('save karo')){ rememberThis(); }
-else if(cmd.includes('kitna bara')||cmd.includes('measure')||cmd.includes('size kitna')){ measureMode(); }
-else if(cmd.includes('bhool jao')||cmd.includes('clear memory')){ localStorage.removeItem('wanaMemory'); memoryDB={}; speakUrdu('Memory clear kar di'); }
-else if(cmd.includes('bill banao')||cmd.includes('make bill')||cmd.includes('hisab')){ makeBill(); }
-else if(cmd.includes('whatsapp bhejo')||cmd.includes('send whatsapp')||cmd.includes('wa send')){ sendWhatsApp(); }
-else if(cmd.includes('report banao')||cmd.includes('pdf banao')||cmd.includes('export')){ exportAllPDF(); }
-else if(cmd.includes('madad')||cmd.includes('help karo')||cmd.includes('help')){ speakUrdu('Commands: Torch jalao, Tasveer lo, Ye kya hai, Gino, Follow karo, Yaad rakho, Kitna bara, Bill banao, WhatsApp bhejo, Report banao'); }
+else if(cmd.includes('follow karo')||cmd.includes('follow this')){ followMode(); }
+else if(cmd.includes('gino')||cmd.includes('count karo')||cmd.includes('kitne hain')){ countStock(); }
+else if(cmd.includes('yaad rakho')||cmd.includes('remember this')){ rememberThis(); }
+else if(cmd.includes('kitna bara')||cmd.includes('measure')){ measureMode(); }
+else if(cmd.includes('bhool jao')||cmd.includes('clear memory')){ localStorage.removeItem('wanaMemory'); memoryDB={}; speakUrdu('Memory clear'); }
+else if(cmd.includes('bill banao')||cmd.includes('make bill')){ makeBill(); }
+else if(cmd.includes('whatsapp bhejo')||cmd.includes('send whatsapp')){ sendWhatsApp(); }
+else if(cmd.includes('report banao')||cmd.includes('pdf banao')){ exportAllPDF(); }
+else if(cmd.includes('about dikhao')||cmd.includes('who made')||cmd.includes('kisne banaya')){ showAbout(); speakUrdu('WanaLab ko Nasir Khan ne banaya hai'); }
 }
-function speakUrdu(t){ speechSynthesis.cancel(); let u=new SpeechSynthesisUtterance(t); u.lang='ur-PK'; u.rate=0.9; let voices=speechSynthesis.getVoices(); let ur=voices.find(v=>v.lang.includes('ur')||v.lang.includes('hi')); if(ur) u.voice=ur; speechSynthesis.speak(u); document.getElementById('do').innerText=`🔊 ${t}`; }
+function speakUrdu(t){ speechSynthesis.cancel(); let u=new SpeechSynthesisUtterance(t); u.lang='ur-PK'; u.rate=0.9; speechSynthesis.speak(u); document.getElementById('do').innerText=`🔊 ${t}`; }
 async function loop(){
 if(detecting){ requestAnimationFrame(loop); return; } detecting=true;
 try{
@@ -145,31 +173,30 @@ aiCtx.strokeStyle=color; aiCtx.lineWidth=3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy
 aiCtx.fillStyle=color; aiCtx.fillRect(x*sx,y*sy-18,w*sx,18);
 aiCtx.fillStyle='#000'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`${label} ${Math.round(conf*100)}%`,x*sx+3,y*sy-3);
 lines.push(`${label}`);
-if(memoryDB[label]){ aiCtx.fillStyle='rgba(160,0,255,0.9)'; aiCtx.fillRect(x*sx+w*sx-40,y*sy,40,14); aiCtx.fillStyle='#fff'; aiCtx.font='8px Arial'; aiCtx.fillText('YAAD',x*sx+w*sx-32,y*sy+9); }
 }
 if(lines.length>0){
 let uniq=[...new Set(lines)]; lastSeen=uniq.join(', ');
 let countStr=Object.entries(countMap).map(([k,v])=>`${k}:${v}`).join(' • ');
 document.getElementById('see').innerText=`${lastSeen} | ${countStr}`;
-document.getElementById('count').innerText=`${lines.length} items`;
-document.getElementById('do').innerText=`Stock: ${countStr} - Say: Gino, Yaad rakho`;
+document.getElementById('count').innerText=`${lines.length}`;
+document.getElementById('do').innerText=`Stock: ${countStr}`;
 }
 }catch(e){}
 detecting=false; requestAnimationFrame(loop);
 }
 function setTorch(on){ track.applyConstraints({advanced:[{torch:on}]}).then(()=>{ isTorch=on; }).catch(()=>{}); }
-function toggleTorch(){ setTorch(!isTorch); speakUrdu(isTorch?'Torch on':'Torch off'); }
-function followMode(){ if(!lastSeen){ speakUrdu('Pehle kisi cheez par camera karo'); return; } followTarget=lastSeen.split(',')[0]; isFollow=!isFollow; document.getElementById('followBtn').innerText=isFollow?`🎯 FOLLOWING ${followTarget}`:'🎯 FOLLOW'; document.getElementById('followBtn').style.background=isFollow?'#f0f':'#a0f'; speakUrdu(isFollow?`${followTarget} ko follow kar raha hu`:'Follow band'); }
-function countStock(){ let map={}; stockList.forEach(s=>map[s]=(map[s]||0)+1); let txt=Object.entries(map).map(([k,v])=>`${v} ${k}`).join(', '); let msg=`Ginti: ${txt} - Total ${stockList.length}`; document.getElementById('see').innerText=msg; document.getElementById('do').innerText=`📋 Stock List: ${msg}`; speakUrdu(msg); }
-function rememberThis(){ if(!lastSeen){ speakUrdu('Pehle kuch dekhao'); return; } let key=lastSeen.split(',')[0]; memoryDB[key]={time:Date.now(),count:(memoryDB[key]?.count||0)+1}; localStorage.setItem('wanaMemory',JSON.stringify(memoryDB)); speakUrdu(`${key} yaad kar liya`); document.getElementById('do').innerText=`🧠 Yaad: ${key} saved`; }
+function toggleTorch(){ setTorch(!isTorch); }
+function followMode(){ if(!lastSeen){ speakUrdu('Pehle kuch dekhao'); return; } followTarget=lastSeen.split(',')[0]; isFollow=!isFollow; document.getElementById('followBtn').innerText=isFollow?`🎯 ${followTarget}`:'🎯 FOLLOW'; document.getElementById('followBtn').style.background=isFollow?'#f0f':'#a0f'; }
+function countStock(){ let map={}; stockList.forEach(s=>map[s]=(map[s]||0)+1); let txt=Object.entries(map).map(([k,v])=>`${v} ${k}`).join(', '); let msg=`Ginti: ${txt} - Total ${stockList.length}`; document.getElementById('see').innerText=msg; speakUrdu(msg); }
+function rememberThis(){ if(!lastSeen){ speakUrdu('Pehle kuch dekhao'); return; } let key=lastSeen.split(',')[0]; memoryDB[key]={time:Date.now()}; localStorage.setItem('wanaMemory',JSON.stringify(memoryDB)); speakUrdu(`${key} yaad kar liya`); }
 function measureMode(){ speakUrdu('Measure: Tap 2 points'); aiCanvas.style.pointerEvents='auto'; aiCanvas.addEventListener('click', measureClick, {once:true}); }
-function measureClick(e){ if(!measureStart){ measureStart={x:e.clientX,y:e.clientY}; document.getElementById('do').innerText='📏 Pehla point - ab dusra'; aiCanvas.addEventListener('click', measureClick, {once:true}); } else { let dx=Math.abs(e.clientX-measureStart.x); let cm=Math.round(dx/10); document.getElementById('do').innerText=`📏 Andaza: ${cm} cm`; speakUrdu(`Andaza ${cm} cm`); measureStart=null; aiCanvas.style.pointerEvents='none'; } }
-function speakWhat(){ if(lastSeen){ speakUrdu(`Main dekh raha hu: ${lastSeen}`); } else { speakUrdu('Abhi kuch nazar nahi aa raha'); } }
-function makeBill(){ let map={}; stockList.forEach(s=>map[s]=(map[s]||0)+1); let total=0; let billText='WanaLab Bill\n'; Object.entries(map).forEach(([k,v])=>{ let price=k.includes('Plate')?150:k.includes('Cup')?100:200; billText+=`${k} x${v} = ${price*v} Rs\n`; total+=price*v; }); billText+=`Total: ${total} Rs`; document.getElementById('see').innerText=billText.replace(/\n/g,' | '); speakUrdu(`Total bill ${total} rupay`); }
-function sendWhatsApp(){ let txt=`WanaLab v8.1 Report: ${lastSeen} - ${new Date().toLocaleString()} - Count: ${stockList.length}`; let url=`https://wa.me/?text=${encodeURIComponent(txt)}`; window.open(url,'_blank'); speakUrdu('WhatsApp khol diya'); }
-function exportAllPDF(){ const { jsPDF } = window.jspdf; let doc=new jsPDF(); doc.text('WanaLab v8.1 ALL PATHS GOD - Full Report',10,10); doc.setFontSize(9); doc.text(`Date: ${new Date().toLocaleString()}`,10,16); doc.text(`Seen: ${lastSeen}`,10,22); doc.text(`Stock: ${stockList.join(', ')}`,10,28); doc.save(`WanaLab-ALL-PATHS-${Date.now()}.pdf`); speakUrdu('PDF report bana diya'); }
-function cap(){ let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); ct.fillStyle='rgba(0,0,0,0.8)'; ct.fillRect(0,c.height-32,c.width,32); ct.fillStyle='#0f8'; ct.font='10px Arial'; ct.fillText(`v8.1 PLAY STORE: ${lastSeen} | Stock:${stockList.length} | ${new Date().toLocaleString()}`,8,c.height-8); let a=document.createElement('a'); a.download=`WanaLab-v81-${Date.now()}.png`; a.href=c.toDataURL(); a.click(); speakUrdu('Capture ho gaya'); }
+function measureClick(e){ if(!measureStart){ measureStart={x:e.clientX,y:e.clientY}; document.getElementById('do').innerText='📏 Pehla point'; aiCanvas.addEventListener('click', measureClick, {once:true}); } else { let dx=Math.abs(e.clientX-measureStart.x); let cm=Math.round(dx/10); document.getElementById('do').innerText=`📏 ${cm} cm`; speakUrdu(`${cm} cm`); measureStart=null; aiCanvas.style.pointerEvents='none'; } }
+function speakWhat(){ if(lastSeen){ speakUrdu(`Main dekh raha hu: ${lastSeen}`); } else { speakUrdu('Abhi kuch nazar nahi'); } }
+function makeBill(){ let map={}; stockList.forEach(s=>map[s]=(map[s]||0)+1); let total=0; let billText=''; Object.entries(map).forEach(([k,v])=>{ let price=200; total+=price*v; billText+=`${k} x${v} `; }); document.getElementById('see').innerText=`Bill: ${billText} Total ${total} Rs`; speakUrdu(`Total ${total} rupay`); }
+function sendWhatsApp(){ let txt=`WanaLab v8.2 by Nasir Khan: ${lastSeen} - ${new Date().toLocaleString()}`; let url=`https://wa.me/?text=${encodeURIComponent(txt)}`; window.open(url,'_blank'); }
+function exportAllPDF(){ const { jsPDF } = window.jspdf; let doc=new jsPDF(); doc.text('WanaLab v8.2 by Nasir Khan - WanaLab',10,10); doc.setFontSize(9); doc.text(`Date: ${new Date().toLocaleString()}`,10,16); doc.text(`Seen: ${lastSeen}`,10,22); doc.save(`WanaLab-v82-${Date.now()}.pdf`); }
+function cap(){ let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); ct.fillStyle='rgba(0,0,0,0.8)'; ct.fillRect(0,c.height-32,c.width,32); ct.fillStyle='#0f8'; ct.font='10px Arial'; ct.fillText(`v8.2 WanaLab by Nasir Khan: ${lastSeen} | ${new Date().toLocaleString()}`,8,c.height-8); let a=document.createElement('a'); a.download=`WanaLab-v82-${Date.now()}.png`; a.href=c.toDataURL(); a.click(); }
 window.addEventListener('load', init);
 </script>
 </body>
-</html>
+  </html>
