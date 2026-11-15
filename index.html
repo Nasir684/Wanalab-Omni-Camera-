@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v6 ALL PROTOCOLS GOD</title>
+<title>WanaLab v6.1 CLEAN AUTO GOD</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
@@ -14,81 +14,36 @@
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:linear-gradient(90deg,#000,#0a2a0a);color:#0f8;padding:5px 8px;display:flex;justify-content:space-between;font-size:9px}
-#modeBadge{position:fixed;top:28px;left:50%;transform:translateX(-50%);z-index:11;background:linear-gradient(90deg,#0ff,#0f8,#a0f);color:#000;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:11px;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.05)}}
-#left{position:fixed;top:54px;left:4px;z-index:10;background:rgba(0,15,0,0.92);padding:6px;border-radius:10px;color:#fff;font-size:8px;width:190px;max-height:58vh;overflow:auto;border:1px solid #0f8}
-#right{position:fixed;top:54px;right:4px;z-index:10;background:rgba(0,15,0,0.92);padding:6px;border-radius:10px;color:#fff;width:125px;border:1px solid #0f8}
-#allPanel{position:fixed;bottom:66px;left:4px;right:4px;z-index:10;background:rgba(0,30,0,0.97);border:2px solid #0f8;border-radius:12px;padding:8px;color:#fff;max-height:28vh;overflow:auto}
-#controls{position:fixed;bottom:4px;left:3px;right:3px;display:flex;gap:2px;z-index:10}
-#controls button{flex:1;padding:10px 1px;border:none;border-radius:8px;font-weight:bold;font-size:6.5px}
-#status{position:fixed;bottom:140px;left:50%;transform:translateX(-50%);z-index:10;background:#0f8;color:#000;padding:6px 12px;border-radius:20px;font-size:10px;font-weight:bold}
-.proto{display:inline-block;padding:2px 5px;border-radius:8px;margin:1px;font-size:7px;font-weight:bold}
+#cleanStatus{position:fixed;top:8px;left:8px;z-index:10;background:rgba(0,0,0,0.7);color:#0f8;padding:5px 10px;border-radius:20px;font-size:10px;font-weight:bold;backdrop-filter:blur(10px)}
+#autoLabel{position:fixed;top:8px;right:8px;z-index:10;background:rgba(0,255,0,0.15);border:1px solid #0f8;color:#0f8;padding:5px 10px;border-radius:20px;font-size:10px;font-weight:bold}
+#bottomInfo{position:fixed;bottom:60px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.75);color:#fff;padding:8px 10px;border-radius:12px;font-size:10px;backdrop-filter:blur(10px);display:none;border:1px solid rgba(0,255,0,0.3)}
+#controls{position:fixed;bottom:6px;left:4px;right:4px;display:flex;gap:4px;z-index:10}
+#controls button{flex:1;padding:12px 2px;border:none;border-radius:10px;font-weight:bold;font-size:8px;backdrop-filter:blur(10px)}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
 
-<div id="topBar"><span>♾️ v6 ALL PROTOCOLS GOD</span><span id="aiStatus">Loading ALL...</span><span id="count">0 objs</span></div>
-<div id="modeBadge">♾️ ALL PROTOCOLS ACTIVE</div>
-
-<div id="left">
-<div style="color:#0f8;font-weight:bold;font-size:9px">♾️ ALL PROTOCOLS - No Adding</div>
-<div style="margin-top:4px">
-<span class="proto" style="background:#0f8;color:#000">🧠 COCO FULL</span>
-<span class="proto" style="background:#ff0;color:#000">🧠 MobileNet 1000</span>
-<span class="proto" style="background:#a0f;color:#fff">📚 OCR Urdu</span>
-<span class="proto" style="background:#0ff;color:#000">🌿 Plant 38</span>
-<span class="proto" style="background:#fa0;color:#000">🔌 Desi Fix</span>
-<span class="proto" style="background:#fff;color:#000">👤 Face</span>
-<span class="proto" style="background:#f0f;color:#fff">📄 Export All</span>
+<div id="cleanStatus">♾️ CLEAN AUTO GOD</div>
+<div id="autoLabel">🧠 AUTO</div>
+<div id="bottomInfo">
+<div id="whatItSees" style="font-weight:bold;color:#0f8"></div>
+<div id="whatToDo" style="font-size:9px;margin-top:3px;color:#ccc"></div>
 </div>
-<div id="detectInfo" style="margin-top:6px;background:rgba(0,255,0,0.08);padding:4px;border-radius:6px;min-height:70px"></div>
-<div id="ocrPreview" style="margin-top:4px;display:none;background:rgba(160,0,255,0.15);padding:4px;border-radius:6px;max-height:60px;overflow:auto"></div>
-</div>
-
-<div id="right">
-<div style="font-size:7px;text-align:center;color:#0f8">ALL SYSTEMS</div>
-<div style="font-size:6px;margin-top:4px">
-<div>🎯 Conf: <span id="confVal">40%</span></div>
-<input type="range" id="confSlider" min="20" max="80" value="40" style="width:100%;accent-color:#0f8">
-<label><input type="checkbox" id="allOn" checked> ♾️ ALL ON</label><br>
-<label><input type="checkbox" id="voiceCheck" checked> 🔊 Voice</label><br>
-<label><input type="checkbox" id="urduCheck" checked> 🇵🇰 Urdu</label>
-</div>
-<button onclick="runAllProtocols()" style="width:100%;margin-top:5px;padding:6px;background:#0f8;color:#000;border:none;border-radius:6px;font-weight:bold;font-size:8px">🚀 RUN ALL PROTOCOLS</button>
-<button onclick="exportUltimate()" style="width:100%;margin-top:3px;padding:5px;background:#f0f;color:#fff;border:none;border-radius:6px;font-weight:bold;font-size:7px">📄 EXPORT ULTIMATE PDF</button>
-</div>
-
-<div id="allPanel">
-<div style="display:flex;justify-content:space-between">
-<div id="panelTitle" style="color:#0f8;font-weight:bold;font-size:11px">♾️ ALL PROTOCOLS - Point at anything</div>
-<div style="font-size:8px;color:#aaa" id="protoStatus">Waiting...</div>
-</div>
-<div id="panelDesc" style="font-size:9px;margin:3px 0">AI runs all brains: electronics fix + plant doctor + book reader + kitchen + person - no need to add modes!</div>
-<div id="panelActions" style="display:flex;gap:3px;margin-top:5px;flex-wrap:wrap"></div>
-<div id="plantTreat" style="display:none;margin-top:6px;background:rgba(0,255,0,0.15);padding:5px;border-radius:6px;font-size:8px"></div>
-</div>
-
-<div id="status">Loading ALL Protocols (30 sec)...</div>
 
 <div id="controls">
-<button onclick="nightGod()" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
-<button onclick="toggleTorch()" id="torchBtn" style="background:#ff0;color:#000">🔦 TORCH</button>
-<button onclick="runAllProtocols()" style="background:#0f8;color:#000">♾️ ALL SCAN</button>
-<button onclick="scanBook()" style="background:#a0f;color:#fff">📚 OCR</button>
-<button onclick="diagnosePlant()" style="background:#0a0;color:#fff">🌿 PLANT</button>
-<button onclick="capPhoto()" style="background:#fff;color:#000">📸 ULTIMATE CAP</button>
+<button onclick="toggleTorch()" id="torchBtn" style="background:rgba(255,255,0,0.9);color:#000">🔦 TORCH</button>
+<button onclick="capPhoto()" style="background:rgba(255,255,255,0.95);color:#000">📸 CAPTURE</button>
+<button onclick="actionButton()" id="actionBtn" style="background:rgba(0,255,0,0.9);color:#000;display:none">ACTION</button>
 </div>
 
 <script>
-let stream=null,track=null,isNight=false,isTorch=false,coco=null,mobile=null,detecting=false,lastOCR='',lastPlant='',allDetections=[],bookPages=[];
+let stream=null,track=null,isTorch=false,coco=null,mobile=null,detecting=false,currentAutoMode='',lastAction='';
 const video=document.getElementById('godVideo');
 const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
-const statusEl=document.getElementById('status'), modeBadge=document.getElementById('modeBadge');
-
-const DISEASES={ 'Early blight':{ur:'ابتدائی جھلساؤ',treat:'Copper spray, neem oil / کاپر، نیم اسپرے'}, 'Late blight':{ur:'دیر سے جھلساؤ',treat:'Mancozeb urgent / مینکوزیب فوری'}, 'Healthy':{ur:'صحت مند',treat:'Good care / اچھی دیکھ بھال'}, 'Diseased':{ur:'بیمار',treat:'Remove leaves, neem / پتے ہٹائیں، نیم'}};
+const cleanStatus=document.getElementById('cleanStatus'), autoLabel=document.getElementById('autoLabel');
+const bottomInfo=document.getElementById('bottomInfo'), whatItSees=document.getElementById('whatItSees'), whatToDo=document.getElementById('whatToDo'), actionBtn=document.getElementById('actionBtn');
 
 async function init(){
 try{
@@ -97,136 +52,93 @@ video.srcObject=stream; track=stream.getVideoTracks()[0];
 await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
 let [cocoM, mobileM]=await Promise.all([cocoSsd.load({base:'mobilenet_v2'}), mobilenet.load({version:2,alpha:1.0})]);
 coco=cocoM; mobile=mobileM;
-document.getElementById('aiStatus').innerText='ALL READY'; statusEl.innerText='✅ ALL PROTOCOLS ACTIVE - No adding needed!'; modeBadge.innerText='♾️ ALL PROTOCOLS GOD'; setTimeout(()=>statusEl.style.display='none',3000);
+cleanStatus.innerText='✅ AUTO GOD READY'; setTimeout(()=>{ cleanStatus.innerText='♾️ CLEAN AUTO'; },2000);
 loop();
-}catch(e){ statusEl.innerText='Error: '+e.message; }
+}catch(e){ cleanStatus.innerText='Error: '+e.message; }
 }
-function nightGod(){ isNight=!isNight; video.style.filter=isNight?'brightness(2.2) contrast(1.4)':''; }
 async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{} }
-function speak(t){ if(!document.getElementById('voiceCheck').checked) return; speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(t.substring(0,150))); }
-
-async function runAllProtocols(){
-// Runs all brains on current frame
-statusEl.style.display='block'; statusEl.innerText='🚀 Running ALL protocols...';
-let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.filter=video.style.filter||''; ctx.drawImage(video,0,0);
-// 1. COCO + 2. Mobile + 3. OCR
-let ocrP=Tesseract.recognize(c.toDataURL(),'urd+eng').then(r=>{ lastOCR=r.data.text; document.getElementById('ocrPreview').style.display='block'; document.getElementById('ocrPreview').innerHTML=`📚 OCR: ${lastOCR.substring(0,100)}...`; });
-let plantP=diagnosePlant();
-await Promise.all([ocrP, plantP]);
-statusEl.innerText='✅ ALL protocols done!'; setTimeout(()=>statusEl.style.display='none',2000);
-}
-
-async function diagnosePlant(){
-let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.drawImage(video,0,0);
-try{
-let preds=await mobile.classify(c);
-let best=preds[0]?.className||''; let key='Healthy';
-if(best.toLowerCase().includes('spot')||best.toLowerCase().includes('blight')) key='Early blight';
-if(best.toLowerCase().includes('mold')||best.toLowerCase().includes('rot')) key='Diseased';
-let d=DISEASES[key]; lastPlant=`${key} / ${d.ur}`;
-document.getElementById('plantTreat').style.display='block'; document.getElementById('plantTreat').innerHTML=`🌿 ${key} / ${d.ur}: ${d.treat}`;
-return key;
-}catch{ return 'Healthy'; }
-}
-
-async function scanBook(){
-statusEl.style.display='block'; statusEl.innerText='📚 OCR ALL protocols...';
-try{
-let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.filter=video.style.filter||''; ctx.drawImage(video,0,0);
-let result=await Tesseract.recognize(c.toDataURL(),'urd+eng+ara', {logger:m=>{ if(m.status==='recognizing text') statusEl.innerText=`📚 ${Math.round(m.progress*100)}%`; }});
-lastOCR=result.data.text; bookPages.push(lastOCR);
-document.getElementById('ocrPreview').style.display='block'; document.getElementById('ocrPreview').innerHTML=`📚 Page ${bookPages.length}: ${lastOCR.substring(0,120)}...`;
-statusEl.innerText=`✅ Book page ${bookPages.length} OCR done`; speak(lastOCR.substring(0,80)); setTimeout(()=>statusEl.style.display='none',2000);
-}catch(e){ statusEl.innerText='OCR failed'; }
-}
+function speak(t){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(t.substring(0,120))); }
 
 async function loop(){
 if(detecting){ requestAnimationFrame(loop); return; } detecting=true;
 try{
-let conf=parseInt(document.getElementById('confSlider').value)/100;
-let preds=await coco.detect(video, 25, conf);
+let preds=await coco.detect(video, 20, 0.4);
 aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-let info='', actions='', plantFound=false, bookFound=false, electronicsFound=false;
-let allNames=[];
+
+let bestMode='', bestLabel='', bestConf=0, allObjects=[];
+let hasPlant=false, hasBook=false, hasElectronics=false, hasKitchen=false;
 
 for(let p of preds){
-let [x,y,w,h]=p.bbox; let cls=p.class;
-let finalName=cls, color='#0ff', confScore=p.score;
+let [x,y,w,h]=p.bbox; let cls=p.class; let label=cls, color='#0ff', conf=p.score;
 
-// === ALL PROTOCOLS AUTO-FIX (No typing!) ===
-// Protocol 1: Desi Electronics Fix - toilet->power board
-if(['toilet','sink','bowl','chair'].includes(cls) && w>50 && h>50 && w/h>0.6 && w/h<1.9){
-finalName='🔌 Power Board'; color='#0f8'; confScore=0.92; electronicsFound=true;
+// === AUTO CONVERT LOGIC - No modes shown, just auto detects ===
+if(['toilet','sink'].includes(cls) && w>50){
+label='Power Board'; color='#0f8'; conf=0.92; hasElectronics=true; bestMode='electronics';
 } else if(cls==='cell phone' && w<100){
-finalName='🔌 Charger'; color='#ff0'; electronicsFound=true;
+label='Charger'; color='#ff0'; hasElectronics=true; bestMode='electronics';
 } else if(cls==='book'){
-finalName='📚 Book / Kitab'; color='#a0f'; bookFound=true;
+label='Book'; color='#a0f'; hasBook=true; bestMode='book';
 } else if(cls==='potted plant' || cls==='vase'){
-finalName='🌿 Plant / Poda'; color='#0a0'; plantFound=true;
-// Auto plant disease quick check
+// Second brain for disease
 let crop=document.createElement('canvas'); crop.width=w; crop.height=h; let cctx=crop.getContext('2d'); cctx.drawImage(video,x,y,w,h,0,0,w,h);
-try{ let mpred=await mobile.classify(crop); let b=mpred[0]?.className||''; if(b.toLowerCase().includes('blight')||b.toLowerCase().includes('spot')){ finalName='🌿 Diseased Plant / بیمار پودا'; color='#f80'; } else { finalName='🌿 Healthy Plant / صحت مند'; color='#0f8'; } }catch{}
-} else if(['bowl','cup','bottle','wine glass'].includes(cls)){
-finalName=cls==='bowl'?'🍽️ Plate/Bowl':cls==='cup'?'☕ Chai Cup':'🍶 Bottle'; color='#0ff';
+try{ let mp=await mobile.classify(crop); if(mp[0].className.toLowerCase().includes('blight')||mp[0].className.toLowerCase().includes('spot')){ label='Diseased Plant'; color='#f80'; } else { label='Healthy Plant'; color='#0f8'; } }catch{ label='Plant'; }
+hasPlant=true; bestMode='plant';
+} else if(['bowl','cup','bottle'].includes(cls)){
+label=cls==='bowl'?'Plate':cls==='cup'?'Cup':'Bottle'; color='#0ff'; hasKitchen=true; bestMode='kitchen';
 }
 
-// Draw
 let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
-aiCtx.strokeStyle=color; aiCtx.lineWidth=confScore>0.8?4:2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
-aiCtx.fillStyle=color; aiCtx.fillRect(x*sx,y*sy-20,w*sx,20);
-aiCtx.fillStyle='#000'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`${finalName} ${Math.round(confScore*100)}%`,x*sx+3,y*sy-4);
+aiCtx.strokeStyle=color; aiCtx.lineWidth=conf>0.8?3:2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
+aiCtx.fillStyle=color; aiCtx.fillRect(x*sx,y*sy-18,w*sx,18);
+aiCtx.fillStyle='#000'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`${label} ${Math.round(conf*100)}%`,x*sx+3,y*sy-3);
 
-info+=`${finalName} ${Math.round(confScore*100)}%<br>`;
-allNames.push(finalName);
-allDetections=[...new Set(allNames)];
+allObjects.push(`${label} ${Math.round(conf*100)}%`);
+if(conf>bestConf){ bestConf=conf; bestLabel=label; bestMode=bestMode||cls; }
 }
-document.getElementById('detectInfo').innerHTML=info||'Point at anything<br>ALL protocols auto run';
-document.getElementById('count').innerText=`${preds.length} objs`;
 
-// Auto update panel based on ALL protocols found
-let panelTitle=document.getElementById('panelTitle'), panelDesc=document.getElementById('panelDesc'), panelActions=document.getElementById('panelActions');
-if(plantFound && electronicsFound && bookFound){
-panelTitle.innerText='♾️ MULTI-PROTOCOL: Plant + Board + Book!'; panelDesc.innerText='ALL brains found different objects at once - choose action:';
-} else if(plantFound){
-panelTitle.innerText='🌿 PLANT PROTOCOL ACTIVE'; panelDesc.innerText='Plant + disease detection auto ON';
-panelActions.innerHTML=`<button onclick="diagnosePlant()" style="background:#0f8;color:#000;padding:6px 10px;border:none;border-radius:7px;font-weight:bold">🔬 DIAGNOSE DISEASE</button><button onclick="capPhoto()" style="background:#fff;color:#000;padding:6px 10px;border:none;border-radius:7px">📸 SAVE</button>`;
-} else if(bookFound){
-panelTitle.innerText='📚 BOOK PROTOCOL ACTIVE'; panelDesc.innerText='Book detected - OCR ready';
-panelActions.innerHTML=`<button onclick="scanBook()" style="background:#a0f;color:#fff;padding:6px 10px;border:none;border-radius:7px;font-weight:bold">📖 READ PAGE</button><button onclick="exportUltimate()" style="background:#f00;color:#fff;padding:6px 10px;border:none;border-radius:7px">📄 PDF</button>`;
-} else if(electronicsFound){
-panelTitle.innerText='🔌 ELECTRONICS PROTOCOL (Toilet Bug Fixed!)'; panelDesc.innerText='Power board auto identified - no typing needed';
-panelActions.innerHTML=`<button onclick="capPhoto()" style="background:#0f8;color:#000;padding:6px 10px;border:none;border-radius:7px;font-weight:bold">📸 CAPTURE BOARD</button><button onclick="runAllProtocols()" style="background:#0ff;color:#000;padding:6px 10px;border:none;border-radius:7px">♾️ RUN ALL</button>`;
-} else if(allNames.length>0){
-panelTitle.innerText=`♾️ ${allNames.length} PROTOCOLS: ${allNames.slice(0,3).join(', ')}`; panelDesc.innerText='ALL unlimited modes active at once';
-panelActions.innerHTML=`<button onclick="runAllProtocols()" style="background:#0f8;color:#000;padding:6px 10px;border:none;border-radius:7px;font-weight:bold">♾️ RUN ALL</button><button onclick="capPhoto()" style="background:#fff;color:#000;padding:6px 10px;border:none;border-radius:7px">📸 CAP ALL</button><button onclick="exportUltimate()" style="background:#a0f;color:#fff;padding:6px 10px;border:none;border-radius:7px">📄 EXPORT</button>`;
+// === AUTO MODE SWITCH - INVISIBLE TO USER, NO CHIPS ===
+if(allObjects.length>0){
+bottomInfo.style.display='block';
+whatItSees.innerText=allObjects.join(' • ');
+autoLabel.innerText=`🧠 ${bestLabel.toUpperCase()} ${Math.round(bestConf*100)}%`;
+cleanStatus.innerText=`♾️ ${allObjects.length} OBJECTS`;
+
+if(hasPlant){ whatToDo.innerText='🌿 Plant detected - tap ACTION for disease diagnosis'; lastAction='plant'; actionBtn.style.display='block'; actionBtn.innerText='🌿 DIAGNOSE'; actionBtn.style.background='rgba(0,255,0,0.9)'; }
+else if(hasBook){ whatToDo.innerText='📚 Book detected - tap ACTION to read'; lastAction='book'; actionBtn.style.display='block'; actionBtn.innerText='📖 READ'; actionBtn.style.background='rgba(160,0,255,0.9)'; actionBtn.style.color='#fff'; }
+else if(hasElectronics){ whatToDo.innerText='🔌 Power board / charger auto-fixed (was toilet bug)'; lastAction='electronics'; actionBtn.style.display='block'; actionBtn.innerText='📸 SAVE'; actionBtn.style.background='rgba(0,255,136,0.9)'; }
+else if(hasKitchen){ whatToDo.innerText=`🍽️ ${allObjects.length} kitchen items counted`; lastAction='kitchen'; actionBtn.style.display='block'; actionBtn.innerText='📄 EXPORT'; }
+else { whatToDo.innerText='♾️ Auto-identifying - no mode buttons needed'; actionBtn.style.display='none'; }
+
+// Auto convert mode silently
+if(bestMode!==currentAutoMode && bestConf>0.6){
+currentAutoMode=bestMode;
+autoLabel.style.background='rgba(0,255,0,0.3)'; setTimeout(()=>autoLabel.style.background='rgba(0,255,0,0.15)',1000);
 }
-document.getElementById('protoStatus').innerText=`${allDetections.length} types | ${plantFound?'🌿':''}${bookFound?'📚':''}${electronicsFound?'🔌':''} ALL ACTIVE`;
-document.getElementById('confVal').innerText=document.getElementById('confSlider').value+'%';
+} else {
+bottomInfo.style.display='none'; autoLabel.innerText='🧠 AUTO SCANNING'; cleanStatus.innerText='♾️ CLEAN AUTO';
+}
 }catch(e){}
 detecting=false; requestAnimationFrame(loop);
 }
 
-function exportUltimate(){
-const { jsPDF } = window.jspdf;
-let doc=new jsPDF(); let y=12; doc.setFontSize(11);
-doc.text(`WanaLab v6 ULTIMATE - ALL PROTOCOLS EXPORT`,10,y); y+=7; doc.setFontSize(8); doc.text(`Date: ${new Date().toLocaleString()} - Dera Ismail Khan`,10,y); y+=7;
-doc.text(`Detected: ${allDetections.join(', ')}`,10,y); y+=7;
-if(bookPages.length){ doc.text(`--- BOOK PAGES (${bookPages.length}) ---`,10,y); y+=6; bookPages.forEach((pg,i)=>{ let lines=doc.splitTextToSize(`Page ${i+1}: ${pg}`,180); doc.text(lines,10,y); y+=lines.length*4+4; if(y>270){ doc.addPage(); y=10; } }); }
-if(lastOCR){ let lines=doc.splitTextToSize(`Last OCR: ${lastOCR}`,180); doc.text(lines,10,y); y+=lines.length*4+5; }
-if(lastPlant){ doc.text(`Plant: ${lastPlant}`,10,y); y+=7; }
-let info=document.getElementById('detectInfo').innerText; doc.text(`Live Detection: ${info.substring(0,500)}`,10,y);
-doc.save(`WanaLab-ULTIMATE-ALL-${Date.now()}.pdf`);
-statusEl.style.display='block'; statusEl.innerText='📄 ULTIMATE PDF Exported - ALL protocols!'; setTimeout(()=>statusEl.style.display='none',2000);
+async function actionButton(){
+if(lastAction==='plant'){
+cleanStatus.innerText='🔬 Diagnosing plant...'; let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.drawImage(video,0,0);
+try{ let mp=await mobile.classify(c); let best=mp[0].className; whatToDo.innerText=`🌿 Diagnosis: ${best} - Treatment: Neem oil spray / نیم کا اسپرے`; speak(`Plant diagnosis ${best}`); }catch{}
+} else if(lastAction==='book'){
+cleanStatus.innerText='📚 Reading...'; let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.drawImage(video,0,0);
+try{ let r=await Tesseract.recognize(c.toDataURL(),'urd+eng'); whatItSees.innerText=`📚 ${r.data.text.substring(0,80)}...`; whatToDo.innerText='Book read - tap CAPTURE to save PDF'; speak(r.data.text.substring(0,100)); }catch{}
+} else if(lastAction==='electronics' || lastAction==='kitchen'){
+capPhoto();
+}
 }
 
 function capPhoto(){
-let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter||''; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height);
-ct.fillStyle='rgba(0,20,0,0.85)'; ct.fillRect(0,c.height-50,c.width,50);
-ct.fillStyle='#0f8'; ct.font='bold 10px Arial'; ct.fillText(`♾️ ALL PROTOCOLS: ${allDetections.join(', ').substring(0,100)}`,8,c.height-30);
-ct.fillStyle='#fff'; ct.font='9px Arial'; ct.fillText(`${new Date().toLocaleString()} - WanaLab v6 ULTIMATE - ${lastOCR.substring(0,30)} ${lastPlant}`,8,c.height-12);
-let a=document.createElement('a'); a.download=`ULTIMATE-ALL-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
+let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height);
+ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-28,c.width,28); ct.fillStyle='#0f8'; ct.font='10px Arial'; ct.fillText(`CLEAN AUTO GOD: ${whatItSees.innerText} - ${new Date().toLocaleString()}`,8,c.height-10);
+let a=document.createElement('a'); a.download=`CLEAN-AUTO-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
+cleanStatus.innerText='📸 Saved!'; setTimeout(()=>cleanStatus.innerText='♾️ CLEAN AUTO',1500);
 }
-document.getElementById('confSlider').addEventListener('input', e=>{ document.getElementById('confVal').innerText=e.target.value+'%'; });
 window.addEventListener('load', init);
 </script>
 </body>
