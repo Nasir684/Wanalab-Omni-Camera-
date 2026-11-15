@@ -1,0 +1,46 @@
+[
+  {
+    "id": "generic-uvc-microscope-1000x",
+    "name": "Generic USB Microscope 1000x (Type-C)",
+    "type": "UVC",
+    "mode": "micro",
+    "vendorIds": [],
+    "description": "Most Amazon/AliExpress 1000x USB microscope Type-C - UVC generic driver",
+    "resolution": "1920x1080",
+    "zoom": "1000x",
+    "connection": "USB-C OTG",
+    "status": "working"
+  },
+  {
+    "id": "generic-uvc-microscope-1600x",
+    "name": "USB Microscope 1600x SuperRes",
+    "type": "UVC",
+    "mode": "micro",
+    "vendorIds": [],
+    "description": "1600x with SuperRes 10x = 16000x digital",
+    "resolution": "2560x1440",
+    "zoom": "1600x",
+    "connection": "USB-C",
+    "status": "working"
+  },
+  {
+    "id": "wifi-microscope-1080p",
+    "name": "WiFi Microscope 1080p (Generic)",
+    "type": "WIFI",
+    "mode": "micro",
+    "description": "WiFi microscope connects via 192.168.1.1 - stream MJPEG",
+    "ip": "192.168.1.1",
+    "url": "http://192.168.1.1:8080/?action=stream",
+    "zoom": "1000x",
+    "status": "working"
+  },
+  {
+    "id": "jiusion-microscope",
+    "name": "Jiusion USB Microscope 40-1000x",
+    "type": "UVC",
+    "mode": "micro",
+    "vendorIds": [1133, 10291],
+    "zoom": "1000x",
+    "status": "working"
+  }
+]
