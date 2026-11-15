@@ -1,0 +1,4 @@
+[
+  {"id":"wifi-microscope-1080p","name":"WiFi Microscope 1080p 50x-1000x","type":"WIFI","mode":"micro","ip":"192.168.10.123","url":"http://192.168.10.123:8080/video","description":"Generic WiFi microscope 50x-1000x","status":"working"},
+  {"id":"wifi-microscope-4k","name":"WiFi 4K Microscope 2MP","type":"WIFI","mode":"micro","ip":"192.168.1.1","description":"4K WiFi microscope","status":"working"}
+]
