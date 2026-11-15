@@ -2,177 +2,124 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>WanaLab God Eye v1.5 GOD</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WanaLab v1.5 GOD</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
 <style>
- *{margin:0;padding:0;box-sizing:border-box}
- body{background:#000;overflow:hidden;font-family:Arial,sans-serif;height:100vh}
- #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;background:#000;z-index:1}
- #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
- #hdrCanvas{display:none}
- #topBar{position:fixed;top:0;left:0;right:0;z-index:1000;background:linear-gradient(90deg,#000,#111);color:#0ff;padding:7px 10px;display:flex;justify-content:space-between;font-size:11px;border-bottom:1px solid #0ff}
- #leftPanel{position:fixed;top:45px;left:8px;z-index:1000;background:rgba(0,0,0,0.75);padding:8px;border-radius:10px;color:#fff;font-size:10px;min-width:130px}
- #rightPanel{position:fixed;top:45px;right:8px;z-index:1000;background:rgba(0,0,0,0.75);padding:8px;border-radius:10px;color:#fff;font-size:10px}
- #proBar{position:fixed;bottom:8px;left:4px;right:4px;display:flex;gap:3px;z-index:1000;flex-wrap:wrap}
- #proBar button{flex:1;padding:10px 1px;border:none;border-radius:8px;font-weight:bold;font-size:8.5px;min-width:42px}
- #status{position:fixed;bottom:62px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,255,136,0.9);color:#000;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:bold}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
+#godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;background:#000;z-index:1}
+#aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.8);color:#0f0;padding:8px 10px;display:flex;justify-content:space-between;font-size:11px}
+#left{position:fixed;top:45px;left:8px;z-index:10;background:rgba(0,0,0,0.75);padding:9px;border-radius:10px;color:#fff;font-size:11px;min-width:125px}
+#right{position:fixed;top:45px;right:8px;z-index:10;background:rgba(0,0,0,0.75);padding:9px;border-radius:10px;color:#fff}
+#proBar{position:fixed;bottom:10px;left:5px;right:5px;display:flex;gap:4px;z-index:10}
+#proBar button{flex:1;padding:12px 2px;border:none;border-radius:10px;font-weight:bold;font-size:9px}
+#status{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:10;background:#0f8;color:#000;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:bold}
 </style>
 </head>
 <body>
-
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
-<canvas id="hdrCanvas"></canvas>
 
-<div id="topBar">
- <span>🔭 WanaLab v1.5 GOD MODE</span>
- <span id="fps">60 FPS</span>
- <span id="aiStatus">AI: Booting</span>
+<div id="topBar"><span>🔭 WanaLab v1.5 GOD</span><span id="aiStatus">Loading AI...</span></div>
+
+<div id="left">
+<div style="color:#0ff;font-weight:bold">📦 COUNT</div>
+<div id="countList">Scanning...</div>
+<div style="margin-top:6px"><label><input type="checkbox" id="voiceCheck" checked> 🔊 Voice ON</label></div>
 </div>
 
-<div id="leftPanel">
- <div style="color:#0ff;font-weight:bold">📊 LIVE COUNT</div>
- <div id="countList" style="margin-top:4px">-</div>
- <div style="margin-top:8px;color:#ffaa00">📍 TRACKING</div>
- <div id="trackList" style="margin-top:2px">No motion</div>
- <div style="margin-top:6px"><label><input type="checkbox" id="voiceCheck" checked> 🔊 Voice</label></div>
+<div id="right">
+<div style="font-size:10px;text-align:center">ZOOM <span id="zoomVal">1.0x</span></div>
+<input type="range" id="zoomSlider" min="1" max="20" value="1" step="0.1" style="width:85px;accent-color:#0ff">
+<div style="margin-top:6px;text-align:center"><button onclick="hdrFusion()" style="background:#c8f;color:#000;border:none;padding:5px 7px;border-radius:6px;font-weight:bold;font-size:9px">🌟 HDR 10x</button></div>
 </div>
 
-<div id="rightPanel">
- <div style="text-align:center">ZOOM <span id="zoomVal">1.0x</span></div>
- <input type="range" id="zoomSlider" min="1" max="20" value="1" step="0.1" style="width:80px;accent-color:#0ff">
- <div style="margin-top:8px;text-align:center"><button onclick="hdrFusion()" id="hdrBtn" style="background:#a0f;color:#000;border:none;padding:5px 8px;border-radius:6px;font-weight:bold;font-size:9px">🌟 HDR FUSION</button></div>
-</div>
-
-<div id="status">⚡ GOD MODE Loading...</div>
+<div id="status">⚡ Loading GOD MODE...</div>
 
 <div id="proBar">
- <button onclick="nightGod()" id="nightBtn" style="background:#ffaa00;color:#000">🌙 NIGHT 10x</button>
- <button onclick="toggleTorch()" id="torchBtn" style="background:#ffff00;color:#000">🔦 TORCH</button>
- <button onclick="thermalMode()" id="thermalBtn" style="background:#ff0044;color:#fff">🔥 THERMAL</button>
- <button onclick="toggleAI()" id="aiBtn" style="background:#00ff88;color:#000">🤖 AI TRACK</button>
- <button onclick="toggleRecord()" id="recBtn" style="background:#ff0000;color:#fff">● REC</button>
- <button onclick="capturePhoto()" style="background:#00e5ff;color:#000">📸 4K CAP</button>
+<button onclick="nightGod()" id="nightBtn" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
+<button onclick="toggleTorch()" id="torchBtn" style="background:#ff0;color:#000">🔦 TORCH</button>
+<button onclick="thermalMode()" style="background:#f04;color:#fff">🔥 THERMAL</button>
+<button onclick="toggleAI()" id="aiBtn" style="background:#0f8;color:#000">🤖 AI ON</button>
+<button onclick="toggleRec()" id="recBtn" style="background:red;color:#fff">● REC</button>
+<button onclick="capPhoto()" style="background:#0ff;color:#000">📸 CAP</button>
 </div>
 
 <script>
-let stream=null,track=null,isNight=false,isThermal=false,isTorch=false,zoomCaps=null,model=null,aiEnabled=true,detecting=false,mediaRecorder=null,recordedChunks=[],isRecording=false,lastSpoken={},lastCountText="",trackHistory={};
+let stream=null,track=null,isNight=false,isThermal=false,isTorch=false,zoomCaps=null,model=null,aiOn=true,detecting=false,rec=null,chunks=[],recing=false,lastSp={},lastTxt="";
 
 const video=document.getElementById('godVideo');
 const canvas=document.getElementById('aiCanvas');
 const ctx=canvas.getContext('2d');
-const hdrCanvas=document.getElementById('hdrCanvas');
-const hdrCtx=hdrCanvas.getContext('2d');
 const statusEl=document.getElementById('status');
 
-async function initCamera(){
- try{
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}},audio:true});
-  video.srcObject=stream; track=stream.getVideoTracks()[0];
-  const caps=track.getCapabilities();
-  if(caps.zoom){ zoomCaps=caps.zoom; document.getElementById('zoomSlider').max=Math.min(caps.zoom.max,20); }
-  await video.play();
-  canvas.width=video.videoWidth; canvas.height=video.videoHeight; hdrCanvas.width=video.videoWidth; hdrCanvas.height=video.videoHeight;
-  loadAI(); fpsCounter();
- }catch(e){ statusEl.innerText='❌ '+e.message; }
+async function init(){
+try{
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920}},audio:true});
+video.srcObject=stream; track=stream.getVideoTracks()[0];
+let caps=track.getCapabilities();
+if(caps.zoom){ zoomCaps=caps.zoom; document.getElementById('zoomSlider').max=Math.min(caps.zoom.max,20); }
+await video.play(); canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+loadAI();
+}catch(e){ statusEl.innerText='❌ '+e.message; }
 }
-async function loadAI(){ try{ model=await cocoSsd.load({base:'lite_mobilenet_v2'}); document.getElementById('aiStatus').innerText='AI: GOD READY'; statusEl.innerText='✅ GOD EYE ACTIVE - Point at anything'; setTimeout(()=>statusEl.style.display='none',2500); detectFrame(); }catch(e){ statusEl.innerText='AI Failed, Camera OK'; } }
-
-function updateFilter(){ let f=''; if(isNight) f+='brightness(2.2) contrast(1.35) saturate(1.2) '; if(isThermal) f+='sepia(1) hue-rotate(-30deg) saturate(4) contrast(1.6) brightness(1.4) '; video.style.filter=f.trim()||'none'; }
-function nightGod(){ isNight=!isNight; document.getElementById('nightBtn').innerText=isNight?'🌙 GOD ON':'🌙 NIGHT 10x'; document.getElementById('nightBtn').style.background=isNight?'#fff':'#ffaa00'; updateFilter(); if(isNight) speak("Night God activated"); }
-function thermalMode(){ isThermal=!isThermal; updateFilter(); if(isThermal) speak("Thermal vision"); }
-async function toggleTorch(){ if(!track) return; try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); document.getElementById('torchBtn').innerText=isTorch?'🔦 OFF':'🔦 TORCH'; if(isTorch) speak("Torch on"); }catch{ alert('Torch not supported'); } }
-function toggleAI(){ aiEnabled=!aiEnabled; document.getElementById('aiBtn').style.background=aiEnabled?'#00ff88':'#555'; if(aiEnabled) detectFrame(); else ctx.clearRect(0,0,canvas.width,canvas.height); }
-
-function speak(t){ if(!document.getElementById('voiceCheck').checked) return; if(lastSpoken[t]&&Date.now()-lastSpoken[t]<4000) return; lastSpoken[t]=Date.now(); speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+async function loadAI(){
+try{ model=await cocoSsd.load({base:'lite_mobilenet_v2'}); document.getElementById('aiStatus').innerText='AI: GOD READY'; statusEl.innerText='✅ GOD EYE READY'; setTimeout(()=>statusEl.style.display='none',2500); detect(); }
+catch(e){ statusEl.innerText='AI failed, cam OK'; }
+}
+function speak(t){ if(!document.getElementById('voiceCheck').checked) return; if(lastSp[t]&&Date.now()-lastSp[t]<4000) return; lastSp[t]=Date.now(); speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+function updFilter(){ let f=''; if(isNight) f+='brightness(2.2) contrast(1.35) '; if(isThermal) f+='sepia(1) hue-rotate(-30deg) saturate(4) contrast(1.6) brightness(1.4) '; video.style.filter=f||'none'; }
+function nightGod(){ isNight=!isNight; document.getElementById('nightBtn').innerText=isNight?'🌙 GOD ON':'🌙 NIGHT'; updFilter(); if(isNight) speak("Night God on"); }
+function thermalMode(){ isThermal=!isThermal; updFilter(); if(isThermal) speak("Thermal on"); }
+async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); document.getElementById('torchBtn').innerText=isTorch?'🔦 OFF':'🔦 TORCH'; }catch{ alert('Torch not on this camera'); } }
+function toggleAI(){ aiOn=!aiOn; document.getElementById('aiBtn').innerText=aiOn?'🤖 AI ON':'🤖 OFF'; if(aiOn) detect(); else ctx.clearRect(0,0,canvas.width,canvas.height); }
 
 function hdrFusion(){
- statusEl.style.display='block'; statusEl.innerText='🌟 HDR Fusion: Capturing 10 frames...'; speak("HDR Fusion started");
- let frames=[]; let count=0;
- let interval=setInterval(()=>{
-  hdrCtx.drawImage(video,0,0,hdrCanvas.width,hdrCanvas.height);
-  frames.push(hdrCtx.getImageData(0,0,hdrCanvas.width,hdrCanvas.height));
-  count++;
-  statusEl.innerText=`🌟 HDR ${count}/10`;
-  if(count>=10){
-   clearInterval(interval);
-   // Average fusion for super night
-   let out=hdrCtx.createImageData(hdrCanvas.width,hdrCanvas.height);
-   for(let i=0;i<out.data.length;i+=4){
-    let r=0,g=0,b=0; frames.forEach(f=>{ r+=f.data[i]; g+=f.data[i+1]; b+=f.data[i+2]; });
-    out.data[i]=r/10*1.4; out.data[i+1]=g/10*1.4; out.data[i+2]=b/10*1.4; out.data[i+3]=255;
-   }
-   hdrCtx.putImageData(out,0,0);
-   const a=document.createElement('a'); a.download='WanaLab-HDR-'+Date.now()+'.png'; a.href=hdrCanvas.toDataURL(); a.click();
-   statusEl.innerText='✅ HDR GOD Image Saved!'; speak("HDR image saved"); setTimeout(()=>statusEl.style.display='none',2000);
-  }
- },120);
+statusEl.style.display='block'; statusEl.innerText='🌟 HDR 10 frames...'; let fr=[],c=0;
+let intv=setInterval(()=>{
+let tmp=document.createElement('canvas'); tmp.width=video.videoWidth; tmp.height=video.videoHeight; let tctx=tmp.getContext('2d'); tctx.filter=video.style.filter; tctx.drawImage(video,0,0); fr.push(tctx.getImageData(0,0,tmp.width,tmp.height)); c++; statusEl.innerText=`🌟 HDR ${c}/10`;
+if(c>=10){ clearInterval(intv);
+let out=tctx.createImageData(tmp.width,tmp.height);
+for(let i=0;i<out.data.length;i+=4){ let r=0,g=0,b=0; fr.forEach(f=>{r+=f.data[i]; g+=f.data[i+1]; b+=f.data[i+2];}); out.data[i]=r/10*1.5; out.data[i+1]=g/10*1.5; out.data[i+2]=b/10*1.5; out.data[i+3]=255; }
+tctx.putImageData(out,0,0); let a=document.createElement('a'); a.download='WanaLab-HDR-'+Date.now()+'.png'; a.href=tmp.toDataURL(); a.click(); statusEl.innerText='✅ HDR Saved!'; speak("HDR saved"); setTimeout(()=>statusEl.style.display='none',2000);
+}
+},120);
 }
 
-async function detectFrame(){
- if(!aiEnabled||!model||detecting){ if(aiEnabled) requestAnimationFrame(detectFrame); return; }
- detecting=true;
- try{
-  const preds=await model.detect(video);
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  const sx=canvas.width/video.videoWidth, sy=canvas.height/video.videoHeight;
-  let counts={};
-  preds.forEach((p,i)=>{
-   if(p.score<0.45) return;
-   counts[p.class]=(counts[p.class]||0)+1;
-   const [x,y,w,h]=p.bbox;
-   // Tracking trail
-   if(!trackHistory[p.class]) trackHistory[p.class]=[];
-   trackHistory[p.class].push({x:x+w/2,y:y+h/2,t:Date.now()});
-   if(trackHistory[p.class].length>15) trackHistory[p.class].shift();
-   // Draw trail
-   ctx.strokeStyle='rgba(0,255,255,0.4)'; ctx.lineWidth=2; ctx.beginPath();
-   trackHistory[p.class].forEach((pt,j)=>{ const px=pt.x*sx, py=pt.y*sy; if(j==0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }); ctx.stroke();
-   // Box
-   ctx.strokeStyle=p.class==='person'?'#ff0044':'#00ff88'; ctx.lineWidth=3; ctx.strokeRect(x*sx,y*sy,w*sx,h*sy);
-   ctx.fillStyle=ctx.strokeStyle; ctx.font='bold 13px Arial'; ctx.fillText(`${p.class.toUpperCase()} ${Math.round(p.score*100)}%`, x*sx, y*sy>14?y*sy-4:y*sy+14);
-  });
-  let html=""; let voice=""; for(let k in counts){ html+=`${k}: ${counts[k]}<br>`; voice+=`${counts[k]} ${k} `; }
-  document.getElementById('countList').innerHTML=html||"Scanning...";
-  document.getElementById('trackList').innerText=preds.length?`Tracking ${preds.length} objects`:"No motion";
-  document.getElementById('aiStatus').innerText=`AI: ${preds.length} obj`;
-  if(voice && voice!==lastCountText){ lastCountText=voice; speak(voice+" tracked"); }
- }catch(e){}
- detecting=false; requestAnimationFrame(detectFrame);
+async function detect(){
+if(!aiOn||!model||detecting){ if(aiOn) requestAnimationFrame(detect); return; } detecting=true;
+try{
+let preds=await model.detect(video); ctx.clearRect(0,0,canvas.width,canvas.height);
+let sx=canvas.width/video.videoWidth, sy=canvas.height/video.videoHeight; let counts={};
+preds.forEach(p=>{ if(p.score<0.45) return; counts[p.class]=(counts[p.class]||0)+1; let [x,y,w,h]=p.bbox; ctx.strokeStyle='#0f8'; ctx.lineWidth=3; ctx.strokeRect(x*sx,y*sy,w*sx,h*sy); ctx.fillStyle='#0f8'; ctx.font='13px Arial'; ctx.fillText(`${p.class} ${Math.round(p.score*100)}%`,x*sx,y*sy>10?y*sy-3:y*sy+13); });
+let html=""; let voice=""; for(let k in counts){ html+=`${k}: ${counts[k]}<br>`; voice+=`${counts[k]} ${k} `; }
+document.getElementById('countList').innerHTML=html||'No objects'; document.getElementById('aiStatus').innerText=`AI: ${preds.length} obj`;
+if(voice&&voice!==lastTxt){ lastTxt=voice; speak(voice+" detected"); }
+}catch(e){} detecting=false; requestAnimationFrame(detect);
 }
 
-function capturePhoto(){
- const c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight;
- const ct=c.getContext('2d'); ct.filter=video.style.filter||'none'; ct.drawImage(video,0,0); ct.drawImage(canvas,0,0,c.width,c.height);
- // Watermark
- ct.fillStyle='rgba(0,0,0,0.6)'; ct.fillRect(0,c.height-30,c.width,30);
- ct.fillStyle='#0ff'; ct.font='12px Arial'; ct.fillText(`WanaLab God Eye v1.5 | ${new Date().toLocaleString()} | Dera Ismail Khan`,10,c.height-10);
- const a=document.createElement('a'); a.download=`WanaLab-GOD-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
- speak("4K capture saved");
+function capPhoto(){
+let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter||'none'; ct.drawImage(video,0,0); ct.drawImage(canvas,0,0,c.width,c.height);
+let a=document.createElement('a'); a.download='WanaLab-GOD-'+Date.now()+'.png'; a.href=c.toDataURL(); a.click(); speak("Photo saved");
 }
-
-function toggleRecord(){
- if(!isRecording){
-  recordedChunks=[]; isRecording=true;
-  const recC=document.createElement('canvas'); recC.width=video.videoWidth; recC.height=video.videoHeight; const recCtx=recC.getContext('2d');
-  const rs=recC.captureStream(30); if(stream.getAudioTracks().length) rs.addTrack(stream.getAudioTracks()[0]);
-  function drawR(){ if(!isRecording) return; recCtx.filter=video.style.filter||'none'; recCtx.drawImage(video,0,0,recC.width,recC.height); recCtx.drawImage(canvas,0,0,recC.width,recC.height); requestAnimationFrame(drawR); } drawR();
-  mediaRecorder=new MediaRecorder(rs,{mimeType:'video/webm'});
-  mediaRecorder.ondataavailable=e=>{ if(e.data.size) recordedChunks.push(e.data); };
-  mediaRecorder.onstop=()=>{ const b=new Blob(recordedChunks,{type:'video/webm'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download=`WanaLab-GOD-VIDEO-${Date.now()}.webm`; a.click(); statusEl.innerText='✅ GOD Video saved!'; setTimeout(()=>statusEl.style.display='none',2000); };
-  mediaRecorder.start(); document.getElementById('recBtn').innerText='■ STOP'; statusEl.style.display='block'; statusEl.innerText='● REC GOD MODE Recording...'; speak("God recording started");
- } else { mediaRecorder.stop(); isRecording=false; document.getElementById('recBtn').innerText='● REC'; speak("Recording saved"); }
+function toggleRec(){
+if(!recing){
+recing=true; chunks=[]; let rc=document.createElement('canvas'); rc.width=video.videoWidth; rc.height=video.videoHeight; let rctx=rc.getContext('2d');
+let rs=rc.captureStream(30); if(stream.getAudioTracks().length) rs.addTrack(stream.getAudioTracks()[0]);
+function draw(){ if(!recing) return; rctx.filter=video.style.filter||'none'; rctx.drawImage(video,0,0,rc.width,rc.height); rctx.drawImage(canvas,0,0,rc.width,rc.height); requestAnimationFrame(draw); } draw();
+rec=new MediaRecorder(rs,{mimeType:'video/webm'}); rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); }; rec.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); let a=document.createElement('a'); a.href=u; a.download='WanaLab-GOD-VIDEO-'+Date.now()+'.webm'; a.click(); };
+rec.start(); document.getElementById('recBtn').innerText='■ STOP'; statusEl.style.display='block'; statusEl.innerText='● REC GOD MODE...'; speak("Recording started");
+}else{ rec.stop(); recing=false; document.getElementById('recBtn').innerText='● REC'; speak("Recording saved"); statusEl.innerText='✅ Video Saved'; setTimeout(()=>statusEl.style.display='none',2000); }
 }
-
-function fpsCounter(){ let last=performance.now(), frames=0; (function loop(){ frames++; const now=performance.now(); if(now-last>1000){ document.getElementById('fps').innerText=`${frames} FPS`; frames=0; last=now; } requestAnimationFrame(loop); })(); }
 
 document.getElementById('zoomSlider').addEventListener('input', async e=>{
- const z=parseFloat(e.target.value); document.getElementById('zoomVal').innerText=z.toFixed(1)+'x';
- if(track && zoomCaps){ try{ await track.applyConstraints({advanced:[{zoom:z}]}); }catch{ video.style.transform=`scale(${z})`; } } else { video.style.transform=`scale(${z})`; video.style.transformOrigin='center center'; }
+let z=parseFloat(e.target.value); document.getElementById('zoomVal').innerText=z.toFixed(1)+'x';
+if(track&&zoomCaps){ try{ await track.applyConstraints({advanced:[{zoom:z}]}); }catch{ video.style.transform=`scale(${z})`; } } else { video.style.transform=`scale(${z})`; }
 });
-window.addEventListener('load', initCamera);
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
