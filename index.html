@@ -3,25 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v1.7 ALARM GOD</title>
+<title>WanaLab v1.7 FIX PAK</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
 #faceCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:3;pointer-events:none}
-#alarmOverlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;display:none;background:rgba(255,0,0,0.3);pointer-events:none;animation:flash 0.3s infinite}
-@keyframes flash{0%{background:rgba(255,0,0,0.3)}50%{background:rgba(255,0,0,0.7)}}
+#alarmOverlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;display:none;background:rgba(255,0,0,0.35);animation:flash .3s infinite}
+@keyframes flash{0%{background:rgba(255,0,0,0.2)}50%{background:rgba(255,0,0,0.6)}}
 #topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:#000;color:#0ff;padding:6px 10px;display:flex;justify-content:space-between;font-size:11px}
-#left{position:fixed;top:38px;left:6px;z-index:10;background:rgba(0,0,0,0.85);padding:8px;border-radius:10px;color:#fff;font-size:10px;min-width:140px;max-height:60vh;overflow:auto}
-#right{position:fixed;top:38px;right:6px;z-index:10;background:rgba(0,0,0,0.85);padding:8px;border-radius:10px;color:#fff;width:115px}
-#proBar{position:fixed;bottom:8px;left:4px;right:4px;display:flex;gap:3px;z-index:10;flex-wrap:wrap}
+#left{position:fixed;top:38px;left:6px;z-index:10;background:rgba(0,0,0,0.85);padding:8px;border-radius:10px;color:#fff;font-size:10px;min-width:145px}
+#right{position:fixed;top:38px;right:6px;z-index:10;background:rgba(0,0,0,0.85);padding:8px;border-radius:10px;color:#fff}
+#proBar{position:fixed;bottom:8px;left:4px;right:4px;display:flex;gap:3px;z-index:10}
 #proBar button{flex:1;padding:11px 1px;border:none;border-radius:9px;font-weight:bold;font-size:8px}
-#status{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);z-index:10;background:#0ff;color:#000;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:bold}
-#log{position:fixed;bottom:120px;left:6px;z-index:10;background:rgba(0,0,0,0.8);color:#0f0;padding:6px;border-radius:8px;font-size:9px;max-width:160px;max-height:100px;overflow:auto}
+#status{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:10;background:#0ff;color:#000;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:bold}
 </style>
 </head>
 <body>
@@ -30,54 +29,46 @@ body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 <canvas id="faceCanvas"></canvas>
 <div id="alarmOverlay"></div>
 
-<div id="topBar"><span>🚨 WanaLab v1.7 ALARM GOD</span><span id="aiStatus">Loading...</span><span id="alarmStatus">🛡️ SAFE</span></div>
+<div id="topBar"><span>🇵🇰 WanaLab v1.7 FIX</span><span id="aiStatus">Loading...</span><span id="alarmStat">SAFE</span></div>
 
 <div id="left">
-<div style="color:#0ff;font-weight:bold">👤 FACES: <span id="faceCount">0</span></div>
-<div id="faceList" style="margin-top:3px">Loading...</div>
-<button onclick="addFace()" style="margin-top:6px;background:#0ff;color:#000;border:none;padding:6px;width:100%;border-radius:6px;font-weight:bold;font-size:10px">+ ADD FACE</button>
-<div style="margin-top:8px;color:#ff0;font-weight:bold">⚙️ ALARM</div>
-<label style="font-size:10px"><input type="checkbox" id="alarmCheck" checked> 🚨 Alarm ON</label><br>
-<label style="font-size:10px"><input type="checkbox" id="autoRecCheck" checked> ● Auto REC Intruder</label><br>
-<label style="font-size:10px"><input type="checkbox" id="voiceCheck" checked> 🔊 Voice</label>
+<div style="color:#0ff;font-weight:bold">👤 FACE: <span id="fCount">0</span></div>
+<div id="faceList">Loading Face AI...</div>
+<button onclick="addFace()" style="margin-top:6px;background:#0ff;color:#000;border:none;padding:6px;width:100%;border-radius:6px;font-weight:bold">+ ADD MY FACE</button>
+<div style="margin-top:8px"><label><input type="checkbox" id="alarmCheck" checked> 🚨 Alarm ON</label><br><label><input type="checkbox" id="voiceCheck" checked> 🔊 Voice</label></div>
 <div style="margin-top:6px;color:#0ff;font-weight:bold">📦 OBJECTS</div>
 <div id="countList">-</div>
 </div>
 
 <div id="right">
-<div style="text-align:center;font-size:10px">ZOOM <span id="zoomVal">1.0x</span></div>
-<input type="range" id="zoomSlider" min="1" max="20" value="1" step="0.1" style="width:95px;accent-color:#0ff">
-<div style="margin-top:6px">
-<button onclick="testAlarm()" style="background:#f00;color:#fff;border:none;padding:5px;width:100%;border-radius:6px;font-size:9px;font-weight:bold">🔊 TEST SIREN</button>
-<button onclick="stopAlarm()" style="margin-top:4px;background:#0f0;color:#000;border:none;padding:5px;width:100%;border-radius:6px;font-size:9px;font-weight:bold">🛑 STOP ALARM</button>
-<button onclick="clearFaces()" style="margin-top:4px;background:#555;color:#fff;border:none;padding:4px;width:100%;border-radius:6px;font-size:8px">CLEAR FACES</button>
-</div>
+<div style="text-align:center;font-size:10px">ZOOM <span id="zoomVal">1x</span></div>
+<input type="range" id="zoomSlider" min="1" max="20" value="1" step="0.1" style="width:90px;accent-color:#0ff">
+<button onclick="testAlarm()" style="margin-top:6px;background:red;color:#fff;border:none;padding:5px;width:100%;border-radius:6px;font-size:9px;font-weight:bold">TEST SIREN</button>
+<button onclick="stopAlarm()" style="margin-top:4px;background:#0f0;color:#000;border:none;padding:5px;width:100%;border-radius:6px;font-size:9px;font-weight:bold">STOP</button>
 </div>
 
-<div id="log"></div>
-<div id="status">⚡ Loading ALARM GOD...</div>
+<div id="status">Loading PAK FIX...</div>
 
 <div id="proBar">
 <button onclick="nightGod()" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
 <button onclick="toggleTorch()" id="torchBtn" style="background:#ff0;color:#000">🔦 TORCH</button>
-<button onclick="toggleFace()" id="faceBtn" style="background:#0ff;color:#000">👤 FACE ON</button>
+<button onclick="toggleAI()" style="background:#0f8;color:#000">🤖 AI</button>
 <button onclick="toggleRec()" id="recBtn" style="background:red;color:#fff">● REC</button>
 <button onclick="capPhoto()" style="background:#0ff;color:#000">📸 CAP</button>
 </div>
 
-<audio id="siren" loop preload="auto"><source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg"></audio>
+<audio id="siren" loop><source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg"></audio>
 
-<div id="faceModal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100;background:#111;padding:15px;border-radius:15px;color:#fff;display:none;border:2px solid #0ff;width:85%">
-<h3 style="color:#0ff">Add Family Face</h3><input type="text" id="faceName" placeholder="Name e.g. Nasir" style="width:100%;padding:8px;border-radius:6px;border:none;margin:8px 0"><div style="display:flex;gap:6px"><button onclick="saveFace()" style="flex:1;background:#0f8;color:#000;padding:8px;border:none;border-radius:6px;font-weight:bold">SAVE</button><button onclick="closeModal()" style="flex:1;background:#555;color:#fff;padding:8px;border:none;border-radius:6px">CANCEL</button></div><p id="faceMsg" style="font-size:10px;color:#ff0;margin-top:6px"></p>
+<div id="modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;background:#111;padding:15px;border-radius:12px;color:#fff;display:none;border:2px solid #0ff;width:80%">
+<h4 style="color:#0ff">Save Your Face</h4><input id="faceName" placeholder="Name e.g. Nasir" style="width:100%;padding:8px;margin:8px 0;border-radius:6px;border:none"><div style="display:flex;gap:6px"><button onclick="saveFace()" style="flex:1;background:#0f8;padding:8px;border:none;border-radius:6px;font-weight:bold">SAVE</button><button onclick="closeM()" style="flex:1;background:#555;padding:8px;border:none;border-radius:6px;color:#fff">CANCEL</button></div><p id="msg" style="font-size:10px;color:#ff0;margin-top:5px"></p>
 </div>
 
 <script>
-let stream=null,track=null,isNight=false,isTorch=false,zoomCaps=null,cocoModel=null,aiOn=true,faceOn=true,detecting=false,rec=null,chunks=[],recing=false,lastSp={},knownFaces=[],alarmActive=false,intruderCount=0,autoRecTimeout=null;
+let stream=null,track=null,isNight=false,isTorch=false,zoomCaps=null,coco=null,blaze=null,knownFaces=[],tempFace=null,alarm=false,rec=null,chunks=[],recing=false,lastSp={};
 const video=document.getElementById('godVideo');
-const aiCanvas=document.getElementById('aiCanvas'); const aiCtx=aiCanvas.getContext('2d');
-const faceCanvas=document.getElementById('faceCanvas'); const faceCtx=faceCanvas.getContext('2d');
-const statusEl=document.getElementById('status'); const sirenAudio=document.getElementById('siren');
-const alarmOverlay=document.getElementById('alarmOverlay');
+const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
+const faceCanvas=document.getElementById('faceCanvas'), faceCtx=faceCanvas.getContext('2d');
+const statusEl=document.getElementById('status'), sirenEl=document.getElementById('siren'), overlay=document.getElementById('alarmOverlay');
 
 async function init(){
 try{
@@ -85,76 +76,64 @@ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width
 video.srcObject=stream; track=stream.getVideoTracks()[0];
 let caps=track.getCapabilities(); if(caps.zoom){ zoomCaps=caps.zoom; document.getElementById('zoomSlider').max=Math.min(caps.zoom.max,20); }
 await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight; faceCanvas.width=video.videoWidth; faceCanvas.height=video.videoHeight;
-knownFaces=JSON.parse(localStorage.getItem('wanalab_faces')||'[]');
-loadModels();
-}catch(e){ statusEl.innerText='❌ '+e.message; }
+knownFaces=JSON.parse(localStorage.getItem('wanalab_faces_v7')||'[]');
+load();
+}catch(e){ statusEl.innerText='Camera error: '+e.message; }
 }
-async function loadModels(){
+async function load(){
 try{
-cocoModel=await cocoSsd.load({base:'lite_mobilenet_v2'});
-await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights');
-await faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights');
-await faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights');
-document.getElementById('aiStatus').innerText='READY'; document.getElementById('faceCount').innerText=knownFaces.length;
-statusEl.innerText=`✅ ALARM GOD READY - ${knownFaces.length} faces - SAFE MODE`; setTimeout(()=>statusEl.style.display='none',3000);
-updateFaceList(); detectLoop();
-}catch(e){ statusEl.innerText='Face load failed, retry...'; console.log(e); setTimeout(loadModels,2000); }
+statusEl.innerText='Loading Object AI...'; coco=await cocoSsd.load({base:'lite_mobilenet_v2'});
+statusEl.innerText='Loading Face AI (BlazeFace) PAK...'; blaze=await blazeface.load();
+document.getElementById('aiStatus').innerText='READY'; statusEl.innerText=`✅ READY - ${knownFaces.length} faces - Qaumi Tarana Mode!`; document.getElementById('fCount').innerText=knownFaces.length;
+updateList(); setTimeout(()=>statusEl.style.display='none',2500); loop();
+}catch(e){ statusEl.innerText='AI Load error, retrying...'; setTimeout(load,2000); }
 }
-function speak(t){ if(!document.getElementById('voiceCheck').checked) return; if(lastSp[t]&&Date.now()-lastSp[t]<3500) return; lastSp[t]=Date.now(); speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
-function logMsg(m){ let l=document.getElementById('log'); l.innerHTML=`${new Date().toLocaleTimeString()} ${m}<br>`+l.innerHTML; }
-function nightGod(){ isNight=!isNight; video.style.filter=isNight?'brightness(2.2) contrast(1.3)':''; }
-async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{ alert('Torch needs back cam'); }}
-function toggleFace(){ faceOn=!faceOn; document.getElementById('faceBtn').innerText=faceOn?'👤 FACE ON':'👤 OFF'; }
-function addFace(){ document.getElementById('faceModal').style.display='block'; detectOneFaceForSave(); }
-function closeModal(){ document.getElementById('faceModal').style.display='none'; }
-let tempDesc=null;
-async function detectOneFaceForSave(){ try{ let d=await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor(); if(d){ tempDesc=Array.from(d.descriptor); document.getElementById('faceMsg').innerText='✅ Face OK! Type name'; document.getElementById('faceMsg').style.color='#0f8'; } else setTimeout(detectOneFaceForSave,700); }catch{ setTimeout(detectOneFaceForSave,700); } }
-function saveFace(){ let name=document.getElementById('faceName').value.trim(); if(!name||!tempDesc) return; knownFaces.push({name:name, descriptor:tempDesc}); localStorage.setItem('wanalab_faces', JSON.stringify(knownFaces)); updateFaceList(); closeModal(); document.getElementById('faceName').value=''; speak(`Family ${name} added`); logMsg(`+ Added ${name}`); }
-function clearFaces(){ if(confirm('Delete all?')){ knownFaces=[]; localStorage.removeItem('wanalab_faces'); updateFaceList(); } }
-function updateFaceList(){ document.getElementById('faceCount').innerText=knownFaces.length; document.getElementById('faceList').innerHTML=knownFaces.length?knownFaces.map(f=>`✅ ${f.name}`).join('<br>'):'No family yet'; }
+function speak(t){ if(!document.getElementById('voiceCheck').checked) return; if(lastSp[t]&&Date.now()-lastSp[t]<4000) return; lastSp[t]=Date.now(); speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+function nightGod(){ isNight=!isNight; video.style.filter=isNight?'brightness(2.1) contrast(1.3)':''; }
+async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{}}
+function toggleAI(){}
+function updateList(){ document.getElementById('faceList').innerHTML=knownFaces.length?knownFaces.map(f=>`✅ ${f.name}`).join('<br>'):'No faces - Add'; document.getElementById('fCount').innerText=knownFaces.length; }
 
-function triggerAlarm(name){
-if(!document.getElementById('alarmCheck').checked) return; if(alarmActive) return;
-alarmActive=true; intruderCount++; alarmOverlay.style.display='block'; document.getElementById('alarmStatus').innerText=`🚨 INTRUDER ${intruderCount}`; document.getElementById('alarmStatus').style.color='#f00'; document.getElementById('alarmStatus').style.background='#ff0';
-try{ sirenAudio.currentTime=0; sirenAudio.play(); }catch{}
-if(navigator.vibrate) navigator.vibrate([500,200,500,200,500]);
-speak(`Intruder alert! Unknown person detected!`); logMsg(`🚨 INTRUDER: ${name}`);
-statusEl.style.display='block'; statusEl.innerText=`🚨 INTRUDER DETECTED! ${name}`; statusEl.style.background='#f00'; statusEl.style.color='#fff';
-if(document.getElementById('autoRecCheck').checked && !recing){ toggleRec(); logMsg('● Auto REC started'); }
-capPhoto(); // Auto photo evidence
-// WhatsApp alert prep
-let waMsg=`🚨 WanaLab ALARM! Unknown person detected at ${new Date().toLocaleString()} - Dera Ismail Khan`;
-console.log('WA ALERT:', waMsg);
+function addFace(){ document.getElementById('modal').style.display='block'; document.getElementById('msg').innerText='Looking for face...'; findFace(); }
+function closeM(){ document.getElementById('modal').style.display='none'; }
+async function findFace(){
+try{
+let preds=await blaze.estimateFaces(video,false);
+if(preds.length>0){ let p=preds[0]; tempFace={x:p.topLeft[0], y:p.topLeft[1], w:p.bottomRight[0]-p.topLeft[0], h:p.bottomRight[1]-p.topLeft[1], prob:p.probability[0]}; document.getElementById('msg').innerText=`✅ Face ${Math.round(tempFace.prob*100)}% captured! Type name`; document.getElementById('msg').style.color='#0f8'; } else { document.getElementById('msg').innerText='No face - come closer'; setTimeout(findFace,600); }
+}catch{ setTimeout(findFace,600); }
 }
-function stopAlarm(){ alarmActive=false; alarmOverlay.style.display='none'; document.getElementById('alarmStatus').innerText='🛡️ SAFE'; document.getElementById('alarmStatus').style.color=''; document.getElementById('alarmStatus').style.background=''; try{ sirenAudio.pause(); }catch{} if(navigator.vibrate) navigator.vibrate(0); statusEl.style.background='#0ff'; statusEl.style.color='#000'; statusEl.innerText='✅ Safe mode'; setTimeout(()=>statusEl.style.display='none',2000); if(recing){ toggleRec(); } speak("Alarm stopped, safe"); logMsg('🛑 Alarm stopped'); }
-function testAlarm(){ triggerAlarm('TEST'); setTimeout(stopAlarm,3000); }
+function saveFace(){
+let n=document.getElementById('faceName').value.trim(); if(!n||!tempFace) { alert('Wait for face'); return; }
+knownFaces.push({name:n, face:tempFace}); localStorage.setItem('wanalab_faces_v7', JSON.stringify(knownFaces)); updateList(); closeM(); document.getElementById('faceName').value=''; speak(`Face ${n} saved`); statusEl.style.display='block'; statusEl.innerText=`✅ ${n} saved`; setTimeout(()=>statusEl.style.display='none',2000);
+}
 
-async function detectLoop(){
-if(detecting){ requestAnimationFrame(detectLoop); return; } detecting=true;
+function triggerAlarm(){
+if(!document.getElementById('alarmCheck').checked||alarm) return;
+alarm=true; overlay.style.display='block'; document.getElementById('alarmStat').innerText='INTRUDER!'; document.getElementById('alarmStat').style.color='#f00';
+try{ sirenEl.currentTime=0; sirenEl.play(); }catch{} if(navigator.vibrate) navigator.vibrate([500,200,500]);
+speak('Intruder alert, unknown person'); statusEl.style.display='block'; statusEl.innerText='🚨 INTRUDER!'; statusEl.style.background='#f00'; statusEl.style.color='#fff'; capPhoto(); if(!recing) toggleRec();
+}
+function stopAlarm(){ alarm=false; overlay.style.display='none'; document.getElementById('alarmStat').innerText='SAFE'; document.getElementById('alarmStat').style.color=''; try{ sirenEl.pause(); }catch{} if(navigator.vibrate) navigator.vibrate(0); statusEl.style.background='#0ff'; statusEl.style.color='#000'; statusEl.innerText='Safe'; setTimeout(()=>statusEl.style.display='none',1500); }
+function testAlarm(){ triggerAlarm(); setTimeout(stopAlarm,3500); }
+
+async function loop(){
 try{
 let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
-if(cocoModel){ let preds=await cocoModel.detect(video); aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); let counts={}; preds.forEach(p=>{ if(p.score<0.5) return; counts[p.class]=(counts[p.class]||0)+1; let [x,y,w,h]=p.bbox; aiCtx.strokeStyle='#0f8'; aiCtx.lineWidth=2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy); }); let html=''; for(let k in counts) html+=`${k}:${counts[k]} `; document.getElementById('countList').innerText=html||'none'; }
-if(faceOn){
-let dets=await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({inputSize:224, scoreThreshold:0.5})).withFaceLandmarks().withFaceDescriptors();
-faceCtx.clearRect(0,0,faceCanvas.width,faceCanvas.height);
-dets.forEach(det=>{
-let box=det.detection.box; let best={name:'UNKNOWN', dist:1};
-knownFaces.forEach(kf=>{ let d=faceapi.euclideanDistance(det.descriptor, new Float32Array(kf.descriptor)); if(d<best.dist){ best.dist=d; best.name=kf.name; } });
-let isKnown=best.dist<0.55; let label=isKnown?best.name:'UNKNOWN'; let color=isKnown?'#0ff':'#f00';
-if(!isKnown && knownFaces.length>0){ triggerAlarm(label); }
-faceCtx.strokeStyle=color; faceCtx.lineWidth=isKnown?2:4; faceCtx.strokeRect(box.x*sx,box.y*sy,box.width*sx,box.height*sy);
-faceCtx.fillStyle=color; faceCtx.fillRect(box.x*sx,box.y*sy-20, (label.length*7+40),20);
-faceCtx.fillStyle='#000'; faceCtx.font='bold 13px Arial'; faceCtx.fillText(`${label} ${Math.round((1-best.dist)*100)}%`,box.x*sx+4,box.y*sy-5);
-if(isKnown){ if(!lastSp[label]||Date.now()-lastSp[label]>10000){ speak(`Welcome ${label}`); lastSp[label]=Date.now(); } }
+if(coco){ let preds=await coco.detect(video); aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); let c={}; preds.forEach(p=>{ if(p.score<0.5) return; c[p.class]=(c[p.class]||0)+1; let [x,y,w,h]=p.bbox; aiCtx.strokeStyle='#0f8'; aiCtx.lineWidth=2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy); aiCtx.fillStyle='#0f8'; aiCtx.font='11px Arial'; aiCtx.fillText(p.class,x*sx,y*sy-2); }); let h=''; for(let k in c) h+=k+':'+c[k]+' '; document.getElementById('countList').innerText=h||'none'; }
+if(blaze){ let faces=await blaze.estimateFaces(video,false); faceCtx.clearRect(0,0,faceCanvas.width,faceCanvas.height);
+let found=false;
+faces.forEach(f=>{ let x=f.topLeft[0]*sx, y=f.topLeft[1]*sy, w=(f.bottomRight[0]-f.topLeft[0])*sx, h=(f.bottomRight[1]-f.topLeft[1])*sy;
+let label='UNKNOWN'; let color='#f00'; if(knownFaces.length>0){ label=knownFaces[0].name; color='#0ff'; found=true; if(!lastSp[label]||Date.now()-lastSp[label]>8000){ speak('Welcome '+label); lastSp[label]=Date.now(); } }
+else { if(knownFaces.length==0) { label='NO FAMILY'; color='#ff0'; } else { triggerAlarm(); } }
+faceCtx.strokeStyle=color; faceCtx.lineWidth=3; faceCtx.strokeRect(x,y,w,h); faceCtx.fillStyle=color; faceCtx.fillRect(x,y-18,w,18); faceCtx.fillStyle='#000'; faceCtx.font='bold 12px Arial'; faceCtx.fillText(label+' '+Math.round(f.probability[0]*100)+'%',x+2,y-4);
 });
-if(dets.length) document.getElementById('aiStatus').innerText=`${dets.length} face(s) ${alarmActive?'🚨':'✅'}`;
+if(faces.length>0 && knownFaces.length==0 && !alarm){ document.getElementById('aiStatus').innerText='Add your face first!'; }
 }
 }catch(e){}
-detecting=false; requestAnimationFrame(detectLoop);
+requestAnimationFrame(loop);
 }
-function capPhoto(){ let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); ct.drawImage(faceCanvas,0,0,c.width,c.height); ct.fillStyle='rgba(255,0,0,0.8)'; if(alarmActive){ ct.fillRect(0,0,c.width,30); ct.fillStyle='#fff'; ct.font='bold 14px Arial'; ct.fillText(`🚨 INTRUDER EVIDENCE ${new Date().toLocaleString()}`,10,20); } let a=document.createElement('a'); a.download=`INTRUDER-${Date.now()}.png`; a.href=c.toDataURL(); a.click(); }
-function toggleRec(){ if(!recing){ recing=true; chunks=[]; let rc=document.createElement('canvas'); rc.width=video.videoWidth; rc.height=video.videoHeight; let rctx=rc.getContext('2d'); let rs=rc.captureStream(30); if(stream.getAudioTracks().length) rs.addTrack(stream.getAudioTracks()[0]); function draw(){ if(!recing) return; rctx.filter=video.style.filter; rctx.drawImage(video,0,0,rc.width,rc.height); rctx.drawImage(aiCanvas,0,0,rc.width,rc.height); rctx.drawImage(faceCanvas,0,0,rc.width,rc.height); requestAnimationFrame(draw); } draw(); rec=new MediaRecorder(rs,{mimeType:'video/webm'}); rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); }; rec.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); let a=document.createElement('a'); a.href=u; a.download=`INTRUDER-VIDEO-${Date.now()}.webm`; a.click(); }; rec.start(); document.getElementById('recBtn').innerText='■ STOP'; }else{ rec.stop(); recing=false; document.getElementById('recBtn').innerText='● REC'; } }
-
+function capPhoto(){ let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); ct.drawImage(faceCanvas,0,0,c.width,c.height); let a=document.createElement('a'); a.download=`WanaLab-${Date.now()}.png`; a.href=c.toDataURL(); a.click(); }
+function toggleRec(){ if(!recing){ recing=true; chunks=[]; let rc=document.createElement('canvas'); rc.width=video.videoWidth; rc.height=video.videoHeight; let rctx=rc.getContext('2d'); let rs=rc.captureStream(30); if(stream.getAudioTracks().length) rs.addTrack(stream.getAudioTracks()[0]); function d(){ if(!recing) return; rctx.filter=video.style.filter; rctx.drawImage(video,0,0,rc.width,rc.height); rctx.drawImage(aiCanvas,0,0,rc.width,rc.height); rctx.drawImage(faceCanvas,0,0,rc.width,rc.height); requestAnimationFrame(d); } d(); rec=new MediaRecorder(rs,{mimeType:'video/webm'}); rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); }; rec.onstop=()=>{ let b=new Blob(chunks,{type:'video/webm'}); let u=URL.createObjectURL(b); let a=document.createElement('a'); a.href=u; a.download=`VIDEO-${Date.now()}.webm`; a.click(); }; rec.start(); document.getElementById('recBtn').innerText='■ STOP'; } else { rec.stop(); recing=false; document.getElementById('recBtn').innerText='● REC'; } }
 document.getElementById('zoomSlider').addEventListener('input', async e=>{ let z=parseFloat(e.target.value); document.getElementById('zoomVal').innerText=z.toFixed(1)+'x'; if(track&&zoomCaps){ try{ await track.applyConstraints({advanced:[{zoom:z}]}); }catch{ video.style.transform=`scale(${z})`; } } else video.style.transform=`scale(${z})`; });
 window.addEventListener('load', init);
 </script>
