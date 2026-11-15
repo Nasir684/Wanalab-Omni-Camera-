@@ -1,0 +1,17 @@
+{
+  "version": "God Eye v1.0",
+  "brand": "WanaLab",
+  "founder": "Nasir Khan",
+  "email": "Nasir@wanalab.org",
+  "total_protocols": 24,
+  "last_updated": "2026-11-15",
+  "description": "1 Repo Working Protocols - Offline Core + Online Universe - Same repo loads",
+  "files": [
+    "microscopes.json",
+    "telescopes.json",
+    "thermal.json",
+    "endoscopes.json",
+    "ip-cameras.json",
+    "custom.json"
+  ]
+}
