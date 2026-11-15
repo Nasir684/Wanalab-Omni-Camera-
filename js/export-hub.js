@@ -1,33 +1,37 @@
-// WanaLab God Eye v1.0 - Export Hub - Global
+// WanaLab God Eye Export Hub PRO v1.1 - All offline - Founder Nasir Khan
 window.exportHub = {
   exportTXT(text){
-    const blob = new Blob([text || 'WanaLab God Eye v1.0 - Export\nFounder Nasir Khan - Nasir@wanalab.org'], {type:'text/plain'});
-    this.download(blob, `GodEye-${Date.now()}.txt`);
+    const blob = new Blob([text], {type:'text/plain'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `GodEye-${Date.now()}.txt`; a.click();
+  },
+  exportJSON(obj){
+    const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `GodEye-${Date.now()}.json`; a.click();
   },
   exportPDF(text){
-    // Simple text to PDF via data url (offline)
-    const content = text || 'WanaLab God Eye v1.0 Global\nFounder Nasir Khan\nNasir@wanalab.org';
-    const blob = new Blob([content], {type:'application/pdf'});
-    this.download(blob, `GodEye-${Date.now()}.pdf`);
-    alert('PDF exported (simple offline PDF). For Pro DOCX/JSON/MP3 use export page.');
-  },
-  exportJSON(data){
-    const blob = new Blob([JSON.stringify(data||{app:"God Eye v1.0", founder:"Nasir Khan", modes:10, protocols: window.protocolUniverse?window.protocolUniverse.getAll().length:0}, null, 2)], {type:'application/json'});
-    this.download(blob, `GodEye-${Date.now()}.json`);
+    // Simple offline PDF using window print trick
+    const w = window.open('', '_blank');
+    w.document.write(`<pre style="font-family:monospace;white-space:pre-wrap">${text.replace(/</g,'&lt;')}\n\n---\nWanaLab God Eye v1.0 PRO\nFounder Nasir Khan</pre>`);
+    w.document.close(); w.print();
   },
   exportMP3(text){
+    // Offline TTS to audio file (uses Web Speech API)
     if('speechSynthesis' in window){
-      const u = new SpeechSynthesisUtterance(text || 'WanaLab God Eye v1.0 Global export to audio');
+      const u = new SpeechSynthesisUtterance(text.slice(0,500));
       speechSynthesis.speak(u);
-      alert('MP3 Audio: Playing via TTS. Pro will export MP4/MP3 file offline.');
-    } else {
-      alert('Audio export needs browser TTS support');
-    }
+      alert('MP3 Pro: Playing audio now (browser TTS). Real MP3 file export in Pro v1.2 with MediaRecorder');
+    } else { alert('TTS not supported'); }
   },
-  download(blob, name){
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name; a.click();
-    URL.revokeObjectURL(url);
+  capturePhoto(){
+    const video = document.getElementById('camera');
+    const canvas = document.getElementById('canvas');
+    if(!video || !canvas) return;
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d'); ctx.drawImage(video,0,0);
+    const link = document.createElement('a');
+    link.download = `GodEye-Photo-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png'); link.click();
   }
 };
