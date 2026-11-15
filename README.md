@@ -1,66 +1,51 @@
+👁️ WanaLab God Eye v1.1 PRO - Omni Camera OS
+Founder: Nasir Khan | Wana, South Waziristan, Pakistan
 
-### How Protocol Universe Works (1 Repo)
-1. **Offline:** Core 10 modes + generic UVC driver works without internet + cached protocols from localStorage
-2. **Online:** `protocol-universe.js` fetches `protocols/index.json` → loads all `protocols/*.json` from same repo → 24+ protocols active → cached for offline next time
-3. **Community:** Anyone adds device to `protocols/custom.json` or new file via GitHub PR → Auto available to all users worldwide next time online
+> World's first *Offline-First Universal Camera OS* - 10 Modes, 24+ Protocols, Thermal, Night God, RTSP, AI - Runs 100% in browser, no install.
 
-**No second repo needed. Same repo = app + universe.**
+*🔴 LIVE DEMO:* https://nasir684.github.io/Wanalab-Omni-Camera-/
 
----
+🚀 Features v1.1 PRO
+- 🔬 *Microscope:* UVC 1000x, WiFi 50x-1000x, 4K support
+- 🌙 *Night God:* Real 10-Frame HDR Fusion (10x light)
+- 🔥 *Thermal:* FLIR SDK Mock + 4 palettes (Iron, Rainbow, WhiteHot, BlackHot)
+- 📡 *IP Camera:* RTSP / ONVIF / WiFi Microscope player
+- 🔭 *Telephoto:* 100x zoom, stabilization
+- 🦠 *AI Detection:* Offline TFJS Lite - Particle/Bacteria counter
+- 💾 *Export Hub:* PNG, TXT, JSON, PDF (offline), TTS Audio
+- 📴 *100% Offline PWA:* Works without internet after first load
 
-## 🔧 Deploy in 1 Click
+📱 10 God Modes
+Micro | Macro | Tele | Wide | Night | Thermal | Endoscope | IP Cam | Lab | AI Lab
 
-**Vercel (Recommended):**
-1. Push this repo to `wanalab/wana-omni-camera`
-2. Vercel.com → Add New Project → Import GitHub repo
-3. Framework: Other → Build command: none → Output: . → Deploy
-4. Live in 30 sec
+🛠️ How to Use
+1. Open Live Demo on Android Chrome
+2. Allow Camera
+3. Tap modes at top
+4. Bottom bar: NIGHT GOD / AI DETECT / THERMAL / IP CAM / CAPTURE
+5. Export from /export.html
 
-**Cloudflare Pages:** Same flow.
+📂 Structure
+- js/god-fusion-engine.js (Core - FIXED)
+- js/protocol-universe.js
+- js/flir-sdk.js (Thermal)
+- js/rtsp-player.js (IP Cam)
+- js/night-hdr-fusion.js (10-Frame)
+- js/ai-detection.js (TFJS)
 
-**Local:** `python -m http.server 8000` → open `http://localhost:8000`
+🌍 Why WanaLab?
+Built in Wana for global labs, field workers, farmers, doctors - where internet fails, God Eye works.
 
----
+📄 License
+MIT - Open for Pakistan & Global
 
-## 💰 Pricing - Global
+🔜 v1.2 Roadmap
+- Real TFJS coco-ssd + custom microscope model
+- go2rtc WebRTC RTSP
+- 4K MP4 MediaRecorder
+- DOCX real export
 
-- **Free $0 Forever:** All 10 modes, USB devices, Export TXT/PDF/PNG, Protocol universe, Offline
-- **Pro $19 Lifetime (one-time):** Thermal fusion, SuperRes unlimited, DOCX/JSON/MP3/OBJ/MP4, Remove footer, Commercial license
-- **Enterprise:** White label + On-premise → Email Nasir@wanalab.org
-
-**Pay:** GitHub Sponsors / Wise / Contact email
-
-**Ads:** Ethical only, online only, never on camera viewfinder, never offline. Only on export/devices pages. Microscope/telescope affiliates.
-
----
-
-## 🔍 Keywords - SEO - Why Users Will Find You
-
-**Full list in `keywords.json` and `index.html` meta - 300+ keywords:**
-Book scanner, microscope 1000x, usb microscope, telescope app, night vision, thermal camera flir, 3D measure, live translate, safety detector, usb endoscope, otoscope, ip camera rtsp, drone camera, phone lab, STEM app, offline OCR, super resolution, etc.
-
-Search "usb microscope app android", "book scanner offline", "phone telescope", "thermal app flir" → You.
-
----
-
-## 🤝 Contribute Protocol (Add Your Device)
-
-1. Fork repo
-2. Edit `protocols/custom.json` or create `protocols/my-device.json`
-3. Add: `{ "id": "my-device", "name": "My Device", "type": "UVC", "vendorIds": [1234], "mode": "micro" }`
-4. Add file name to `protocols/index.json` → `files` array
-5. PR → Merged → Auto loaded for all users worldwide when online
-
-**Contact:** Nasir@wanalab.org | Subject: God Eye Protocol
+*Contact:* Nasir@wanalab.org | GitHub: @Nasir684
 
 ---
-
-## 📄 License
-
-Free for personal use with WanaLab footer. Pro $19 Lifetime removes footer + commercial license.
-
-© WanaLab | Wana-Omni-Camera | God Eye v1.0 | Global | Founder Nasir Khan | Nasir@wanalab.org | Offline First, Global Scale
-
----
-
-**Version:** God Eye v1.0 | Build: 2026.11.15 FINAL | 1 Repo | 24 Protocols | Offline + Online Universe | Global
+⭐ Star this repo if you are from Wana / Waziristan / Pakistan - Let's show our tech!
