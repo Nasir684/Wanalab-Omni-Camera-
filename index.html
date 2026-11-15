@@ -3,97 +3,144 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v6.2 CLEAN FIX</title>
+<title>WanaLab v7 VOICE COMMAND GOD</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
-#godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#111}
+#godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.8);color:#0f8;padding:6px 10px;display:flex;justify-content:space-between;font-size:11px}
-#badge{position:fixed;top:36px;left:50%;transform:translateX(-50%);z-index:11;background:#0f8;color:#000;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:11px}
-#info{position:fixed;bottom:65px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.8);color:#fff;padding:8px 10px;border-radius:12px;font-size:11px;border:1px solid #0f8}
-#controls{position:fixed;bottom:6px;left:4px;right:4px;display:flex;gap:4px;z-index:10}
-#controls button{flex:1;padding:12px 2px;border:none;border-radius:10px;font-weight:bold;font-size:8px}
+#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.85);color:#0f8;padding:6px 10px;display:flex;justify-content:space-between;font-size:10px}
+#voiceBadge{position:fixed;top:38px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:7px 16px;border-radius:20px;font-weight:bold;font-size:11px;transition:all 0.3s}
+#voiceBadge.listening{background:#0f8;color:#000;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.08)}}
+#transcript{position:fixed;top:70px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.85);color:#ff0;padding:8px 10px;border-radius:10px;font-size:11px;display:none;border:1px solid #ff0;text-align:center}
+#info{position:fixed;bottom:70px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.85);color:#fff;padding:8px 10px;border-radius:12px;font-size:10px;border:1px solid #0f8}
+#controls{position:fixed;bottom:6px;left:4px;right:4px;display:flex;gap:3px;z-index:10}
+#controls button{flex:1;padding:12px 2px;border:none;border-radius:10px;font-weight:bold;font-size:7px}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
-<div id="top"><span>♾️ v6.2 CLEAN FIX</span><span id="stat">Starting camera...</span><span id="ver">FIXED v5 BUG</span></div>
-<div id="badge">🧠 AUTO - NO MODES</div>
-<div id="info"><div id="see" style="color:#0f8;font-weight:bold">Starting...</div><div id="do" style="font-size:9px;color:#ccc;margin-top:3px">Clean auto - no mode chips</div></div>
-<div id="controls">
-<button onclick="toggleTorch()" style="background:#ff0;color:#000">🔦 TORCH</button>
-<button onclick="location.reload(true)" style="background:#f80;color:#000">🔄 RELOAD</button>
-<button onclick="clearCache()" style="background:#f00;color:#fff">🗑️ CLEAR v5</button>
-<button onclick="cap()" style="background:#fff;color:#000">📸 CAP</button>
+
+<div id="top"><span>🎤 v7 VOICE GOD</span><span id="stat">Loading...</span><span id="voiceStat">🎤 OFF</span></div>
+<div id="voiceBadge">🎤 TAP TO SPEAK</div>
+<div id="transcript"></div>
+<div id="info">
+<div id="see" style="color:#0f8;font-weight:bold">Say: Torch on, Capture, What do you see?</div>
+<div id="do" style="font-size:8px;color:#ccc;margin-top:3px">Voice commands active - camera obeys you</div>
+<div style="font-size:7px;color:#aaa;margin-top:4px">Commands: torch on/off, night on/off, capture, zoom in/out, read book, what is this, export, clear, help</div>
 </div>
+
+<div id="controls">
+<button onclick="toggleVoice()" id="voiceBtn" style="background:#f00;color:#fff">🎤 START VOICE</button>
+<button onclick="toggleTorch()" id="torchBtn" style="background:#ff0;color:#000">🔦 TORCH</button>
+<button onclick="cap()" style="background:#fff;color:#000">📸 CAP</button>
+<button onclick="speakWhatISee()" style="background:#0f8;color:#000">🔊 WHAT I SEE?</button>
+</div>
+
 <script>
-let stream=null,track=null,isTorch=false,coco=null,detecting=false,currentMode='';
+let stream=null,track=null,isTorch=false,coco=null,detecting=false,recognition=null,isListening=false,lastSeen='';
 const video=document.getElementById('godVideo');
 const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
+
 async function init(){
-// 1. CAMERA FIRST - Show immediately, don't wait for AI
 try{
-stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:false});
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:true});
 video.srcObject=stream; track=stream.getVideoTracks()[0];
 await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
-document.getElementById('stat').innerText='Camera OK, loading AI...';
-document.getElementById('see').innerText='📷 Camera active - AI loading in background...';
-// 2. LOAD AI AFTER camera is visible
+document.getElementById('stat').innerText='Camera OK';
 coco=await cocoSsd.load({base:'lite_mobilenet_v2'});
-document.getElementById('stat').innerText='AI READY'; document.getElementById('see').innerText='♾️ AUTO GOD READY - Point at anything';
-document.getElementById('badge').innerText='✅ CLEAN AUTO READY';
-setTimeout(()=>document.getElementById('stat').innerText='CLEAN AUTO',2000);
+document.getElementById('stat').innerText='VOICE READY';
+document.getElementById('see').innerText='✅ Voice God Ready - Tap 🎤 START VOICE then say "Torch on" or "Capture"';
+initVoice();
 loop();
-}catch(e){ document.getElementById('stat').innerText='Error: '+e.message; document.getElementById('see').innerText='Error: '+e.message+' - Tap RELOAD'; }
+}catch(e){ document.getElementById('stat').innerText='Error: '+e.message; }
 }
-async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{ alert('Torch not supported'); } }
-function clearCache(){
-if('caches' in window){ caches.keys().then(k=>k.forEach(n=>caches.delete(n))); }
-localStorage.clear(); sessionStorage.clear();
-alert('v5 cache cleared! Now hard reload: Hold refresh button or close tab and open again in private/incognito tab: nasir684.github.io/W');
-location.reload(true);
+
+function initVoice(){
+let SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SpeechRec){ document.getElementById('voiceStat').innerText='🎤 Not supported'; return; }
+recognition=new SpeechRec();
+recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-US';
+recognition.onstart=()=>{ isListening=true; document.getElementById('voiceBadge').classList.add('listening'); document.getElementById('voiceBadge').innerText='🎤 LISTENING...'; document.getElementById('voiceStat').innerText='🎤 ON'; document.getElementById('voiceBtn').innerText='🎤 STOP VOICE'; document.getElementById('voiceBtn').style.background='#0f8'; document.getElementById('voiceBtn').style.color='#000'; };
+recognition.onend=()=>{ if(isListening){ try{ recognition.start(); }catch{} } };
+recognition.onresult=(event)=>{
+let transcript=''; for(let i=event.resultIndex;i<event.results.length;i++){ transcript+=event.results[i][0].transcript; }
+let final=transcript.toLowerCase().trim();
+document.getElementById('transcript').style.display='block'; document.getElementById('transcript').innerText=`🎤 You said: "${final}"`;
+if(event.results[event.results.length-1].isFinal){
+handleVoiceCommand(final);
+setTimeout(()=>{ document.getElementById('transcript').style.display='none'; },3000);
 }
+};
+recognition.onerror=(e)=>{ document.getElementById('voiceBadge').innerText='🎤 ERROR - Tap again'; };
+}
+
+function toggleVoice(){
+if(!recognition){ alert('Voice not supported - use Chrome browser'); return; }
+if(isListening){ isListening=false; recognition.stop(); document.getElementById('voiceBadge').classList.remove('listening'); document.getElementById('voiceBadge').innerText='🎤 TAP TO SPEAK'; document.getElementById('voiceStat').innerText='🎤 OFF'; document.getElementById('voiceBtn').innerText='🎤 START VOICE'; document.getElementById('voiceBtn').style.background='#f00'; document.getElementById('voiceBtn').style.color='#fff'; }
+else { isListening=true; try{ recognition.start(); }catch(e){ setTimeout(()=>{ try{ recognition.start(); }catch{} },500); } }
+}
+
+function handleVoiceCommand(cmd){
+console.log('Command:',cmd);
+if(cmd.includes('torch on')||cmd.includes('light on')||cmd.includes('flash on')){ setTorch(true); speak('Torch on'); }
+else if(cmd.includes('torch off')||cmd.includes('light off')||cmd.includes('flash off')){ setTorch(false); speak('Torch off'); }
+else if(cmd.includes('capture')||cmd.includes('photo')||cmd.includes('take picture')||cmd.includes('cheese')){ cap(); speak('Captured'); }
+else if(cmd.includes('what do you see')||cmd.includes('what is this')||cmd.includes('what you see')||cmd.includes('identify')){ speakWhatISee(); }
+else if(cmd.includes('night on')||cmd.includes('dark mode')){ setNight(true); speak('Night mode on'); }
+else if(cmd.includes('night off')||cmd.includes('day mode')){ setNight(false); speak('Night mode off'); }
+else if(cmd.includes('zoom in')){ setZoom(2); speak('Zoomed in'); }
+else if(cmd.includes('zoom out')||cmd.includes('zoom normal')){ setZoom(1); speak('Zoomed out'); }
+else if(cmd.includes('read')||cmd.includes('book')){ speak('Reading book - use OCR feature'); document.getElementById('see').innerText='📚 Book mode - point at book'; }
+else if(cmd.includes('export')||cmd.includes('pdf')){ exportPDF(); speak('Exporting PDF'); }
+else if(cmd.includes('clear')||cmd.includes('clean')){ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); speak('Cleared'); }
+else if(cmd.includes('help')||cmd.includes('commands')){ speak('Commands: Torch on off, Capture photo, What do you see, Night on off, Zoom in out, Export'); document.getElementById('do').innerText='Commands: Torch on/off, Capture, What do you see, Night on/off, Zoom in/out'; }
+else if(cmd.includes('hello')||cmd.includes('salam')){ speak('Hello! I am WanaLab Voice God, how can I help?'); }
+else { document.getElementById('do').innerText=`Heard: "${cmd}" - Try: Torch on, Capture, What do you see?`; }
+}
+
+async function setTorch(on){ try{ isTorch=on; await track.applyConstraints({advanced:[{torch:on}]}); document.getElementById('torchBtn').style.background=on?'#0f8':'#ff0'; }catch{} }
+function setNight(on){ video.style.filter=on?'brightness(2.2) contrast(1.4)':''; }
+function setZoom(z){ video.style.transform=`scale(${z})`; }
+function speak(t){ speechSynthesis.cancel(); let u=new SpeechSynthesisUtterance(t.substring(0,150)); u.rate=0.95; speechSynthesis.speak(u); document.getElementById('do').innerText=`🔊 Speaking: ${t.substring(0,60)}...`; }
+
 async function loop(){
 if(detecting){ requestAnimationFrame(loop); return; } detecting=true;
 try{
 let preds=await coco.detect(video, 15, 0.4);
 aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-let lines=[], mode='';
+let lines=[];
 for(let p of preds){
 let [x,y,w,h]=p.bbox; let cls=p.class; let label=cls, color='#0ff', conf=p.score;
-// AUTO FIX NO TYPING - All protocols in code, no chips on screen
-if(['toilet','sink'].includes(cls)){ label='🔌 Power Board'; color='#0f8'; mode='electronics'; conf=0.92; }
-else if(cls==='cell phone'){ label='🔌 Charger'; color='#ff0'; mode='electronics'; }
-else if(cls==='book'){ label='📚 Book'; color='#a0f'; mode='book'; }
-else if(cls==='potted plant' || cls==='vase'){ label='🌿 Plant'; color='#0f8'; mode='plant'; }
-else if(cls==='bowl'){ label='🍽️ Plate'; color='#0ff'; mode='kitchen'; }
-else if(cls==='cup'){ label='☕ Cup'; color='#fa0'; mode='kitchen'; }
+if(['toilet','sink'].includes(cls)){ label='🔌 Power Board'; color='#0f8'; conf=0.92; }
+else if(cls==='cell phone'){ label='🔌 Charger'; color='#ff0'; }
+else if(cls==='book'){ label='📚 Book'; color='#a0f'; }
+else if(cls==='potted plant'){ label='🌿 Plant'; color='#0f8'; }
+else if(cls==='bowl'){ label='🍽️ Plate'; color='#0ff'; }
+else if(cls==='cup'){ label='☕ Cup'; color='#fa0'; }
 let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
 aiCtx.strokeStyle=color; aiCtx.lineWidth=3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
 aiCtx.fillStyle=color; aiCtx.fillRect(x*sx,y*sy-18,w*sx,18);
 aiCtx.fillStyle='#000'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`${label} ${Math.round(conf*100)}%`,x*sx+3,y*sy-3);
 lines.push(`${label} ${Math.round(conf*100)}%`);
 }
-if(lines.length>0){
-document.getElementById('see').innerText=lines.join(' • ');
-document.getElementById('badge').innerText=`🧠 ${lines[0].toUpperCase()}`;
-document.getElementById('do').innerText=`Auto mode: ${mode} - No chips, AI auto converts. Tap CAP to save`;
-} else {
-document.getElementById('see').innerText='Point at power board / cup / book / plant - Auto identifies, no modes shown';
-document.getElementById('badge').innerText='🧠 AUTO SCANNING';
-}
+if(lines.length>0){ lastSeen=lines.join(', '); document.getElementById('see').innerText=lastSeen; document.getElementById('voiceBadge').innerText=`🧠 ${lines[0]}`; }
 }catch(e){}
 detecting=false; requestAnimationFrame(loop);
 }
+function speakWhatISee(){ if(lastSeen){ speak(`I see ${lastSeen}`); document.getElementById('transcript').style.display='block'; document.getElementById('transcript').innerText=`🔊 I see: ${lastSeen}`; setTimeout(()=>document.getElementById('transcript').style.display='none',4000); } else { speak('I see nothing yet, point camera at object'); } }
+function toggleTorch(){ setTorch(!isTorch); speak(isTorch?'Torch on':'Torch off'); }
 function cap(){
 let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height);
-ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-26,c.width,26); ct.fillStyle='#0f8'; ct.font='10px Arial'; ct.fillText(`CLEAN AUTO FIX: ${document.getElementById('see').innerText} ${new Date().toLocaleString()}`,8,c.height-8);
-let a=document.createElement('a'); a.download=`CLEAN-FIX-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
+ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-26,c.width,26); ct.fillStyle='#0f8'; ct.font='10px Arial'; ct.fillText(`VOICE GOD: ${lastSeen} ${new Date().toLocaleString()}`,8,c.height-8);
+let a=document.createElement('a'); a.download=`VOICE-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
+document.getElementById('do').innerText='📸 Captured by voice command!';
 }
+function exportPDF(){ document.getElementById('do').innerText='📄 Exporting - feature coming in v7.1'; }
 window.addEventListener('load', init);
 </script>
 </body>
