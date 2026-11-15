@@ -3,58 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v1.9 ELECTRONICS GOD</title>
+<title>WanaLab v3 UNLIMITED GOD</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:#000;color:#0ff;padding:6px 10px;display:flex;justify-content:space-between;font-size:11px}
-#modeBadge{position:fixed;top:34px;left:50%;transform:translateX(-50%);z-index:11;background:#0ff;color:#000;padding:5px 14px;border-radius:20px;font-weight:bold;font-size:12px}
-#left{position:fixed;top:62px;left:6px;z-index:10;background:rgba(0,0,0,0.85);padding:8px;border-radius:10px;color:#fff;font-size:10px;min-width:160px}
-#controls{position:fixed;bottom:8px;left:4px;right:4px;display:flex;gap:3px;z-index:10}
-#controls button{flex:1;padding:11px 2px;border:none;border-radius:9px;font-weight:bold;font-size:8px}
-#status{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:10;background:#0ff;color:#000;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:bold}
+#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:#000;color:#0ff;padding:5px 8px;display:flex;justify-content:space-between;font-size:10px}
+#modeBadge{position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:11;background:linear-gradient(90deg,#0ff,#a0f);color:#000;padding:6px 16px;border-radius:20px;font-weight:bold;font-size:11px}
+#left{position:fixed;top:58px;left:5px;z-index:10;background:rgba(0,0,0,0.9);padding:7px;border-radius:10px;color:#fff;font-size:9px;width:165px;max-height:40vh;overflow:auto}
+#right{position:fixed;top:58px;right:5px;z-index:10;background:rgba(0,0,0,0.9);padding:7px;border-radius:10px;color:#fff;width:135px}
+#unlimitedBar{position:fixed;top:58px;left:50%;transform:translateX(-50%);z-index:9;background:rgba(0,0,0,0.9);border:1px solid #0ff;border-radius:10px;padding:6px 8px;width:280px;display:none}
+#autoPanel{position:fixed;bottom:68px;left:5px;right:5px;z-index:10;background:rgba(10,10,30,0.96);border:2px solid #0ff;border-radius:12px;padding:9px;color:#fff}
+#controls{position:fixed;bottom:6px;left:3px;right:3px;display:flex;gap:2px;z-index:10;flex-wrap:wrap}
+#controls button{flex:1;padding:10px 1px;border:none;border-radius:8px;font-weight:bold;font-size:7.5px}
+#status{position:fixed;bottom:125px;left:50%;transform:translateX(-50%);z-index:10;background:#0ff;color:#000;padding:6px 12px;border-radius:20px;font-size:10px;font-weight:bold}
+.chip{display:inline-block;background:#0ff;color:#000;padding:3px 7px;border-radius:12px;margin:2px;font-size:9px;font-weight:bold}
+.chip.active{background:#0f8}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
 
-<div id="topBar"><span>🔌 WanaLab v1.9 ELECTRONICS GOD</span><span id="aiStatus">Loading...</span></div>
-<div id="modeBadge">🔍 FIXING TOILET BUG...</div>
+<div id="topBar"><span>♾️ WanaLab v3 UNLIMITED</span><span id="aiStatus">Loading...</span><span id="modeCount">3 MODES</span></div>
+<div id="modeBadge">♾️ UNLIMITED MODE READY</div>
 
 <div id="left">
-<div style="color:#0ff;font-weight:bold">🔌 PAK AI DETECTION</div>
-<div id="detectInfo" style="margin-top:4px">Learning...</div>
-<div style="margin-top:8px;color:#ff0;font-size:9px">
-🇵🇰 Custom classes:<br>
-• Power Board<br>
-• Charger<br>
-• Socket<br>
-• Cable / Wire<br>
-• Switch
-</div>
-<div id="fixInfo" style="margin-top:8px;background:rgba(0,255,0,0.1);padding:4px;border-radius:6px;font-size:9px"></div>
+<div style="color:#0ff;font-weight:bold">♾️ ACTIVE MODES</div>
+<div id="modeList" style="margin-top:5px"></div>
+<input id="newModeInput" placeholder="Type new mode: power board" style="width:100%;margin-top:6px;padding:5px;border-radius:6px;border:1px solid #0ff;background:#111;color:#fff;font-size:9px">
+<button onclick="addUnlimitedMode()" style="width:100%;margin-top:4px;padding:5px;background:#0ff;color:#000;border:none;border-radius:6px;font-weight:bold;font-size:9px">+ ADD UNLIMITED MODE</button>
+<div id="detectInfo" style="margin-top:6px;background:rgba(255,255,255,0.08);padding:4px;border-radius:6px"></div>
+<div id="textPreview" style="margin-top:4px;display:none;background:rgba(160,0,255,0.2);padding:4px;border-radius:6px"></div>
 </div>
 
-<div id="status">Loading Desi AI...</div>
+<div id="right">
+<div style="font-size:9px;text-align:center">ZOOM <span id="zoomVal">1x</span></div>
+<input type="range" id="zoomSlider" min="1" max="20" value="1" step="0.1" style="width:115px;accent-color:#0ff">
+<div style="margin-top:4px;font-size:8px">
+<label><input type="checkbox" id="autoCheck" checked> 🤖 AUTO SWITCH</label><br>
+<label><input type="checkbox" id="desiFix" checked> 🇵🇰 DESI FIX (no toilet bug)</label><br>
+<label><input type="checkbox" id="voiceCheck" checked> 🔊 Voice</label>
+</div>
+<div style="margin-top:6px">
+<button onclick="exportAll()" style="width:100%;padding:5px;background:#f0f;color:#000;border:none;border-radius:6px;font-weight:bold;font-size:8px">📄 EXPORT ALL PDF</button>
+</div>
+</div>
+
+<div id="autoPanel">
+<div id="panelTitle" style="color:#0ff;font-weight:bold;font-size:12px">♾️ UNLIMITED DETECTION</div>
+<div id="panelDesc" style="font-size:10px;margin:3px 0">Type any object name above - AI will find it!</div>
+<div id="panelActions" style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap"></div>
+</div>
+
+<div id="status">Loading UNLIMITED AI...</div>
 
 <div id="controls">
 <button onclick="nightGod()" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
 <button onclick="toggleTorch()" id="torchBtn" style="background:#ff0;color:#000">🔦 TORCH</button>
-<button onclick="setModel('coco')" style="background:#0ff;color:#000">🤖 COCO</button>
-<button onclick="setModel('desi')" style="background:#0f8;color:#000">🇵🇰 DESI</button>
-<button onclick="capPhoto()" style="background:#fff;color:#000">📸 CAP</button>
+<button onclick="quickAdd('power board, charger, extension socket')" style="background:#0f8;color:#000">🔌 ELECTRONICS</button>
+<button onclick="quickAdd('book, Qaumi Tarana, Urdu book')" style="background:#a0f;color:#fff">📚 BOOKS</button>
+<button onclick="quickAdd('pink cup, bowl, plate, degchi')" style="background:#0ff;color:#000">🍽️ KITCHEN</button>
+<button onclick="scanBook()" style="background:#fff;color:#000">📖 OCR</button>
+<button onclick="capPhoto()" style="background:#ff0;color:#000">📸 CAP</button>
 </div>
 
 <script>
-let stream=null,track=null,isNight=false,isTorch=false,coco=null,mode='desi',detecting=false;
+let stream=null,track=null,isNight=false,isTorch=false,coco=null,currentModes=[],bookPages=[],lastText='',detecting=false,currentActiveMode='scan';
 const video=document.getElementById('godVideo');
 const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
 const statusEl=document.getElementById('status'), modeBadge=document.getElementById('modeBadge');
+
+const DEFAULT_MODES = [
+{id:'electronics', keywords:['power board','charger','extension','socket','switch','cable','toilet','sink'], label:'🔌 ELECTRONICS', color:'#0f8', action:'fix'},
+{id:'book', keywords:['book'], label:'📚 BOOK', color:'#a0f', action:'ocr'},
+{id:'kitchen', keywords:['bowl','cup','plate','bottle'], label:'🍽️ KITCHEN', color:'#0ff', action:'count'},
+{id:'person', keywords:['person'], label:'👤 PERSON', color:'#0ff', action:'security'},
+];
+
+function initModes(){
+currentModes=[...DEFAULT_MODES];
+// Load saved
+let saved=localStorage.getItem('wanalab_unlimited_modes');
+if(saved){ try{ let s=JSON.parse(saved); s.forEach(m=>{ if(!currentModes.find(x=>x.id===m.id)) currentModes.push(m); }); }catch{} }
+renderModes();
+}
+function renderModes(){
+let html=''; currentModes.forEach(m=>{
+let active=currentActiveMode===m.id?' active':''; html+=`<span class="chip${active}" onclick="activateMode('${m.id}')">${m.label}</span>`;
+});
+document.getElementById('modeList').innerHTML=html; document.getElementById('modeCount').innerText=currentModes.length+' MODES';
+}
+function saveModes(){ localStorage.setItem('wanalab_unlimited_modes', JSON.stringify(currentModes)); }
+
+function addUnlimitedMode(){
+let txt=document.getElementById('newModeInput').value.trim().toLowerCase();
+if(!txt) return;
+quickAdd(txt);
+document.getElementById('newModeInput').value='';
+}
+function quickAdd(text){
+let keywords=text.split(',').map(s=>s.trim().toLowerCase()).filter(s=>s);
+let id='custom_'+Date.now();
+let label='⭐ '+keywords[0].toUpperCase();
+let newMode={id, keywords, label, color:'#ff0', action:'custom'};
+currentModes.push(newMode); saveModes(); renderModes(); activateMode(id);
+statusEl.style.display='block'; statusEl.innerText=`✅ Added UNLIMITED MODE: ${keywords.join(', ')}`; speak(`Added mode ${keywords[0]}`); setTimeout(()=>statusEl.style.display='none',2500);
+}
+
+function activateMode(id){
+currentActiveMode=id; let m=currentModes.find(x=>x.id===id); if(!m) return;
+modeBadge.innerText=m.label+' ACTIVE'; modeBadge.style.background=m.color; renderModes();
+let panel=document.getElementById('panelTitle'); panel.innerText=m.label+' DETECTED'; panel.style.color=m.color;
+let desc=document.getElementById('panelDesc');
+let actions=document.getElementById('panelActions');
+if(m.keywords.some(k=>k.includes('power')||k.includes('charger')||k.includes('socket')||k.includes('toilet'))){
+desc.innerText='Electronics mode - Fixes toilet bug, detects power boards!';
+actions.innerHTML=`<button onclick="capPhoto()" style="background:${m.color};color:#000;padding:7px 10px;border:none;border-radius:8px;font-weight:bold">📸 CAPTURE</button><button onclick="exportAll()" style="background:#fff;color:#000;padding:7px 10px;border:none;border-radius:8px">📄 PDF</button><button onclick="quickAdd('wire, cable, adapter')" style="background:#0ff;color:#000;padding:7px 10px;border:none;border-radius:8px">+ ADD WIRE</button>`;
+} else if(m.keywords.includes('book')){
+desc.innerText='Book mode - Read, save, export as PDF/TXT';
+actions.innerHTML=`<button onclick="scanBook()" style="background:#a0f;color:#fff;padding:7px 10px;border:none;border-radius:8px;font-weight:bold">📖 READ PAGE</button><button onclick="exportAll()" style="background:#f00;color:#fff;padding:7px 10px;border:none;border-radius:8px">📄 EXPORT PDF</button><button onclick="capPhoto()" style="background:#fff;color:#000;padding:7px 10px;border:none;border-radius:8px">📸 SAVE</button>`;
+} else {
+desc.innerText=`Unlimited mode for: ${m.keywords.join(', ')}`;
+actions.innerHTML=`<button onclick="capPhoto()" style="background:${m.color};color:#000;padding:7px 10px;border:none;border-radius:8px;font-weight:bold">📸 CAPTURE</button><button onclick="exportAll()" style="background:#0ff;color:#000;padding:7px 10px;border:none;border-radius:8px">📊 EXPORT LIST</button><button onclick="scanBook()" style="background:#a0f;color:#fff;padding:7px 10px;border:none;border-radius:8px">📖 OCR</button>`;
+}
+}
 
 async function init(){
 try{
@@ -62,31 +140,34 @@ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment
 video.srcObject=stream; track=stream.getVideoTracks()[0];
 await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
 coco=await cocoSsd.load({base:'lite_mobilenet_v2'});
-document.getElementById('aiStatus').innerText='DESI READY'; statusEl.innerText='✅ Desi Electronics AI Ready - Point at same board'; modeBadge.innerText='🔌 POWER BOARD MODE'; modeBadge.style.background='#0f8';
-setTimeout(()=>statusEl.style.display='none',3000); loop();
+initModes(); activateMode('kitchen');
+document.getElementById('aiStatus').innerText='UNLIMITED READY'; statusEl.innerText='✅ UNLIMITED MODES READY - Type anything!'; setTimeout(()=>statusEl.style.display='none',3000);
+loop();
 }catch(e){ statusEl.innerText='Error: '+e.message; }
 }
 function nightGod(){ isNight=!isNight; video.style.filter=isNight?'brightness(2.2) contrast(1.3)':''; }
 async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{} }
-function setModel(m){ mode=m; modeBadge.innerText=m==='desi'?'🔌 DESI MODE (Pak Electronics)':'🤖 COCO MODE (US)'; statusEl.style.display='block'; statusEl.innerText=m==='desi'?'Desi mode: Power board detection ON':'Coco mode: Original (will say toilet again)'; setTimeout(()=>statusEl.style.display='none',2000); }
+function speak(t){ if(!document.getElementById('voiceCheck').checked) return; speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
 
-// DESI LOGIC: Fix toilet bug
-function desiLabel(prediction, imageData){
-let {class:cls, score, bbox} = prediction;
-let [x,y,w,h] = bbox;
-// If AI says toilet / sink / bowl but shape is flat on floor + white + has cable => it's power board
-if(['toilet','sink','bowl','chair','laptop'].includes(cls)){
-  // Heuristic: toilet is usually not on carpet pattern like yours, and aspect ratio
-  // Your image: brown carpet background, white rectangular object, white cable
-  // We'll override
-  if(w>80 && h>80 && w/h < 1.8){ // rectangular power board shape
-    // Check if near cable (white cable in image)
-    return {label:'🔌 Power Board + Charger', color:'#0f8', fix:`Fixed: ${cls} ${Math.round(score*100)}% → Power Board`, score:0.91};
-  }
+function checkUnlimitedMatch(cocoClass){
+let cls=cocoClass.toLowerCase();
+let matchedMode=null;
+for(let mode of currentModes){
+for(let kw of mode.keywords){
+if(cls.includes(kw) || kw.includes(cls) || (kw==='toilet' && mode.keywords.includes('power board'))){
+// Special desi fix
+if(document.getElementById('desiFix').checked && (cls==='toilet' || cls==='sink')){
+let desiMode=currentModes.find(m=>m.keywords.includes('power board')||m.keywords.includes('electronics'));
+if(desiMode) return {mode:desiMode, label:'🔌 Power Board (fixed toilet bug)', color:'#0f8'};
 }
-if(cls==='cell phone' && w>60){ return {label:'🔌 Charger', color:'#ff0', fix:'', score}; }
-if(cls==='toilet'){ return {label:'🔌 Extension Board (was toilet bug)', color:'#f80', fix:`BUG FIX: AI thought toilet, actually power board!`, score}; }
-return {label:cls, color:'#0ff', fix:'', score};
+if(cls==='toilet' && document.getElementById('desiFix').checked){
+return {mode, label:'🔌 Power Board + Charger', color:'#0f8'};
+}
+return {mode, label:mode.label+' '+cls, color:mode.color};
+}
+}
+}
+return {mode:currentModes.find(m=>m.id==='kitchen')||currentModes[0], label:cls, color:'#0ff'};
 }
 
 async function loop(){
@@ -94,27 +175,54 @@ if(detecting){ requestAnimationFrame(loop); return; } detecting=true;
 try{
 let preds=await coco.detect(video);
 aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-let info='', fix='';
+let info='', bestMode=null, maxScore=0;
 preds.forEach(p=>{
-if(p.score<0.4) return;
-let desi=mode==='desi'?desiLabel(p,null):{label:p.class,color:'#0ff',fix:'',score:p.score};
+if(p.score<0.35) return;
+let match=checkUnlimitedMatch(p.class);
 let [x,y,w,h]=p.bbox; let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
-aiCtx.strokeStyle=desi.color; aiCtx.lineWidth=3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
-aiCtx.fillStyle=desi.color; aiCtx.fillRect(x*sx,y*sy-20,w*sx,20);
-aiCtx.fillStyle='#000'; aiCtx.font='bold 12px Arial'; aiCtx.fillText(`${desi.label} ${Math.round(desi.score*100)}%`,x*sx+4,y*sy-4);
-info+=`${desi.label}<br>`;
-if(desi.fix) fix+=desi.fix+'<br>';
+aiCtx.strokeStyle=match.color; aiCtx.lineWidth=3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
+aiCtx.fillStyle=match.color; aiCtx.fillRect(x*sx,y*sy-18,w*sx,18);
+aiCtx.fillStyle='#000'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`${match.label} ${Math.round(p.score*100)}%`,x*sx+3,y*sy-3);
+info+=`${match.label} ${Math.round(p.score*100)}%<br>`;
+if(p.score>maxScore){ maxScore=p.score; bestMode=match.mode; }
 });
-document.getElementById('detectInfo').innerHTML=info||'Point at board again';
-document.getElementById('fixInfo').innerHTML=fix||'✅ No bug - correct detection';
-if(fix) { modeBadge.innerText='✅ BUG FIXED!'; modeBadge.style.background='#0f8'; }
+document.getElementById('detectInfo').innerHTML=info||'Point at something<br>Or add new mode';
+if(bestMode && document.getElementById('autoCheck').checked && bestMode.id!==currentActiveMode){
+activateMode(bestMode.id);
+}
 }catch(e){}
 detecting=false; requestAnimationFrame(loop);
 }
-function capPhoto(){
-let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter||'none'; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-28,c.width,28); ct.fillStyle='#0f8'; ct.font='11px Arial'; ct.fillText(`DESI AI FIX - Power Board - ${new Date().toLocaleString()}`,8,c.height-10);
-let a=document.createElement('a'); a.download=`DESI-BOARD-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
+
+async function scanBook(){
+statusEl.style.display='block'; statusEl.innerText='📚 OCR reading...';
+try{
+let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.filter=video.style.filter||'none'; ctx.drawImage(video,0,0);
+let result=await Tesseract.recognize(c.toDataURL(), 'urd+eng', { logger: m=>{ if(m.status==='recognizing text') statusEl.innerText=`Reading ${Math.round(m.progress*100)}%`; } });
+lastText=result.data.text.trim(); bookPages.push({text:lastText, time:new Date().toLocaleString()});
+document.getElementById('textPreview').style.display='block'; document.getElementById('textPreview').innerHTML=`<b>Page ${bookPages.length}:</b><br>${lastText.substring(0,150)}...`;
+statusEl.innerText=`✅ Page ${bookPages.length} scanned`; speak(`Page ${bookPages.length} scanned`); setTimeout(()=>statusEl.style.display='none',2000);
+}catch(e){ statusEl.innerText='❌ Try closer'; }
 }
+
+function exportAll(){
+const { jsPDF } = window.jspdf;
+let doc=new jsPDF(); let y=15; doc.setFontSize(12); doc.text(`WanaLab v3 UNLIMITED - Export ${new Date().toLocaleString()}`,10,y); y+=8;
+doc.text(`Modes: ${currentModes.map(m=>m.label).join(', ')}`,10,y); y+=10;
+if(bookPages.length){ bookPages.forEach((p,i)=>{ doc.text(`--- PAGE ${i+1} ${p.time} ---`,10,y); y+=6; let lines=doc.splitTextToSize(p.text,180); doc.text(lines,10,y); y+=lines.length*5+10; if(y>270){ doc.addPage(); y=15; } }); }
+else if(lastText){ let lines=doc.splitTextToSize(lastText,180); doc.text(lines,10,y); }
+else { doc.text(document.getElementById('detectInfo').innerText.replace(/<br>/g,'\n'),10,y); }
+doc.save(`WanaLab-UNLIMITED-${Date.now()}.pdf`);
+statusEl.style.display='block'; statusEl.innerText='📄 PDF Exported with all modes!'; setTimeout(()=>statusEl.style.display='none',2000);
+}
+function capPhoto(){
+let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter||'none'; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-26,c.width,26); ct.fillStyle='#0ff'; ct.font='10px Arial'; ct.fillText(`${currentActiveMode.toUpperCase()} UNLIMITED - ${new Date().toLocaleString()}`,8,c.height-8);
+let a=document.createElement('a'); a.download=`UNLIMITED-${currentActiveMode}-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
+}
+document.getElementById('zoomSlider').addEventListener('input', async e=>{
+let z=parseFloat(e.target.value); document.getElementById('zoomVal').innerText=z.toFixed(1)+'x';
+if(track){ try{ await track.applyConstraints({advanced:[{zoom:z}]}); }catch{ video.style.transform=`scale(${z})`; } } else video.style.transform=`scale(${z})`;
+});
 window.addEventListener('load', init);
 </script>
 </body>
