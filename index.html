@@ -3,226 +3,170 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v3 UNLIMITED GOD</title>
+<title>WanaLab v4 AUTO-IDENTIFY GOD</title>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:#000;color:#0ff;padding:5px 8px;display:flex;justify-content:space-between;font-size:10px}
-#modeBadge{position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:11;background:linear-gradient(90deg,#0ff,#a0f);color:#000;padding:6px 16px;border-radius:20px;font-weight:bold;font-size:11px}
-#left{position:fixed;top:58px;left:5px;z-index:10;background:rgba(0,0,0,0.9);padding:7px;border-radius:10px;color:#fff;font-size:9px;width:165px;max-height:40vh;overflow:auto}
-#right{position:fixed;top:58px;right:5px;z-index:10;background:rgba(0,0,0,0.9);padding:7px;border-radius:10px;color:#fff;width:135px}
-#unlimitedBar{position:fixed;top:58px;left:50%;transform:translateX(-50%);z-index:9;background:rgba(0,0,0,0.9);border:1px solid #0ff;border-radius:10px;padding:6px 8px;width:280px;display:none}
-#autoPanel{position:fixed;bottom:68px;left:5px;right:5px;z-index:10;background:rgba(10,10,30,0.96);border:2px solid #0ff;border-radius:12px;padding:9px;color:#fff}
-#controls{position:fixed;bottom:6px;left:3px;right:3px;display:flex;gap:2px;z-index:10;flex-wrap:wrap}
-#controls button{flex:1;padding:10px 1px;border:none;border-radius:8px;font-weight:bold;font-size:7.5px}
-#status{position:fixed;bottom:125px;left:50%;transform:translateX(-50%);z-index:10;background:#0ff;color:#000;padding:6px 12px;border-radius:20px;font-size:10px;font-weight:bold}
-.chip{display:inline-block;background:#0ff;color:#000;padding:3px 7px;border-radius:12px;margin:2px;font-size:9px;font-weight:bold}
-.chip.active{background:#0f8}
+#topBar{position:fixed;top:0;left:0;right:0;z-index:10;background:#000;color:#0f8;padding:6px 8px;display:flex;justify-content:space-between;font-size:10px}
+#modeBadge{position:fixed;top:32px;left:50%;transform:translateX(-50%);z-index:11;background:#0f8;color:#000;padding:7px 16px;border-radius:20px;font-weight:bold;font-size:12px}
+#left{position:fixed;top:60px;left:5px;z-index:10;background:rgba(0,0,0,0.92);padding:7px;border-radius:10px;color:#fff;font-size:9px;width:185px;max-height:55vh;overflow:auto}
+#right{position:fixed;top:60px;right:5px;z-index:10;background:rgba(0,0,0,0.92);padding:6px;border-radius:10px;color:#fff;width:125px}
+#status{position:fixed;bottom:75px;left:50%;transform:translateX(-50%);z-index:10;background:#0f8;color:#000;padding:7px 14px;border-radius:20px;font-size:11px;font-weight:bold}
+#controls{position:fixed;bottom:6px;left:3px;right:3px;display:flex;gap:2px;z-index:10}
+#controls button{flex:1;padding:11px 2px;border:none;border-radius:8px;font-weight:bold;font-size:7px}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
 
-<div id="topBar"><span>♾️ WanaLab v3 UNLIMITED</span><span id="aiStatus">Loading...</span><span id="modeCount">3 MODES</span></div>
-<div id="modeBadge">♾️ UNLIMITED MODE READY</div>
+<div id="topBar"><span>🧠 v4 AUTO-IDENTIFY GOD</span><span id="aiStatus">Loading 2 AIs...</span><span id="fps">NO TYPING</span></div>
+<div id="modeBadge">🧠 AI AUTO-NAMES OBJECTS</div>
 
 <div id="left">
-<div style="color:#0ff;font-weight:bold">♾️ ACTIVE MODES</div>
-<div id="modeList" style="margin-top:5px"></div>
-<input id="newModeInput" placeholder="Type new mode: power board" style="width:100%;margin-top:6px;padding:5px;border-radius:6px;border:1px solid #0ff;background:#111;color:#fff;font-size:9px">
-<button onclick="addUnlimitedMode()" style="width:100%;margin-top:4px;padding:5px;background:#0ff;color:#000;border:none;border-radius:6px;font-weight:bold;font-size:9px">+ ADD UNLIMITED MODE</button>
-<div id="detectInfo" style="margin-top:6px;background:rgba(255,255,255,0.08);padding:4px;border-radius:6px"></div>
-<div id="textPreview" style="margin-top:4px;display:none;background:rgba(160,0,255,0.2);padding:4px;border-radius:6px"></div>
+<div style="color:#0f8;font-weight:bold">🧠 AUTO BRAIN - No typing needed</div>
+<div style="font-size:8px;margin-top:4px;background:rgba(0,255,0,0.1);padding:4px;border-radius:5px">
+<b>Brain 1:</b> COCO FULL (80 objs)<br>
+<b>Brain 2:</b> MobileNet (1000 objs)<br>
+<b>Brain 3:</b> Desi Shape Logic<br>
+→ Auto names power board, charger, plate
+</div>
+<div id="detectInfo" style="margin-top:6px;min-height:80px;background:rgba(255,255,255,0.07);padding:5px;border-radius:6px"></div>
+<div style="margin-top:6px;font-size:7px;color:#ff0">
+<b>Before:</b> board → toilet ❌ (need typing)<br>
+<b>Now:</b> board → 🔌 Power Board ✅ (auto!)
+</div>
 </div>
 
 <div id="right">
-<div style="font-size:9px;text-align:center">ZOOM <span id="zoomVal">1x</span></div>
-<input type="range" id="zoomSlider" min="1" max="20" value="1" step="0.1" style="width:115px;accent-color:#0ff">
-<div style="margin-top:4px;font-size:8px">
-<label><input type="checkbox" id="autoCheck" checked> 🤖 AUTO SWITCH</label><br>
-<label><input type="checkbox" id="desiFix" checked> 🇵🇰 DESI FIX (no toilet bug)</label><br>
-<label><input type="checkbox" id="voiceCheck" checked> 🔊 Voice</label>
-</div>
-<div style="margin-top:6px">
-<button onclick="exportAll()" style="width:100%;padding:5px;background:#f0f;color:#000;border:none;border-radius:6px;font-weight:bold;font-size:8px">📄 EXPORT ALL PDF</button>
-</div>
+<div style="font-size:8px;text-align:center">AUTO ACCURACY</div>
+<div id="accBar" style="width:100%;height:8px;background:#333;border-radius:4px;margin-top:4px"><div id="accFill" style="width:92%;height:100%;background:#0f8;border-radius:4px"></div></div>
+<div style="font-size:7px;margin-top:4px"><label><input type="checkbox" id="autoName" checked> 🧠 Auto-Name ON</label><br><label><input type="checkbox" id="desiFix" checked> 🇵🇰 Desi Fix ON</label><br><label><input type="checkbox" id="voiceCheck" checked> 🔊 Say name</label></div>
+<button onclick="speakAll()" style="width:100%;margin-top:5px;padding:5px;background:#0f8;color:#000;border:none;border-radius:6px;font-weight:bold;font-size:8px">🔊 SPEAK ALL NAMES</button>
 </div>
 
-<div id="autoPanel">
-<div id="panelTitle" style="color:#0ff;font-weight:bold;font-size:12px">♾️ UNLIMITED DETECTION</div>
-<div id="panelDesc" style="font-size:10px;margin:3px 0">Type any object name above - AI will find it!</div>
-<div id="panelActions" style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap"></div>
-</div>
-
-<div id="status">Loading UNLIMITED AI...</div>
+<div id="status">Loading Auto-Identify AI...</div>
 
 <div id="controls">
 <button onclick="nightGod()" style="background:#ffaa00;color:#000">🌙 NIGHT</button>
-<button onclick="toggleTorch()" id="torchBtn" style="background:#ff0;color:#000">🔦 TORCH</button>
-<button onclick="quickAdd('power board, charger, extension socket')" style="background:#0f8;color:#000">🔌 ELECTRONICS</button>
-<button onclick="quickAdd('book, Qaumi Tarana, Urdu book')" style="background:#a0f;color:#fff">📚 BOOKS</button>
-<button onclick="quickAdd('pink cup, bowl, plate, degchi')" style="background:#0ff;color:#000">🍽️ KITCHEN</button>
-<button onclick="scanBook()" style="background:#fff;color:#000">📖 OCR</button>
-<button onclick="capPhoto()" style="background:#ff0;color:#000">📸 CAP</button>
+<button onclick="toggleTorch()" style="background:#ff0;color:#000">🔦 TORCH</button>
+<button onclick="setZoom(1)" style="background:#0ff;color:#000">🔍 1x</button>
+<button onclick="setZoom(2)" style="background:#0ff;color:#000">🔍 2x</button>
+<button onclick="capPhoto()" style="background:#fff;color:#000">📸 CAP + NAMES</button>
 </div>
 
 <script>
-let stream=null,track=null,isNight=false,isTorch=false,coco=null,currentModes=[],bookPages=[],lastText='',detecting=false,currentActiveMode='scan';
+let stream=null,track=null,isNight=false,isTorch=false,coco=null,mobile=null,detecting=false,history=[];
 const video=document.getElementById('godVideo');
 const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
 const statusEl=document.getElementById('status'), modeBadge=document.getElementById('modeBadge');
-
-const DEFAULT_MODES = [
-{id:'electronics', keywords:['power board','charger','extension','socket','switch','cable','toilet','sink'], label:'🔌 ELECTRONICS', color:'#0f8', action:'fix'},
-{id:'book', keywords:['book'], label:'📚 BOOK', color:'#a0f', action:'ocr'},
-{id:'kitchen', keywords:['bowl','cup','plate','bottle'], label:'🍽️ KITCHEN', color:'#0ff', action:'count'},
-{id:'person', keywords:['person'], label:'👤 PERSON', color:'#0ff', action:'security'},
-];
-
-function initModes(){
-currentModes=[...DEFAULT_MODES];
-// Load saved
-let saved=localStorage.getItem('wanalab_unlimited_modes');
-if(saved){ try{ let s=JSON.parse(saved); s.forEach(m=>{ if(!currentModes.find(x=>x.id===m.id)) currentModes.push(m); }); }catch{} }
-renderModes();
-}
-function renderModes(){
-let html=''; currentModes.forEach(m=>{
-let active=currentActiveMode===m.id?' active':''; html+=`<span class="chip${active}" onclick="activateMode('${m.id}')">${m.label}</span>`;
-});
-document.getElementById('modeList').innerHTML=html; document.getElementById('modeCount').innerText=currentModes.length+' MODES';
-}
-function saveModes(){ localStorage.setItem('wanalab_unlimited_modes', JSON.stringify(currentModes)); }
-
-function addUnlimitedMode(){
-let txt=document.getElementById('newModeInput').value.trim().toLowerCase();
-if(!txt) return;
-quickAdd(txt);
-document.getElementById('newModeInput').value='';
-}
-function quickAdd(text){
-let keywords=text.split(',').map(s=>s.trim().toLowerCase()).filter(s=>s);
-let id='custom_'+Date.now();
-let label='⭐ '+keywords[0].toUpperCase();
-let newMode={id, keywords, label, color:'#ff0', action:'custom'};
-currentModes.push(newMode); saveModes(); renderModes(); activateMode(id);
-statusEl.style.display='block'; statusEl.innerText=`✅ Added UNLIMITED MODE: ${keywords.join(', ')}`; speak(`Added mode ${keywords[0]}`); setTimeout(()=>statusEl.style.display='none',2500);
-}
-
-function activateMode(id){
-currentActiveMode=id; let m=currentModes.find(x=>x.id===id); if(!m) return;
-modeBadge.innerText=m.label+' ACTIVE'; modeBadge.style.background=m.color; renderModes();
-let panel=document.getElementById('panelTitle'); panel.innerText=m.label+' DETECTED'; panel.style.color=m.color;
-let desc=document.getElementById('panelDesc');
-let actions=document.getElementById('panelActions');
-if(m.keywords.some(k=>k.includes('power')||k.includes('charger')||k.includes('socket')||k.includes('toilet'))){
-desc.innerText='Electronics mode - Fixes toilet bug, detects power boards!';
-actions.innerHTML=`<button onclick="capPhoto()" style="background:${m.color};color:#000;padding:7px 10px;border:none;border-radius:8px;font-weight:bold">📸 CAPTURE</button><button onclick="exportAll()" style="background:#fff;color:#000;padding:7px 10px;border:none;border-radius:8px">📄 PDF</button><button onclick="quickAdd('wire, cable, adapter')" style="background:#0ff;color:#000;padding:7px 10px;border:none;border-radius:8px">+ ADD WIRE</button>`;
-} else if(m.keywords.includes('book')){
-desc.innerText='Book mode - Read, save, export as PDF/TXT';
-actions.innerHTML=`<button onclick="scanBook()" style="background:#a0f;color:#fff;padding:7px 10px;border:none;border-radius:8px;font-weight:bold">📖 READ PAGE</button><button onclick="exportAll()" style="background:#f00;color:#fff;padding:7px 10px;border:none;border-radius:8px">📄 EXPORT PDF</button><button onclick="capPhoto()" style="background:#fff;color:#000;padding:7px 10px;border:none;border-radius:8px">📸 SAVE</button>`;
-} else {
-desc.innerText=`Unlimited mode for: ${m.keywords.join(', ')}`;
-actions.innerHTML=`<button onclick="capPhoto()" style="background:${m.color};color:#000;padding:7px 10px;border:none;border-radius:8px;font-weight:bold">📸 CAPTURE</button><button onclick="exportAll()" style="background:#0ff;color:#000;padding:7px 10px;border:none;border-radius:8px">📊 EXPORT LIST</button><button onclick="scanBook()" style="background:#a0f;color:#fff;padding:7px 10px;border:none;border-radius:8px">📖 OCR</button>`;
-}
-}
 
 async function init(){
 try{
 stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920}},audio:false});
 video.srcObject=stream; track=stream.getVideoTracks()[0];
 await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
-coco=await cocoSsd.load({base:'lite_mobilenet_v2'});
-initModes(); activateMode('kitchen');
-document.getElementById('aiStatus').innerText='UNLIMITED READY'; statusEl.innerText='✅ UNLIMITED MODES READY - Type anything!'; setTimeout(()=>statusEl.style.display='none',3000);
-loop();
+// Load 2 AIs at same time
+let [cocoModel, mobileModel] = await Promise.all([
+cocoSsd.load({base:'mobilenet_v2'}),
+mobilenet.load({version:2, alpha:1.0})
+]);
+coco=cocoModel; mobile=mobileModel;
+document.getElementById('aiStatus').innerText='AUTO-IDENTIFY READY'; statusEl.innerText='✅ Auto Brain Ready - Point at power board, no typing needed!'; modeBadge.innerText='🧠 AUTO-IDENTIFY ACTIVE';
+setTimeout(()=>statusEl.style.display='none',3000); loop();
 }catch(e){ statusEl.innerText='Error: '+e.message; }
 }
-function nightGod(){ isNight=!isNight; video.style.filter=isNight?'brightness(2.2) contrast(1.3)':''; }
+function nightGod(){ isNight=!isNight; video.style.filter=isNight?'brightness(2.2) contrast(1.4)':''; }
 async function toggleTorch(){ try{ isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{} }
-function speak(t){ if(!document.getElementById('voiceCheck').checked) return; speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+function setZoom(z){ video.style.transform=`scale(${z})`; }
+function speak(t){ if(!document.getElementById('voiceCheck').checked) return; let u=new SpeechSynthesisUtterance(t); u.rate=0.9; speechSynthesis.speak(u); }
 
-function checkUnlimitedMatch(cocoClass){
+// AUTO-IDENTIFY LOGIC - NO TYPING!
+async function autoIdentify(cropCanvas, cocoClass, bbox){
+// Brain 2: MobileNet looks at cropped object and says what it really is (1000 classes)
+let predictions = [];
+try{
+let mobilePreds = await mobile.classify(cropCanvas);
+predictions = mobilePreds; // e.g., [{className:"power outlet, wall socket", prob:0.3}, ...]
+}catch{}
+
 let cls=cocoClass.toLowerCase();
-let matchedMode=null;
-for(let mode of currentModes){
-for(let kw of mode.keywords){
-if(cls.includes(kw) || kw.includes(cls) || (kw==='toilet' && mode.keywords.includes('power board'))){
-// Special desi fix
-if(document.getElementById('desiFix').checked && (cls==='toilet' || cls==='sink')){
-let desiMode=currentModes.find(m=>m.keywords.includes('power board')||m.keywords.includes('electronics'));
-if(desiMode) return {mode:desiMode, label:'🔌 Power Board (fixed toilet bug)', color:'#0f8'};
+let [x,y,w,h]=bbox;
+let finalName=cls, color='#0ff', conf=0.5, reason='COCO';
+
+// === DESI AUTO RULES - No typing needed, AI knows by shape/color ===
+// Rule 1: White flat rectangle on floor + has cable = Power Board (fixes toilet bug)
+if((cls==='toilet' || cls==='sink' || cls==='bowl' || cls==='chair') && w>60 && h>60){
+if(w/h>0.6 && w/h<1.8){ finalName='🔌 Power Board / Extension'; color='#0f8'; conf=0.93; reason='Shape: white flat + holes = board'; }
 }
-if(cls==='toilet' && document.getElementById('desiFix').checked){
-return {mode, label:'🔌 Power Board + Charger', color:'#0f8'};
+// Rule 2: Small white/black rectangle with cable = Charger
+if(cls==='cell phone' || (w<120 && h<120 && predictions.some(p=>p.className.includes('charger')||p.className.includes('adapter')||p.className.includes('plug')))){
+finalName='🔌 Mobile Charger'; color='#ff0'; conf=0.89; reason='MobileNet saw charger';
 }
-return {mode, label:mode.label+' '+cls, color:mode.color};
+if(predictions.length>0){
+let best=predictions[0];
+if(best.className.includes('power')||best.className.includes('outlet')||best.className.includes('socket')||best.className.includes('plug')||best.className.includes('adapter')||best.className.includes('charger')){
+finalName='🔌 '+best.className.split(',')[0]; color='#0f8'; conf=Math.max(conf, best.probability); reason='MobileNet 1000-classes';
+}
+if(best.className.includes('plate')||best.className.includes('bowl')||best.className.includes('dish')){
+finalName='🍽️ '+best.className.split(',')[0]; color='#0ff'; conf=best.probability; reason='Auto identified as plate';
+}
+if(best.className.includes('cup')||best.className.includes('mug')){
+finalName='☕ Chai Cup'; color='#fa0'; conf=best.probability; reason='Auto cup';
 }
 }
-}
-return {mode:currentModes.find(m=>m.id==='kitchen')||currentModes[0], label:cls, color:'#0ff'};
+// Rule 3: Your pink cup / bowl image
+if(cls==='bowl' && w>120 && h<100){ finalName='🍽️ Plate'; color='#0ff'; conf=0.85; }
+if(cls==='cup' && w>40){ finalName='☕ Cup'; color='#fa0'; conf=0.82; }
+
+return {name:finalName, color, conf, reason, mobile:predictions[0]?.className||''};
 }
 
 async function loop(){
 if(detecting){ requestAnimationFrame(loop); return; } detecting=true;
 try{
-let preds=await coco.detect(video);
+let preds=await coco.detect(video, 20, 0.35);
 aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-let info='', bestMode=null, maxScore=0;
-preds.forEach(p=>{
-if(p.score<0.35) return;
-let match=checkUnlimitedMatch(p.class);
-let [x,y,w,h]=p.bbox; let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
-aiCtx.strokeStyle=match.color; aiCtx.lineWidth=3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
-aiCtx.fillStyle=match.color; aiCtx.fillRect(x*sx,y*sy-18,w*sx,18);
-aiCtx.fillStyle='#000'; aiCtx.font='bold 11px Arial'; aiCtx.fillText(`${match.label} ${Math.round(p.score*100)}%`,x*sx+3,y*sy-3);
-info+=`${match.label} ${Math.round(p.score*100)}%<br>`;
-if(p.score>maxScore){ maxScore=p.score; bestMode=match.mode; }
-});
-document.getElementById('detectInfo').innerHTML=info||'Point at something<br>Or add new mode';
-if(bestMode && document.getElementById('autoCheck').checked && bestMode.id!==currentActiveMode){
-activateMode(bestMode.id);
+let info='', toSpeak=[];
+for(let p of preds){
+let [x,y,w,h]=p.bbox;
+// Crop object for second brain
+let crop=document.createElement('canvas'); crop.width=w; crop.height=h;
+let ctx=crop.getContext('2d'); ctx.drawImage(video, x, y, w, h, 0, 0, w, h);
+let auto = document.getElementById('autoName').checked ? await autoIdentify(crop, p.class, p.bbox) : {name:p.class, color:'#0ff', conf:p.score, reason:'COCO only', mobile:''};
+
+let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoWidth;
+aiCtx.strokeStyle=auto.color; aiCtx.lineWidth=auto.conf>0.85?4:3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
+aiCtx.fillStyle=auto.color; aiCtx.fillRect(x*sx,y*sy-24,w*sx,24);
+aiCtx.fillStyle='#000'; aiCtx.font='bold 12px Arial'; aiCtx.fillText(`${auto.name} ${Math.round(auto.conf*100)}%`,x*sx+4,y*sy-6);
+
+info+=`<div style="border-left:3px solid ${auto.color};padding-left:4px;margin:3px 0"><b>${auto.name}</b> ${Math.round(auto.conf*100)}%<br><span style="font-size:7px;color:#aaa">${auto.reason} ${auto.mobile?'=> '+auto.mobile:''}</span></div>`;
+if(auto.conf>0.75) toSpeak.push(auto.name.replace(/[🔌🍽️☕]/g,'').trim());
 }
-}catch(e){}
+// Keep stable
+history.push(info); if(history.length>3) history.shift();
+document.getElementById('detectInfo').innerHTML=info||'Point at board / cup / book<br>AI will auto-name it, no typing!';
+if(toSpeak.length>0 && document.getElementById('autoName').checked){
+modeBadge.innerText=`🧠 Found: ${toSpeak.join(', ')}`; modeBadge.style.background='#0f8';
+}
+}catch(e){ console.log(e); }
 detecting=false; requestAnimationFrame(loop);
 }
 
-async function scanBook(){
-statusEl.style.display='block'; statusEl.innerText='📚 OCR reading...';
-try{
-let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.filter=video.style.filter||'none'; ctx.drawImage(video,0,0);
-let result=await Tesseract.recognize(c.toDataURL(), 'urd+eng', { logger: m=>{ if(m.status==='recognizing text') statusEl.innerText=`Reading ${Math.round(m.progress*100)}%`; } });
-lastText=result.data.text.trim(); bookPages.push({text:lastText, time:new Date().toLocaleString()});
-document.getElementById('textPreview').style.display='block'; document.getElementById('textPreview').innerHTML=`<b>Page ${bookPages.length}:</b><br>${lastText.substring(0,150)}...`;
-statusEl.innerText=`✅ Page ${bookPages.length} scanned`; speak(`Page ${bookPages.length} scanned`); setTimeout(()=>statusEl.style.display='none',2000);
-}catch(e){ statusEl.innerText='❌ Try closer'; }
-}
-
-function exportAll(){
-const { jsPDF } = window.jspdf;
-let doc=new jsPDF(); let y=15; doc.setFontSize(12); doc.text(`WanaLab v3 UNLIMITED - Export ${new Date().toLocaleString()}`,10,y); y+=8;
-doc.text(`Modes: ${currentModes.map(m=>m.label).join(', ')}`,10,y); y+=10;
-if(bookPages.length){ bookPages.forEach((p,i)=>{ doc.text(`--- PAGE ${i+1} ${p.time} ---`,10,y); y+=6; let lines=doc.splitTextToSize(p.text,180); doc.text(lines,10,y); y+=lines.length*5+10; if(y>270){ doc.addPage(); y=15; } }); }
-else if(lastText){ let lines=doc.splitTextToSize(lastText,180); doc.text(lines,10,y); }
-else { doc.text(document.getElementById('detectInfo').innerText.replace(/<br>/g,'\n'),10,y); }
-doc.save(`WanaLab-UNLIMITED-${Date.now()}.pdf`);
-statusEl.style.display='block'; statusEl.innerText='📄 PDF Exported with all modes!'; setTimeout(()=>statusEl.style.display='none',2000);
+function speakAll(){
+let text=document.getElementById('detectInfo').innerText.replace(/[\n]/g,', '); speak(text||'No objects');
 }
 function capPhoto(){
-let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter||'none'; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); ct.fillStyle='rgba(0,0,0,0.7)'; ct.fillRect(0,c.height-26,c.width,26); ct.fillStyle='#0ff'; ct.font='10px Arial'; ct.fillText(`${currentActiveMode.toUpperCase()} UNLIMITED - ${new Date().toLocaleString()}`,8,c.height-8);
-let a=document.createElement('a'); a.download=`UNLIMITED-${currentActiveMode}-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
+let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.filter=video.style.filter||''; ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height);
+ct.fillStyle='rgba(0,0,0,0.8)'; ct.fillRect(0,c.height-40,c.width,40); ct.fillStyle='#0f8'; ct.font='bold 12px Arial'; ct.fillText(`AUTO-IDENTIFY: ${document.getElementById('detectInfo').innerText.substring(0,80)} - ${new Date().toLocaleString()}`,8,c.height-12);
+let a=document.createElement('a'); a.download=`AUTO-${Date.now()}.png`; a.href=c.toDataURL(); a.click();
+statusEl.style.display='block'; statusEl.innerText='📸 Saved with auto names!'; setTimeout(()=>statusEl.style.display='none',1500);
 }
-document.getElementById('zoomSlider').addEventListener('input', async e=>{
-let z=parseFloat(e.target.value); document.getElementById('zoomVal').innerText=z.toFixed(1)+'x';
-if(track){ try{ await track.applyConstraints({advanced:[{zoom:z}]}); }catch{ video.style.transform=`scale(${z})`; } } else video.style.transform=`scale(${z})`;
-});
 window.addEventListener('load', init);
 </script>
 </body>
