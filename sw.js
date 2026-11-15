@@ -1,5 +1,5 @@
-const CACHE = 'wanalab-v8-1';
-const URLS = ['/W/', '/W/manifest.json', '/W/index.html'];
+const CACHE = 'wanalab-v81-final';
+const URLS = ['/Wanalab-Omni-Camera-/', '/Wanalab-Omni-Camera-/manifest.json', '/Wanalab-Omni-Camera-/index.html'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)).then(()=>self.skipWaiting()));
 });
@@ -9,8 +9,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-      if(e.request.url.startsWith('http')){ caches.open(CACHE).then(c=>c.put(e.request,res.clone())); }
       return res;
-    }).catch(()=>caches.match('/W/')))
+    }).catch(()=>caches.match('/Wanalab-Omni-Camera-/')))
   );
 });
