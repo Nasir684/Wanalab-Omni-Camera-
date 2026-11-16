@@ -2,340 +2,98 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab God Eye v1.1 PRO - Universal Camera OS - By Nasir Khan</title>
-<meta name="description" content="WanaLab God Eye v1.1 PRO - World's first offline-first universal camera OS">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>WanaLab God Eye v1.1 PRO - Universal Camera OS</title>
+<meta name="description" content="World's first offline-first universal camera OS: Microscope 1000x, Thermal FLIR, Night God HDR, IP Cam, Barcode + Voice">
 <meta name="theme-color" content="#00ff88">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="God Eye">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="wanalab-god-eye-v1-1-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="wanalab-god-eye-v1-1-icon.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow:hidden;font-family:Arial;height:100vh;color:#fff}
-#godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
-#aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+*{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow:hidden;font-family:system-ui,Arial;height:100vh;color:#fff;-webkit-tap-highlight-color:transparent}
+#godVideo{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
+#aiCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
 #scanBox{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:320px;height:160px;border:3px solid #ff0;border-radius:12px;z-index:3;display:none}
 #scanLine{position:absolute;top:0;left:0;width:100%;height:3px;background:#ff0;animation:scan 1.5s infinite}
 @keyframes scan{0%{top:0}50%{top:97%}100%{top:0}}
-#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.85);color:#0f8;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;font-size:8px;border-bottom:1px solid #0f8}
-#installBtn{position:fixed;top:32px;left:50%;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:8px 18px;border-radius:20px;font-weight:bold;font-size:11px;display:none;box-shadow:0 0 15px #00ff88;animation:pop 0.5s;cursor:pointer;border:none}
-@keyframes pop{0%{transform:translateX(-50%) scale(0)}100%{transform:translateX(-50%) scale(1)}}
-#voiceBadge{position:fixed;top:34px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:10px;cursor:pointer;transition:top 0.3s}
-#voiceBadge.on{background:#0f8;color:#000}
-#langSel{position:fixed;top:60px;right:6px;z-index:12;background:#000;border:1px solid #0f8;border-radius:20px;padding:2px 4px;display:flex;gap:2px}
-#langSel button{border:none;padding:3px 6px;border-radius:10px;font-size:7px;font-weight:bold;cursor:pointer}
-#transcript{position:fixed;top:84px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.9);color:#ff0;padding:6px 10px;border-radius:8px;font-size:9px;display:none;border:1px solid #ff0;text-align:center}
-#shutter{position:fixed;bottom:98px;left:50%;transform:translateX(-50%);z-index:12;width:72px;height:72px;border-radius:50%;background:#fff;border:4px solid #00ff88;box-shadow:0 0 12px #00ff88;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer}
-#shutter.rec{border-color:#f00;box-shadow:0 0 15px #f00;animation:pulse 1s infinite}
-@keyframes pulse{0%{box-shadow:0 0 5px #f00}50%{box-shadow:0 0 20px #f00}100%{box-shadow:0 0 5px #f00}}
-#info{position:fixed;bottom:170px;left:4px;right:4px;z-index:10;background:rgba(0,0,0,0.85);color:#fff;padding:5px 6px;border-radius:8px;font-size:8px;border:1px solid #0f8;max-height:16vh;overflow:auto}
-#controls{position:fixed;bottom:30px;left:2px;right:2px;display:flex;gap:2px;z-index:10;flex-wrap:wrap}#controls button{flex:1 1 15%;padding:7px 1px;border:none;border-radius:7px;font-weight:bold;font-size:6px}
-#adBanner{position:fixed;bottom:0;left:0;right:0;z-index:9;background:#0a0a0a;padding:3px;text-align:center;font-size:7px;color:#888;height:28px;display:flex;align-items:center;justify-content:center}
-#preview{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:10px}
-#preview img{max-width:95%;max-height:70vh;border-radius:12px;border:2px solid #00ff88}
-#aboutPage{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:99999;display:none;overflow-y:auto;padding:20px 15px;align-items:center;justify-content:center}
-#aboutPage.show{display:flex}
+#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);color:#0f8;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:10px;border-bottom:1px solid #0f8}
+#installBtn{position:fixed;top:40px;left:50%;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:10px 20px;border-radius:24px;font-weight:800;font-size:12px;display:none;box-shadow:0 0 20px #00ff88;border:none;cursor:pointer}
+#voiceBadge{position:fixed;top:38px;left:50%;transform:translateX(-50%);z-index:11;background:#ff1a1a;color:#fff;padding:7px 16px;border-radius:20px;font-weight:800;font-size:11px;cursor:pointer;letter-spacing:.3px;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+#voiceBadge.on{background:#00ff88;color:#000;box-shadow:0 0 15px #00ff88}
+#langSel{position:fixed;top:66px;right:6px;z-index:12;background:rgba(0,0,0,.8);border:1px solid #0f8;border-radius:20px;padding:3px;display:flex;gap:2px}
+#langSel button{border:none;padding:4px 8px;border-radius:12px;font-size:8px;font-weight:800;cursor:pointer}
+#transcript{position:fixed;top:96px;left:10px;right:10px;z-index:10;background:rgba(0,0,0,.9);color:#ff0;padding:8px 12px;border-radius:10px;font-size:10px;display:none;border:1px solid #ff0;text-align:center;font-weight:700}
+#shutter{position:fixed;bottom:104px;left:50%;transform:translateX(-50%);z-index:12;width:76px;height:76px;border-radius:50%;background:#fff;border:4px solid #00ff88;box-shadow:0 0 15px #00ff88;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;transition:all .15s}
+#shutter:active{transform:translateX(-50%) scale(.92)}#shutter.rec{border-color:#ff1a1a;box-shadow:0 0 20px #ff1a1a;animation:pulse 1s infinite}
+@keyframes pulse{0%{box-shadow:0 0 8px #f00}50%{box-shadow:0 0 24px #f00}100%{box-shadow:0 0 8px #f00}}
+#info{position:fixed;bottom:178px;left:6px;right:6px;z-index:10;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);padding:6px 8px;border-radius:10px;font-size:9px;border:1px solid rgba(0,255,136,.4);max-height:16vh;overflow:auto}
+#controls{position:fixed;bottom:36px;left:4px;right:4px;display:flex;gap:3px;z-index:10;flex-wrap:wrap}#controls button{flex:1 1 18%;padding:8px 2px;border:none;border-radius:8px;font-weight:800;font-size:7px;cursor:pointer}
+#adBanner{position:fixed;bottom:0;left:0;right:0;z-index:9;background:#080808;padding:4px;text-align:center;font-size:8px;color:#666;height:30px;display:flex;align-items:center;justify-content:center;letter-spacing:.2px}
+#preview{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:12px}
+#preview img{max-width:96%;max-height:72vh;border-radius:14px;border:2px solid #00ff88;box-shadow:0 0 20px rgba(0,255,136,.3)}
+#aboutPage{position:fixed;inset:0;background:#000;z-index:99999;display:none;overflow-y:auto;padding:20px 14px}#aboutPage.show{display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video><canvas id="aiCanvas"></canvas>
 <div id="scanBox"><div id="scanLine"></div></div>
-<div id="top"><span>👁️ God Eye v1.1 PRO FIXED</span><span id="stat">Ready</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:bold">ℹ️ ABOUT</span></div>
+<div id="top"><span>👁️ God Eye v1.1 PRO</span><span id="stat">Ready</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:4px 12px;border-radius:12px;font-weight:800;cursor:pointer">ℹ️ ABOUT</span></div>
 <button id="installBtn" onclick="installApp()">📲 INSTALL GOD EYE</button>
-<div id="voiceBadge" onclick="toggleVoice()">🎤 TAP TO START</div>
+<div id="voiceBadge" onclick="toggleVoice()">🎤 TAP TO START VOICE</div>
 <div id="langSel"><button onclick="setLang('en')" id="btnEn" style="background:#0f8;color:#000">EN</button><button onclick="setLang('ur')" id="btnUr" style="background:#333;color:#fff">اردو</button><button onclick="setLang('ps')" id="btnPs" style="background:#333;color:#fff">پښتو</button><button onclick="setLang('auto')" id="btnAuto" style="background:#a0f;color:#fff">AUTO</button></div>
 <div id="transcript"></div>
 <button id="shutter" onclick="handleShutter()">📸</button>
-<div id="info"><div id="see" style="color:#0f8;font-weight:bold">Say: Capture, Video, Stop, Count, Follow</div><div id="countDisplay" style="color:#ff8800;font-size:12px;font-weight:bold"></div><div id="barcodeRes" style="color:#ff0;font-size:10px;font-weight:bold"></div><div id="billBox"></div></div>
+<div id="info"><div id="see" style="color:#0f8;font-weight:800">🎤 Say: Capture, Video, Stop, Count, Follow</div><div id="countDisplay" style="color:#ff8800;font-weight:800;margin-top:2px"></div><div id="barcodeRes" style="color:#ff0;font-weight:800"></div><div id="billBox" style="color:#fff;margin-top:2px"></div></div>
 <div id="controls">
-<button onclick="toggleVoice()" style="background:#f00;color:#fff">🎤 VOICE</button><button onclick="toggleCounting()" id="countBtn" style="background:#333;color:#fff">🔢 COUNT</button><button onclick="toggleFollow()" id="followBtn" style="background:#333;color:#fff">🎯 FOLLOW</button><button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE</button><button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button><button onclick="toggleVideo()" id="videoBtn" style="background:#f00;color:#fff">🎥 VIDEO</button><button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD</button><button onclick="showPriceDB()" style="background:#fff;color:#000">📦 DB</button><button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL</button><button onclick="toggleAI()" id="aiBtn" style="background:#222;color:#888">🤖 AI</button>
+<button onclick="toggleVoice()" style="background:#ff1a1a;color:#fff">🎤 VOICE</button><button onclick="toggleCounting()" id="countBtn" style="background:#333;color:#fff">🔢 COUNT</button><button onclick="toggleFollow()" id="followBtn" style="background:#333;color:#fff">🎯 FOLLOW</button><button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE</button><button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button><button onclick="toggleVideo()" id="videoBtn" style="background:#ff1a1a;color:#fff">🎥 VIDEO</button><button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD</button><button onclick="showPriceDB()" style="background:#fff;color:#000">📦 DB</button><button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL</button><button onclick="toggleAI()" id="aiBtn" style="background:#222;color:#888">🤖 AI</button>
 </div>
-<div id="adBanner"><span>WanaLab God Eye v1.1 PRO - Voice Working Restored</span></div>
-<div id="preview"><img id="previewImg"><div style="display:flex;gap:8px;margin-top:10px;width:95%"><button onclick="savePhoto()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">💾 SAVE</button><button onclick="closePreview()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">❌ CLOSE</button></div></div>
-<div id="priceDBPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9998;padding:12px"><div style="max-width:420px;margin:10px auto;background:#001a0a;border:2px solid #ff0;border-radius:16px;padding:14px"><h3 style="color:#ff0">📦 Price DB</h3><div id="dbList" style="max-height:30vh;overflow:auto;margin:8px 0;background:#000;padding:8px;border-radius:8px"></div><div style="display:flex;gap:4px"><input id="newBarcode" placeholder="Barcode" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newName" placeholder="Name" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newPrice" placeholder="Price" type="number" style="width:70px;padding:8px;border-radius:6px;border:none"></div><button onclick="addPriceManual()" style="width:100%;margin-top:6px;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">➕ Add</button><button onclick="hidePriceDB()" style="width:100%;margin-top:8px;padding:10px;background:#333;color:#fff;border:none;border-radius:8px">Back</button></div></div>
-<div id="aboutPage"><div style="max-width:380px;width:100%;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:18px;padding:20px;text-align:center">
-<img src="wanalab-god-eye-v1-1-icon.png" style="width:90px;height:90px;border-radius:20px;border:2px solid #00ff88" onerror="this.src='wanalab-icon-v8.1.png'">
-<h2 style="color:#00ff88;margin:12px 0 6px 0">WanaLab God Eye</h2>
-<p style="color:#aaa;font-size:11px;margin-bottom:12px">v1.1 PRO - Voice Working Restored</p>
-<div style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:12px;text-align:left;font-size:10px;color:#0f8;line-height:18px">
-✅ Voice: "capture" "video" "stop" "count" "follow"<br>
-✅ TTS: Speaks all actions<br>
-✅ Counting: Say "count" then "stop"<br>
-✅ Follow: AI tracking<br>
-✅ Video: Say "video" then "stop"<br>
-🔬 Microscope 1000x | 🌡️ Thermal<br>
-🌃 Night God HDR | 📹 RTSP IP Cam
-</div>
-<div id="aboutInstallArea" style="margin-top:10px"></div>
-<p style="font-size:8px;color:#666;margin:12px 0">© 2026 WanaLab - By Nasir Khan</p>
-<button onclick="hideAbout()" style="width:100%;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:bold;font-size:14px;cursor:pointer">✅ BACK TO GOD EYE</button>
-</div></div>
+<div id="adBanner">WanaLab God Eye v1.1 PRO © 2026 WanaLab - By Nasir Khan - Play Store Ready</div>
+<div id="preview"><img id="previewImg"><div style="display:flex;gap:10px;margin-top:14px;width:96%"><button onclick="savePhoto()" style="flex:1;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:800">💾 SAVE</button><button onclick="closePreview()" style="flex:1;padding:14px;background:#222;color:#fff;border:none;border-radius:12px">❌ CLOSE</button></div></div>
+<div id="priceDBPage" style="display:none;position:fixed;inset:0;background:#000;z-index:9998;padding:14px"><div style="max-width:440px;margin:10px auto;background:#001a0a;border:2px solid #ff0;border-radius:16px;padding:14px"><h3 style="color:#ff0">📦 Price Database</h3><div id="dbList" style="max-height:32vh;overflow:auto;margin:10px 0;background:#000;padding:8px;border-radius:10px"></div><div style="display:flex;gap:4px"><input id="newBarcode" placeholder="Barcode" style="flex:1;padding:10px;border-radius:8px;border:none"><input id="newName" placeholder="Name" style="flex:1;padding:10px;border-radius:8px;border:none"><input id="newPrice" placeholder="Price" type="number" style="width:80px;padding:10px;border-radius:8px;border:none"></div><button onclick="addPriceManual()" style="width:100%;margin-top:8px;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:800">➕ Add Product</button><button onclick="hidePriceDB()" style="width:100%;margin-top:8px;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Back</button></div></div>
+<div id="aboutPage"><div style="max-width:400px;width:100%;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:20px;padding:22px;text-align:center;box-shadow:0 0 30px rgba(0,255,136,.15)">
+<img src="wanalab-god-eye-v1-1-icon.png" style="width:96px;height:96px;border-radius:22px;border:2px solid #00ff88" onerror="this.style.display='none'">
+<h2 style="color:#00ff88;margin:14px 0 4px 0">WanaLab God Eye</h2><p style="color:#aaa;font-size:11px;margin-bottom:14px">v1.1 PRO - Universal Camera OS - Play Store Ready</p>
+<div style="background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);border-radius:14px;padding:14px;text-align:left;font-size:11px;color:#0f8;line-height:20px">
+<b>🎤 Voice OS:</b> capture, video, stop, count, follow, barcode, torch<br>
+<b>🧠 AI:</b> Offline COCO-SSD detection + Follow + Counting<br>
+<b>🔬 Modes:</b> Microscope 1000x, Thermal FLIR, Night God HDR, RTSP/ONVIF IP Cam, Macro, Telephoto<br>
+<b>📦 Business:</b> Barcode scan + Offline Price DB + Bill PDF<br>
+<b>✅ Play Store:</b> TWA Ready, Offline First, PWA Install
+</div><div id="aboutInstallArea" style="margin-top:14px"></div><p style="font-size:8px;color:#555;margin:14px 0">© 2026 WanaLab - By Nasir Khan - Wana, Pakistan & Global - All Rights Reserved</p><button onclick="hideAbout()" style="width:100%;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:800;font-size:14px">✅ BACK TO CAMERA</button></div></div>
 <script>
-let deferredPrompt=null;let isInstalled=false;
-function checkInstalled(){
-  let aboutArea=document.getElementById('aboutInstallArea');
-  let isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || localStorage.getItem('wanaInstalled')==='true';
-  if(isStandalone){
-    isInstalled=true;document.getElementById('installBtn').style.display='none';document.getElementById('voiceBadge').style.top='34px';
-    if(aboutArea) aboutArea.innerHTML='<div style="background:#0f8;color:#000;padding:10px;border-radius:10px;margin:10px 0;font-weight:bold;font-size:11px">✅ God Eye Installed</div>';
-    return true;
-  } else {
-    isInstalled=false;
-    if(aboutArea) aboutArea.innerHTML='<button onclick="installApp()" style="width:100%;margin:10px 0;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:bold;font-size:13px;box-shadow:0 0 15px #00ff88">📲 INSTALL GOD EYE PRO</button><div style="font-size:8px;color:#888;margin-top:6px;text-align:center">Chrome menu (⋮) → Install app</div>';
-    return false;
-  }
-}
-window.addEventListener('beforeinstallprompt', (e)=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtn').style.display='block';document.getElementById('voiceBadge').style.top='68px';checkInstalled();});
-async function installApp(){if(deferredPrompt){deferredPrompt.prompt();let choice=await deferredPrompt.userChoice;if(choice.outcome==='accepted'){localStorage.setItem('wanaInstalled','true');document.getElementById('installBtn').style.display='none'}deferredPrompt=null;checkInstalled();}else{alert('Chrome menu (⋮) → Install app');}}
-window.addEventListener('appinstalled', ()=>{localStorage.setItem('wanaInstalled','true');document.getElementById('installBtn').style.display='none';checkInstalled();});
-let stream=null, track=null, coco=null, detecting=false, lastSeen='', billItems=[], totalBill=0, lastBarcode='', priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'), capturedDataUrl='', barcodeMode=false, barcodeInterval=null, codeReader=null, isTorch=false, aiEnabled=false, isListening=false, recognition=null, currentLangMode=localStorage.getItem('wanaLang')||'auto';
-let isCounting=false, particleCount=0, isRecording=false, mediaRecorder=null, recordedChunks=[], followMode=false, trackedObject=null, speechEnabled=true;
-const video=document.getElementById('godVideo'); const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
-function showAbout(){ let el=document.getElementById('aboutPage'); el.classList.add('show'); el.style.display='flex'; checkInstalled(); }
-function hideAbout(){ let el=document.getElementById('aboutPage'); el.classList.remove('show'); el.style.display='none'; }
-function showPriceDB(){renderDB();document.getElementById('priceDBPage').style.display='block';}function hidePriceDB(){document.getElementById('priceDBPage').style.display='none';}
-function setLang(l){ currentLangMode=l; localStorage.setItem('wanaLang',l); updateLangUI(); }
-function updateLangUI(){ document.querySelectorAll('#langSel button').forEach(b=>{b.style.background='#333'; b.style.color='#fff';}); let id={en:'btnEn',ur:'btnUr',ps:'btnPs',auto:'btnAuto'}[currentLangMode]; if(id){ document.getElementById(id).style.background='#0f8'; document.getElementById(id).style.color='#000'; } }
-async function init(){
-  checkInstalled();
-  try{
-    let constraints={video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}, audio:true};
-    stream=await navigator.mediaDevices.getUserMedia(constraints);
-    video.srcObject=stream; track=stream.getVideoTracks()[0];
-    await video.play();
-    aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
-    document.getElementById('stat').innerText='God Eye Ready';
-    document.getElementById('see').innerText='Say: Capture, Video, Stop, Count, Follow';
-    updateLangUI(); initVoice();
-  }catch(e){ document.getElementById('stat').innerText='Allow camera'; setTimeout(init,1000); }
-}
-
-// *** VOICE FIXED - RESTORED FROM WORKING v8 ***
-function initVoice(){
-  let SR=window.SpeechRecognition||window.webkitSpeechRecognition; 
-  if(!SR){ document.getElementById('voiceBadge').innerText='❌ Need Chrome'; return; }
-  recognition=new SR(); 
-  recognition.continuous=true; 
-  recognition.interimResults=true; // MUST BE TRUE - this was working in old versions
-  recognition.lang='en-US';
-  recognition.maxAlternatives=1;
-  
-  recognition.onresult=(ev)=>{
-    let finalTranscript='';
-    let interimTranscript='';
-    for(let i=ev.resultIndex;i<ev.results.length;i++){
-      let t=ev.results[i][0].transcript;
-      if(ev.results[i].isFinal){
-        finalTranscript+=t+' ';
-      } else {
-        interimTranscript+=t;
-      }
-    }
-    let display = finalTranscript || interimTranscript;
-    if(display){
-      document.getElementById('transcript').style.display='block'; 
-      document.getElementById('transcript').innerText='🎤 '+display;
-    }
-    if(finalTranscript.trim()!==''){
-      handleVoice(finalTranscript.trim());
-      setTimeout(()=>{document.getElementById('transcript').style.display='none';},2500);
-    }
-  };
-  
-  recognition.onend=()=>{ 
-    console.log('Voice ended, restarting if listening');
-    if(isListening){
-      try{recognition.start();}catch(err){console.log('Restart fail',err)}
-    }
-  };
-  
-  recognition.onerror=(e)=>{ 
-    console.log('Voice error:',e.error);
-    if(isListening && e.error!=='no-speech' && e.error!=='audio-capture'){
-      setTimeout(()=>{try{recognition.start();}catch{}},700);
-    }
-  };
-  
-  recognition.onstart=()=>{document.getElementById('stat').innerText='🔴 Listening';};
-}
-
-function toggleVoice(){
-  if(!recognition){ alert('Use Chrome Android - Open in Chrome'); return; }
-  if(isListening){ 
-    isListening=false; 
-    try{recognition.stop();}catch{}
-    document.getElementById('voiceBadge').classList.remove('on'); 
-    document.getElementById('voiceBadge').innerText='🎤 TAP TO START';
-    document.getElementById('stat').innerText='Voice OFF';
-  } else { 
-    isListening=true; 
-    try{recognition.start();}catch(e){console.log('Start err',e)}
-    document.getElementById('voiceBadge').classList.add('on'); 
-    document.getElementById('voiceBadge').innerText='🔴 LISTENING'; 
-    speak('Listening, say capture or video');
-  }
-}
-
-function speak(text){
-  if(!speechEnabled) return;
-  try{
-    window.speechSynthesis.cancel();
-    let utter=new SpeechSynthesisUtterance(text);
-    if(currentLangMode==='ur') utter.lang='ur-PK';
-    else if(currentLangMode==='ps') utter.lang='ps-AF';
-    else utter.lang='en-US';
-    utter.rate=1; utter.volume=1;
-    window.speechSynthesis.speak(utter);
-  }catch{}
-}
-
-function handleVoice(cmd){ 
-  let l=cmd.toLowerCase().trim(); 
-  console.log('VOICE CMD FINAL:',l);
-  // STOP FIRST
-  if(l.includes('stop')||l.includes('بس')||l.includes('بند')||l.includes('ruk')){
-    if(isRecording){ stopVideoRecording(); return; }
-    if(isCounting){ toggleCounting(); return; }
-    if(followMode){ toggleFollow(); return; }
-  }
-  if(l.includes('capture')||l.includes('photo')||l.includes('cheese')||l.includes('shot')||l.includes('click')||l.includes('تصویر')||l.includes('پکچر')){
-    capturePhoto();
-  } else if(l.includes('video')||l.includes('record')||l.includes('ویڈیو')){
-    toggleVideo();
-  } else if(l.includes('count')||l.includes('گنتی')){
-    toggleCounting();
-  } else if(l.includes('follow')||l.includes('track')||l.includes('فالو')){
-    toggleFollow();
-  } else if(l.includes('barcode')||l.includes('scan')){ toggleBarcodeMode(); }
-  else if(l.includes('torch')||l.includes('light')){ toggleTorch(); }
-  else if(l.includes('total')||l.includes('bill')){ speak('Total is ' + totalBill + ' rupees'); }
-  else if(l.includes('about')){ showAbout(); }
-  else if(l.includes('ai')){ toggleAI(); }
-}
-
-async function toggleAI(){
-  if(aiEnabled){ aiEnabled=false; coco=null; aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); document.getElementById('aiBtn').style.background='#222'; document.getElementById('aiBtn').style.color='#888'; document.getElementById('aiBtn').innerText='🤖 AI'; speak('AI off'); return; }
-  document.getElementById('aiBtn').innerText='⏳...';
-  if(!window.tf){ let s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js'; await new Promise(r=>{s.onload=r; document.head.appendChild(s);}); }
-  if(!window.cocoSsd){ let s2=document.createElement('script'); s2.src='https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js'; await new Promise(r=>{s2.onload=r; document.head.appendChild(s2);}); }
-  try{ coco=await cocoSsd.load({base:'lite_mobilenet_v2'}); aiEnabled=true; document.getElementById('aiBtn').style.background='#0f8'; document.getElementById('aiBtn').style.color='#000'; document.getElementById('aiBtn').innerText='🤖 AI ON'; speak('AI on'); loop(); }catch{ document.getElementById('aiBtn').innerText='🤖 AI'; }
-}
-function loop(){ 
-  if(!aiEnabled || detecting || !coco){ if(aiEnabled) requestAnimationFrame(loop); return;}
-  detecting=true; 
-  coco.detect(video,6,0.5).then(preds=>{ 
-    aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); 
-    let lines=[]; 
-    for(let p of preds){ 
-      let [x,y,w,h]=p.bbox; 
-      let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight; 
-      if(followMode && lines.length==0){
-        trackedObject=p;
-        aiCtx.strokeStyle='#ff0'; aiCtx.lineWidth=4;
-        aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
-        aiCtx.fillStyle='#ff0'; aiCtx.fillRect(x*sx, y*sy-18, 90,18);
-        aiCtx.fillStyle='#000'; aiCtx.font='11px Arial'; aiCtx.fillText('🎯 FOLLOW '+p.class.toUpperCase(), x*sx+2, y*sy-4);
-      } else {
-        aiCtx.strokeStyle='#00ff88'; aiCtx.lineWidth=2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
-        aiCtx.fillStyle='#00ff88'; aiCtx.font='10px Arial'; aiCtx.fillText(p.class, x*sx, y*sy>10?y*sy-4:y*sy+12);
-      }
-      lines.push(p.class);
-    } 
-    if(lines.length>0){ 
-      lastSeen=[...new Set(lines)].join(', '); 
-      if(isCounting){
-        particleCount+=lines.length;
-        document.getElementById('countDisplay').innerText='🔢 Count: '+particleCount+' (Say STOP to end)';
-        document.getElementById('see').innerText='🔢 Counting: '+particleCount+' - '+lastSeen;
-      } else {
-        document.getElementById('see').innerText=(followMode?'🎯 FOLLOW: ':'🤖 ')+lastSeen;
-      }
-    } 
-    detecting=false; requestAnimationFrame(loop);
-  }).catch(()=>{detecting=false; requestAnimationFrame(loop);}); 
-}
-async function toggleTorch(){ try{ if(!track) return; let caps=track.getCapabilities(); if(!caps.torch) {speak('Torch not supported'); return;} isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); speak(isTorch?'Torch on':'Torch off'); }catch{} }
-function toggleBarcodeMode(){ barcodeMode=!barcodeMode; document.getElementById('scanBox').style.display=barcodeMode?'block':'none'; document.getElementById('barcodeBtn').style.background=barcodeMode?'#0f8':'#ff0'; if(barcodeMode){ document.getElementById('barcodeRes').innerHTML='🔍 Scanning...'; startScan(); speak('Barcode scanning'); } else { stopScan(); } }
-function startScan(){ if(!codeReader){ try{codeReader=new ZXing.BrowserMultiFormatReader();}catch{}} if(codeReader){ try{codeReader.decodeFromVideoDevice(null,'godVideo',(r)=>{ if(r&&r.text) handleBarcode(r.text); });}catch{}} barcodeInterval=setInterval(async()=>{ if(!barcodeMode) return; if('BarcodeDetector' in window){ try{ let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; c.getContext('2d').drawImage(video,0,0); let det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','qr_code']}); let bmp=await createImageBitmap(c); let codes=await det.detect(bmp); if(codes[0]) handleBarcode(codes[0].rawValue); }catch{} } },500); }
-function stopScan(){ if(barcodeInterval) clearInterval(barcodeInterval); if(codeReader) try{codeReader.reset();}catch{} }
-function handleBarcode(code){ if(!code || code===lastBarcode) return; lastBarcode=code; if(navigator.vibrate) navigator.vibrate(80); document.getElementById('newBarcode').value=code; let item=priceDB[code]; if(item){ document.getElementById('barcodeRes').innerHTML=`✅ ${code} → <b>${item.name}</b> Rs.${item.price}`; speak(item.name); addToBill(code,item.price,item.name); setTimeout(()=>{if(barcodeMode) toggleBarcodeMode();},1200); } else { document.getElementById('barcodeRes').innerHTML=`📷 NEW ${code} <button onclick="showPriceDB()" style="background:#0f8;color:#000;border:none;padding:2px 6px;border-radius:6px">➕ ADD</button>`; speak('New barcode'); } }
-function handleShutter(){ if(isRecording) stopVideoRecording(); else capturePhoto(); }
-function capturePhoto(){ let canvas=document.createElement('canvas'); canvas.width=video.videoWidth; canvas.height=video.videoHeight; let ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0); ctx.drawImage(aiCanvas,0,0); capturedDataUrl=canvas.toDataURL('image/jpeg',0.82); document.getElementById('previewImg').src=capturedDataUrl; document.getElementById('preview').style.display='flex'; if(navigator.vibrate) navigator.vibrate(30); speak('Photo captured'); }
-function closePreview(){document.getElementById('preview').style.display='none';}
-function savePhoto(){let a=document.createElement('a'); a.href=capturedDataUrl; a.download=`WanaLab-GodEye-${Date.now()}.jpg`; a.click(); closePreview(); speak('Saved');}
-function addPriceManual(){let bc=document.getElementById('newBarcode').value.trim(); let nm=document.getElementById('newName').value.trim()||'Product'; let pr=parseInt(document.getElementById('newPrice').value)||0; if(!bc||!pr) return; priceDB[bc]={name:nm,price:pr}; localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB)); renderDB(); speak('Added');}
-function renderDB(){let h=''; let k=Object.keys(priceDB); if(k.length==0) h='Empty'; else k.forEach(x=>{h+=`<div style="display:flex;justify-content:space-between;padding:4px;background:#111;margin:2px 0;border-radius:6px;font-size:7px"><span>${x} ${priceDB[x].name}</span><span style="color:#0f8">Rs.${priceDB[x].price}</span></div>`;}); document.getElementById('dbList').innerHTML=h;}
-function addToBill(bc=null,pr=null,name=null){let it=name||bc||lastSeen||'Product'; let p=pr||250; billItems.push({name:it,price:p}); totalBill+=p; document.getElementById('billBox').innerHTML=`Total Rs.${totalBill}`;}
-function toggleCounting(){
-  isCounting=!isCounting;
-  let btn=document.getElementById('countBtn');
-  if(isCounting){
-    particleCount=0;
-    btn.style.background='#ff8800'; btn.style.color='#fff';
-    speak('Counting started, say stop to end');
-    document.getElementById('countDisplay').innerText='🔢 Counting: 0 - Say STOP';
-    if(!aiEnabled) toggleAI();
-  } else {
-    btn.style.background='#333'; btn.style.color='#fff';
-    speak('Counting stopped, total '+particleCount);
-    document.getElementById('see').innerText='🔢 Total: '+particleCount;
-    document.getElementById('countDisplay').innerText='🔢 Final: '+particleCount;
-  }
-}
-function toggleFollow(){
-  followMode=!followMode;
-  let btn=document.getElementById('followBtn');
-  if(followMode){
-    btn.style.background='#00aaff'; btn.style.color='#fff';
-    speak('Follow on');
-    if(!aiEnabled) toggleAI();
-  } else {
-    btn.style.background='#333'; btn.style.color='#fff';
-    trackedObject=null;
-    speak('Follow off');
-  }
-}
-function toggleVideo(){
-  if(isRecording) stopVideoRecording(); else startVideoRecording();
-}
-function startVideoRecording(){
-  if(!stream){ speak('Camera not ready'); return; }
-  recordedChunks=[];
-  let mime='video/webm;codecs=vp9';
-  if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
-  mediaRecorder=new MediaRecorder(stream, {mimeType:mime});
-  mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
-  mediaRecorder.onstop=()=>{
-    let blob=new Blob(recordedChunks,{type:'video/webm'});
-    let url=URL.createObjectURL(blob);
-    let a=document.createElement('a'); a.href=url; a.download=`GodEye-Video-${Date.now()}.webm`; a.click();
-    speak('Video saved');
-    document.getElementById('stat').innerText='Ready';
-    document.getElementById('shutter').classList.remove('rec');
-    document.getElementById('shutter').innerText='📸';
-    document.getElementById('videoBtn').style.background='#f00';
-    document.getElementById('videoBtn').innerText='🎥 VIDEO';
-  };
-  mediaRecorder.start(100);
-  isRecording=true;
-  document.getElementById('stat').innerText='🔴 REC - Say STOP';
-  document.getElementById('shutter').classList.add('rec');
-  document.getElementById('shutter').innerText='⏹️';
-  document.getElementById('videoBtn').style.background='#0f8';
-  document.getElementById('videoBtn').innerText='⏹️ STOP';
-  speak('Video recording, say stop to save');
-}
-function stopVideoRecording(){
-  if(mediaRecorder && isRecording){ mediaRecorder.stop(); isRecording=false; speak('Stopping video'); }
-}
-function exportBill(){if(billItems.length==0){ speak('Bill empty'); return;} const {jsPDF}=window.jspdf; let doc=new jsPDF(); doc.text('WanaLab God Eye - Count:'+particleCount+' Total Rs.'+totalBill,10,12); let y=20; billItems.forEach((it,i)=>{ doc.text((i+1)+'. '+it.name+' Rs.'+it.price,10,y); y+=8; }); doc.save(`GodEye-Bill-${Date.now()}.pdf`); speak('Bill exported');}
-window.addEventListener('load', ()=>{ 
-  checkInstalled(); 
-  init(); 
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/Wanalab-Omni-Camera-/sw.js').then(()=>console.log('God Eye Fixed Ready'));
-  }
-});
+let deferredPrompt=null;function checkInstalled(){let a=document.getElementById('aboutInstallArea');let s=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone||localStorage.getItem('wanaInstalled')==='true';if(s){document.getElementById('installBtn').style.display='none';document.getElementById('voiceBadge').style.top='38px';if(a)a.innerHTML='<div style="background:#0f8;color:#000;padding:10px;border-radius:10px;font-weight:800">✅ Installed - Ready for Play Store</div>';return true}else{if(a)a.innerHTML='<button onclick="installApp()" style="width:100%;margin:12px 0;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:800;box-shadow:0 0 15px #00ff88">📲 INSTALL GOD EYE PRO</button><div style="font-size:9px;color:#888">Chrome (⋮) → Install app</div>';return false}}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtn').style.display='block';document.getElementById('voiceBadge').style.top='74px';checkInstalled()});
+async function installApp(){if(deferredPrompt){deferredPrompt.prompt();let c=await deferredPrompt.userChoice;if(c.outcome==='accepted')localStorage.setItem('wanaInstalled','true');deferredPrompt=null;checkInstalled()}else alert('Chrome menu (⋮) → Install app / Add to Home screen')}
+window.addEventListener('appinstalled',()=>{localStorage.setItem('wanaInstalled','true');document.getElementById('installBtn').style.display='none';checkInstalled()});
+let stream=null,track=null,coco=null,detecting=false,lastSeen='',billItems=[],totalBill=0,lastBarcode='',priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'),capturedDataUrl='',barcodeMode=false,barcodeInterval=null,codeReader=null,isTorch=false,aiEnabled=false,isListening=false,recognition=null,currentLangMode=localStorage.getItem('wanaLang')||'en',isCounting=false,particleCount=0,isRecording=false,mediaRecorder=null,recordedChunks=[],followMode=false,speechEnabled=true;
+const video=document.getElementById('godVideo');const aiCanvas=document.getElementById('aiCanvas'),aiCtx=aiCanvas.getContext('2d');
+function showAbout(){let e=document.getElementById('aboutPage');e.classList.add('show');e.style.display='flex';checkInstalled()}function hideAbout(){let e=document.getElementById('aboutPage');e.classList.remove('show');e.style.display='none'}function showPriceDB(){renderDB();document.getElementById('priceDBPage').style.display='block'}function hidePriceDB(){document.getElementById('priceDBPage').style.display='none'}function setLang(l){currentLangMode=l;localStorage.setItem('wanaLang',l);updateLangUI()}function updateLangUI(){document.querySelectorAll('#langSel button').forEach(b=>{b.style.background='#333';b.style.color='#fff'});let id={en:'btnEn',ur:'btnUr',ps:'btnPs',auto:'btnAuto'}[currentLangMode];if(id){document.getElementById(id).style.background='#0f8';document.getElementById(id).style.color='#000'}}
+async function init(){checkInstalled();try{let c={video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}},audio:{echoCancellation:true,noiseSuppression:true}};stream=await navigator.mediaDevices.getUserMedia(c);video.srcObject=stream;track=stream.getVideoTracks()[0];await video.play();aiCanvas.width=video.videoWidth;aiCanvas.height=video.videoHeight;document.getElementById('stat').innerText='Ready';updateLangUI();initVoice()}catch(e){let m=e.name==='NotAllowedError'?'Allow Camera+Mic: Tap 🔒 in address bar':'Camera error';document.getElementById('stat').innerText=m;if(e.name==='NotAllowedError'){document.getElementById('see').innerText='Tap 🔒 → Permissions → Camera+Mic → Allow → Refresh'}setTimeout(init,2500)}}
+function initVoice(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){document.getElementById('voiceBadge').innerText='❌ Chrome Required';return}recognition=new SR();recognition.continuous=true;recognition.interimResults=true;recognition.lang='en-US';recognition.maxAlternatives=1;recognition.onresult=ev=>{let f='',i='';for(let k=ev.resultIndex;k<ev.results.length;k++){let t=ev.results[k][0].transcript;if(ev.results[k].isFinal)f+=t+' ';else i+=t}let d=f||i;if(d){document.getElementById('transcript').style.display='block';document.getElementById('transcript').innerText='🎤 '+d;document.getElementById('stat').innerText='Heard: '+d.slice(0,24)}if(f.trim()){handleVoice(f.trim());setTimeout(()=>{document.getElementById('transcript').style.display='none'},2200)}};recognition.onend=()=>{if(isListening)setTimeout(()=>{try{recognition.start()}catch{}},350)};recognition.onerror=e=>{if(e.error==='not-allowed'){isListening=false;document.getElementById('voiceBadge').classList.remove('on');document.getElementById('voiceBadge').innerText='🎤 TAP TO START';document.getElementById('stat').innerText='Mic blocked - Tap 🔒 Allow'}else if(isListening&&e.error!=='no-speech')setTimeout(()=>{try{recognition.start()}catch{}},800)};recognition.onstart=()=>{document.getElementById('stat').innerText='🔴 Listening - Say CAPTURE'}}
+function toggleVoice(){if(!recognition){alert('Please open in Google Chrome - Not Facebook/WhatsApp browser');return}if(isListening){isListening=false;try{recognition.stop()}catch{}window.speechSynthesis.cancel();document.getElementById('voiceBadge').classList.remove('on');document.getElementById('voiceBadge').innerText='🎤 TAP TO START VOICE';document.getElementById('stat').innerText='Voice OFF'}else{isListening=true;try{recognition.start()}catch(e){try{recognition.stop();setTimeout(()=>{try{recognition.start()}catch{}},400)}catch{}}document.getElementById('voiceBadge').classList.add('on');document.getElementById('voiceBadge').innerText='🔴 LISTENING';document.getElementById('stat').innerText='🔴 Listening...';setTimeout(()=>speak('Voice on, say capture, video, count'),900)}}
+function speak(t){if(!speechEnabled)return;try{let w=isListening;if(w){isListening=false;try{recognition.stop()}catch{}}window.speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.lang=currentLangMode==='ur'?'ur-PK':currentLangMode==='ps'?'ps-AF':'en-US';u.rate=1;u.volume=1;u.onend=()=>{if(w)setTimeout(()=>{isListening=true;try{recognition.start();document.getElementById('voiceBadge').classList.add('on');document.getElementById('voiceBadge').innerText='🔴 LISTENING';document.getElementById('stat').innerText='🔴 Listening'}catch{}},600)};u.onerror=()=>{if(w)setTimeout(()=>{isListening=true;try{recognition.start()}catch{}},600)};window.speechSynthesis.speak(u)}catch{}}
+function handleVoice(cmd){let l=cmd.toLowerCase().trim();if(l.includes('stop')||l.includes('بس')||l.includes('بند')||l.includes('ruk')){if(isRecording){stopVideoRecording();return}if(isCounting){toggleCounting();return}if(followMode){toggleFollow();return}}if(l.includes('capture')||l.includes('photo')||l.includes('cheese')||l.includes('shot')||l.includes('click')||l.includes('تصویر'))capturePhoto();else if(l.includes('video')||l.includes('record'))toggleVideo();else if(l.includes('count')||l.includes('گنتی'))toggleCounting();else if(l.includes('follow')||l.includes('track')||l.includes('فالو'))toggleFollow();else if(l.includes('barcode')||l.includes('scan'))toggleBarcodeMode();else if(l.includes('torch')||l.includes('light'))toggleTorch();else if(l.includes('total')||l.includes('bill'))speak('Total is '+totalBill+' rupees');else if(l.includes('about'))showAbout();else if(l.includes('ai'))toggleAI()}
+async function toggleAI(){if(aiEnabled){aiEnabled=false;coco=null;aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);document.getElementById('aiBtn').style.background='#222';document.getElementById('aiBtn').style.color='#888';document.getElementById('aiBtn').innerText='🤖 AI';speak('AI off');return}document.getElementById('aiBtn').innerText='⏳ AI...';if(!window.tf){let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js';await new Promise(r=>{s.onload=r;document.head.appendChild(s)})}if(!window.cocoSsd){let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js';await new Promise(r=>{s.onload=r;document.head.appendChild(s)})}try{coco=await cocoSsd.load({base:'lite_mobilenet_v2'});aiEnabled=true;document.getElementById('aiBtn').style.background='#0f8';document.getElementById('aiBtn').style.color='#000';document.getElementById('aiBtn').innerText='🤖 AI ON';speak('AI on');loop()}catch{document.getElementById('aiBtn').innerText='🤖 AI'}}
+function loop(){if(!aiEnabled||detecting||!coco){if(aiEnabled)requestAnimationFrame(loop);return}detecting=true;coco.detect(video,6,0.5).then(preds=>{aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);let lines=[];for(let p of preds){let[x,y,w,h]=p.bbox;let sx=aiCanvas.width/video.videoWidth,sy=aiCanvas.height/video.videoHeight;if(followMode&&lines.length===0){aiCtx.strokeStyle='#ff0';aiCtx.lineWidth=4;aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);aiCtx.fillStyle='#ff0';aiCtx.fillRect(x*sx,y*sy-18,100,18);aiCtx.fillStyle='#000';aiCtx.font='11px Arial';aiCtx.fillText('🎯 '+p.class.toUpperCase(),x*sx+2,y*sy-4)}else{aiCtx.strokeStyle='#00ff88';aiCtx.lineWidth=2;aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);aiCtx.fillStyle='#00ff88';aiCtx.font='10px Arial';aiCtx.fillText(p.class,x*sx,y*sy>12?y*sy-4:y*sy+12)}lines.push(p.class)}if(lines.length){lastSeen=[...new Set(lines)].join(', ');if(isCounting){particleCount+=lines.length;document.getElementById('countDisplay').innerText='🔢 Count: '+particleCount+' (Say STOP)';document.getElementById('see').innerText='🔢 Counting: '+particleCount} else document.getElementById('see').innerText=(followMode?'🎯 FOLLOW: ':'🤖 ')+lastSeen}detecting=false;requestAnimationFrame(loop)}).catch(()=>{detecting=false;requestAnimationFrame(loop)})}
+async function toggleTorch(){try{if(!track)return;let c=track.getCapabilities();if(!c.torch){speak('Torch not supported');return}isTorch=!isTorch;await track.applyConstraints({advanced:[{torch:isTorch}]});speak(isTorch?'Torch on':'Torch off')}catch{}}
+function toggleBarcodeMode(){barcodeMode=!barcodeMode;document.getElementById('scanBox').style.display=barcodeMode?'block':'none';document.getElementById('barcodeBtn').style.background=barcodeMode?'#0f8':'#ff0';if(barcodeMode){document.getElementById('barcodeRes').innerText='🔍 Scanning...';startScan();speak('Barcode scanning')}else stopScan()}
+function startScan(){if(!codeReader)try{codeReader=new ZXing.BrowserMultiFormatReader()}catch{}if(codeReader)try{codeReader.decodeFromVideoDevice(null,'godVideo',r=>{if(r&&r.text)handleBarcode(r.text)})}catch{}barcodeInterval=setInterval(async()=>{if(!barcodeMode)return;if('BarcodeDetector' in window)try{let c=document.createElement('canvas');c.width=video.videoWidth;c.height=video.videoHeight;c.getContext('2d').drawImage(video,0,0);let d=new BarcodeDetector({formats:['ean_13','ean_8','code_128','qr_code']});let b=await createImageBitmap(c);let codes=await d.detect(b);if(codes[0])handleBarcode(codes[0].rawValue)}catch{}},600)}
+function stopScan(){if(barcodeInterval)clearInterval(barcodeInterval);if(codeReader)try{codeReader.reset()}catch{}}
+function handleBarcode(code){if(!code||code===lastBarcode)return;lastBarcode=code;if(navigator.vibrate)navigator.vibrate(80);document.getElementById('newBarcode').value=code;let it=priceDB[code];if(it){document.getElementById('barcodeRes').innerHTML=`✅ ${code} → <b>${it.name}</b> Rs.${it.price}`;speak(it.name);addToBill(code,it.price,it.name);setTimeout(()=>{if(barcodeMode)toggleBarcodeMode()},1100)}else{document.getElementById('barcodeRes').innerHTML=`📷 NEW ${code} <button onclick="showPriceDB()" style="background:#0f8;color:#000;border:none;padding:3px 8px;border-radius:6px;margin-left:6px">➕ ADD</button>`;speak('New barcode')}}
+function handleShutter(){if(isRecording)stopVideoRecording();else capturePhoto()}
+function capturePhoto(){let c=document.createElement('canvas');c.width=video.videoWidth;c.height=video.videoHeight;let x=c.getContext('2d');x.drawImage(video,0,0);x.drawImage(aiCanvas,0,0);capturedDataUrl=c.toDataURL('image/jpeg',0.85);document.getElementById('previewImg').src=capturedDataUrl;document.getElementById('preview').style.display='flex';if(navigator.vibrate)navigator.vibrate(30);speak('Photo captured')}
+function closePreview(){document.getElementById('preview').style.display='none'}function savePhoto(){let a=document.createElement('a');a.href=capturedDataUrl;a.download=`WanaLab-GodEye-${Date.now()}.jpg`;a.click();closePreview();speak('Saved')}
+function addPriceManual(){let bc=document.getElementById('newBarcode').value.trim(),nm=document.getElementById('newName').value.trim()||'Product',pr=parseInt(document.getElementById('newPrice').value)||0;if(!bc||!pr)return;priceDB[bc]={name:nm,price:pr};localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB));renderDB();speak('Added')}function renderDB(){let h='',k=Object.keys(priceDB);if(!k.length)h='<div style="color:#666;text-align:center;padding:10px">Empty DB - Scan barcode to add</div>';else k.forEach(x=>{h+=`<div style="display:flex;justify-content:space-between;padding:6px;background:#111;margin:3px 0;border-radius:8px;font-size:8px"><span>${x} ${priceDB[x].name}</span><span style="color:#0f8">Rs.${priceDB[x].price}</span></div>`});document.getElementById('dbList').innerHTML=h}function addToBill(bc=null,pr=null,name=null){let it=name||bc||lastSeen||'Product',p=pr||250;billItems.push({name:it,price:p});totalBill+=p;document.getElementById('billBox').innerText=`🧾 Total Rs.${totalBill} - ${billItems.length} items`}
+function toggleCounting(){isCounting=!isCounting;let b=document.getElementById('countBtn');if(isCounting){particleCount=0;b.style.background='#ff8800';b.style.color='#fff';speak('Counting started, say stop to end');document.getElementById('countDisplay').innerText='🔢 Counting: 0 - Say STOP';if(!aiEnabled)toggleAI()}else{b.style.background='#333';b.style.color='#fff';speak('Counting stopped, total '+particleCount);document.getElementById('see').innerText='🔢 Total counted: '+particleCount;document.getElementById('countDisplay').innerText='🔢 Final: '+particleCount}}
+function toggleFollow(){followMode=!followMode;let b=document.getElementById('followBtn');if(followMode){b.style.background='#00aaff';b.style.color='#fff';speak('Follow on');if(!aiEnabled)toggleAI()}else{b.style.background='#333';b.style.color='#fff';speak('Follow off')}}
+function toggleVideo(){if(isRecording)stopVideoRecording();else startVideoRecording()}
+function startVideoRecording(){if(!stream){speak('Camera not ready');return}recordedChunks=[];let mime='video/webm;codecs=vp9';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';mediaRecorder=new MediaRecorder(stream,{mimeType:mime});mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recordedChunks.push(e.data)};mediaRecorder.onstop=()=>{let blob=new Blob(recordedChunks,{type:'video/webm'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`GodEye-Video-${Date.now()}.webm`;a.click();speak('Video saved');document.getElementById('stat').innerText='Ready';document.getElementById('shutter').classList.remove('rec');document.getElementById('shutter').innerText='📸';document.getElementById('videoBtn').style.background='#ff1a1a';document.getElementById('videoBtn').innerText='🎥 VIDEO'};mediaRecorder.start(100);isRecording=true;document.getElementById('stat').innerText='🔴 REC - Say STOP';document.getElementById('shutter').classList.add('rec');document.getElementById('shutter').innerText='⏹️';document.getElementById('videoBtn').style.background='#0f8';document.getElementById('videoBtn').innerText='⏹️ STOP';speak('Recording video, say stop')}
+function stopVideoRecording(){if(mediaRecorder&&isRecording){mediaRecorder.stop();isRecording=false;speak('Stopping')}}
+function exportBill(){if(!billItems.length){speak('Bill empty');return}const{jsPDF}=window.jspdf;let d=new jsPDF();d.text(`WanaLab God Eye - Count:${particleCount} Total Rs.${totalBill}`,10,12);let y=20;billItems.forEach((it,i)=>{d.text(`${i+1}. ${it.name} Rs.${it.price}`,10,y);y+=8});d.save(`GodEye-Bill-${Date.now()}.pdf`);speak('Bill exported')}
+window.addEventListener('load',()=>{checkInstalled();init();if('serviceWorker' in navigator)navigator.serviceWorker.register('/Wanalab-Omni-Camera-/sw.js').then(()=>console.log('God Eye PRO Play Store Ready'))});
 </script>
 </body>
-</html>
+  </html>
