@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab Omni-Camera - AI Camera by Nasir Khan</title>
-<meta name="description" content="WanaLab Omni-Camera by Nasir Khan - AI Camera with Urdu Voice, Stock Count, Follow, Bill, WhatsApp - WanaLab">
+<title>WanaLab Omni-Camera v9.1 Pro - Face Blur + Price DB - By Nasir Khan</title>
+<meta name="description" content="WanaLab Omni-Camera v9.1 Pro by Nasir Khan - Face Blur Privacy, Barcode Price DB, OCR Urdu English Auto, Bill, WhatsApp">
 <meta name="theme-color" content="#00ff88">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,22 +14,25 @@
 <link rel="icon" type="image/png" href="wanalab-icon-v8.1.png">
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 #godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+#blurCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:3;pointer-events:none}
 #top{position:fixed;top:0;left:0;right:0;z-index:10;background:linear-gradient(90deg,rgba(0,0,0,0.9),rgba(0,40,0,0.9));color:#0f8;padding:6px 8px;display:flex;justify-content:space-between;font-size:9px}
 #voiceBadge{position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:10px}
 #voiceBadge.on{background:#0f8;color:#000;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.07)}}
 #transcript{position:fixed;top:58px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.9);color:#ff0;padding:6px 10px;border-radius:8px;font-size:10px;display:none;border:1px solid #ff0;text-align:center}
-#info{position:fixed;bottom:68px;left:5px;right:5px;z-index:10;background:rgba(0,0,0,0.88);color:#fff;padding:7px 8px;border-radius:10px;font-size:9px;border:1px solid #0f8;max-height:24vh;overflow:auto}
-#controls{position:fixed;bottom:4px;left:3px;right:3px;display:flex;gap:2px;z-index:10}
-#controls button{flex:1;padding:10px 1px;border:none;border-radius:8px;font-weight:bold;font-size:6px}
+#info{position:fixed;bottom:78px;left:5px;right:5px;z-index:10;background:rgba(0,0,0,0.88);color:#fff;padding:7px 8px;border-radius:10px;font-size:9px;border:1px solid #0f8;max-height:30vh;overflow:auto}
+#controls{position:fixed;bottom:4px;left:3px;right:3px;display:flex;gap:2px;z-index:10;flex-wrap:wrap}
+#controls button{flex:1 1 30%;padding:9px 1px;border:none;border-radius:8px;font-weight:bold;font-size:6px}
 .protoTag{display:inline-block;padding:2px 4px;border-radius:6px;margin:1px;font-size:6px;font-weight:bold}
 #installBtn{position:fixed;top:55px;right:8px;z-index:12;background:#00ff88;color:#000;padding:6px 10px;border-radius:20px;font-size:8px;font-weight:bold;display:none;border:none}
 </style>
@@ -37,69 +40,136 @@ body{background:#000;overflow:hidden;font-family:Arial;height:100vh}
 <body>
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
-<div id="top"><span onclick="showAbout()" style="cursor:pointer">♾️ v8.3 WanaLab Omni-Camera</span><span id="stat">Loading...</span><span onclick="showAbout()" style="background:#00ff88;color:#000;padding:2px 6px;border-radius:10px;cursor:pointer">ℹ️ ABOUT</span></div>
+<canvas id="blurCanvas"></canvas>
+<div id="top"><span onclick="showAbout()" style="cursor:pointer">♾️ v9.1 Pro Face+Price</span><span id="stat">Loading...</span><span id="faceStat" style="background:#333;color:#fff;padding:2px 6px;border-radius:10px">😐 OFF</span><span onclick="showAbout()" style="background:#00ff88;color:#000;padding:2px 6px;border-radius:10px;cursor:pointer">ℹ️ ABOUT</span></div>
 <div id="voiceBadge">🎤 TAP TO START ALL</div>
 <button id="installBtn" onclick="installPWA()">📲 INSTALL APP</button>
 <div id="transcript"></div>
 <div id="info">
-<div id="see" style="color:#0f8;font-weight:bold;font-size:10px">Loading Omni-Camera...</div>
+<div id="see" style="color:#0f8;font-weight:bold;font-size:10px">Loading v9.1 Pro...</div>
+<div id="faceInfo" style="color:#f0f;font-size:8px"></div>
+<div id="barcodeRes" style="color:#ff0;font-size:9px;margin:2px 0"></div>
+<div id="ocrRes" style="color:#0ff;font-size:8px;margin:2px 0;max-height:40px;overflow:auto"></div>
+<div id="priceDBInfo" style="font-size:8px"></div>
+<div id="billBox" style="margin-top:4px"></div>
 <div id="do" style="font-size:8px;color:#ccc;margin-top:2px"></div>
 <div id="extra" style="font-size:7px;color:#aaa;margin-top:3px;display:flex;gap:3px;flex-wrap:wrap">
-<span class="protoTag" style="background:#0f8;color:#000">WanaLab Omni</span>
-<span class="protoTag" style="background:#a0f;color:#fff">🧠 AI TRACK</span>
-<span class="protoTag" style="background:#ff0;color:#000">💰 BILL</span>
-<span class="protoTag" style="background:#0ff;color:#000">📏 MEASURE</span>
-<span class="protoTag" style="background:#f0f;color:#fff">🧠 MEMORY</span>
+<span class="protoTag" style="background:#f0f;color:#fff">😐 FACE BLUR</span>
+<span class="protoTag" style="background:#ff0;color:#000">📦 PRICE DB</span>
+<span class="protoTag" style="background:#0ff;color:#000">🔤 OCR UR/EN</span>
+<span class="protoTag" style="background:#0f8;color:#000">🌐 AUTO LANG</span>
 </div>
 </div>
 <div id="controls">
-<button onclick="toggleVoice()" id="voiceBtn" style="background:#f00;color:#fff">🎤 VOICE</button>
-<button onclick="toggleTorch()" style="background:#ff0;color:#000">🔦 TORCH</button>
-<button onclick="followMode()" id="followBtn" style="background:#a0f;color:#fff">🎯 FOLLOW</button>
-<button onclick="countStock()" style="background:#0ff;color:#000">🔢 GINO</button>
-<button onclick="cap()" style="background:#fff;color:#000">📸 CAP</button>
-<button onclick="sendWhatsApp()" style="background:#0a0;color:#fff">📱 WA</button>
+<button onclick="toggleVoice()" id="voiceBtn" style="background:#f00;color:#fff">🎤 VOICE<br><span style="font-size:5px">اردو/EN AUTO</span></button>
+<button onclick="toggleFaceBlur()" id="faceBtn" style="background:#f0f;color:#fff">😐 FACE BLUR<br>چہرہ بلر</button>
+<button onclick="scanBarcode()" style="background:#ff0;color:#000">📷 BARCODE<br>بارکوڈ</button>
+<button onclick="readOCR()" style="background:#0ff;color:#000">🔤 OCR<br>تحریر پڑھو</button>
+<button onclick="countStock()" style="background:#0ff;color:#000">🔢 GINO<br>گنو</button>
+<button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD BILL<br>بل میں</button>
+<button onclick="showPriceDB()" style="background:#fff;color:#000">📦 PRICE DB<br>قیمت لسٹ</button>
+<button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL PDF<br>بل بناؤ</button>
+<button onclick="sendWhatsAppBill()" style="background:#0a0;color:#fff">📱 WA BILL<br>واٹس ایپ</button>
 </div>
 
+<!-- Price DB Page -->
+<div id="priceDBPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:50;overflow:auto;padding:12px">
+<div style="max-width:420px;margin:10px auto;background:#001a0a;border:2px solid #ff0;border-radius:16px;padding:14px">
+<h3 style="color:#ff0">📦 Smart Price DB - قیمت لسٹ</h3>
+<p style="font-size:9px;color:#aaa">Barcode → auto price. Voice: "Iska price 500 hai" / "Price 500"</p>
+<div id="dbList" style="max-height:38vh;overflow:auto;margin:8px 0;background:#000;padding:8px;border-radius:8px"></div>
+<div style="display:flex;gap:4px;margin:8px 0"><input id="newBarcode" placeholder="Barcode" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newName" placeholder="Name" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newPrice" placeholder="Price" type="number" style="width:70px;padding:8px;border-radius:6px;border:none"></div>
+<button onclick="addPriceManual()" style="width:100%;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">➕ Add Price</button>
+<button onclick="hidePriceDB()" style="width:100%;margin-top:8px;padding:10px;background:#333;color:#fff;border:none;border-radius:8px">✅ BACK</button>
+</div>
+</div>
+
+<!-- About Page - KEEP YOUR ORIGINAL -->
 <div id="aboutPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:100;overflow:auto;padding:15px;color:#fff;font-family:Arial">
   <div style="max-width:400px;margin:20px auto;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:16px;padding:18px">
     <div style="text-align:center">
       <img src="wanalab-icon-v8.1.png" style="width:90px;height:90px;border-radius:20px;border:2px solid #00ff88;background:#001a0a">
       <h2 style="color:#00ff88;margin:10px 0 2px">WanaLab Omni-Camera</h2>
-      <p style="color:#aaa;font-size:11px">AI Camera App - v8.3</p>
-      <div style="background:rgba(0,255,136,0.1);border-radius:10px;padding:8px;margin:10px 0;font-size:9px;color:#0f8">🇵🇰 By WanaLab - Nasir Khan</div>
+      <p style="color:#aaa;font-size:11px">AI Camera App - v9.1 Business Pro</p>
+      <div style="background:rgba(0,255,136,0.1);border-radius:10px;padding:8px;margin:10px 0;font-size:9px;color:#0f8">🇵🇰 By WanaLab - Nasir Khan - Face Blur + Price DB + Urdu/English Auto</div>
     </div>
     <h3 style="color:#00ff88;font-size:12px;margin:12px 0 6px">👨‍💻 Developer</h3>
     <p style="font-size:11px;line-height:1.5"><b>Nasir Khan</b><br>Founder - WanaLab Omni-Camera<br>WanaLab</p>
-    <h3 style="color:#00ff88;font-size:12px;margin:12px 0 6px">📱 What is Omni-Camera?</h3>
-    <p style="font-size:10px;line-height:1.5;color:#ccc">WanaLab Omni-Camera is AI-powered camera with Urdu Voice, Stock Counting, Follow Mode, Bill Maker, WhatsApp Report, Memory. Works offline. PWA ready for Play Store.</p>
+    <h3 style="color:#00ff88;font-size:12px;margin:12px 0 6px">🆕 v9.1 Pro Features</h3>
+    <p style="font-size:9px;line-height:1.5;color:#ccc">✅ Face Blur Privacy - Auto blur customer faces<br>✅ Smart Price DB - Barcode → auto price<br>✅ OCR Urdu + English - Read product labels<br>✅ Auto Language Detect - Speaks Urdu/English<br>✅ Bill + Excel + WhatsApp Report</p>
     <h3 style="color:#00ff88;font-size:12px;margin:12px 0 6px">© Copyright</h3>
-    <p style="font-size:9px;color:#888">© 2026 WanaLab - Omni-Camera<br>Developed by Nasir Khan - WanaLab<br>All rights reserved.</p>
+    <p style="font-size:9px;color:#888">© 2026 WanaLab - Omni-Camera v9.1 Pro<br>Developed by Nasir Khan - WanaLab<br>All rights reserved.</p>
     <button onclick="hideAbout()" style="width:100%;margin-top:14px;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold;font-size:12px">✅ BACK TO CAMERA</button>
   </div>
 </div>
 
 <script>
-let stream=null,track=null,isTorch=false,coco=null,mobile=null,detecting=false,isListening=false,recognition=null,lastSeen='',memoryDB=JSON.parse(localStorage.getItem('wanaMemory')||'{}'),followTarget=null,isFollow=false,stockList=[],measureStart=null,deferredPrompt=null;
-const video=document.getElementById('godVideo');const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
+let stream=null,track=null,isTorch=false,coco=null,faceModel=null,detecting=false,isListening=false,recognition=null,lastSeen='',memoryDB=JSON.parse(localStorage.getItem('wanaMemory')||'{}'),stockList=[],billItems=[],totalBill=0,lastBarcode='',lastOCR='',isFaceBlur=false,priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'),deferredPrompt=null;
+const video=document.getElementById('godVideo');const aiCanvas=document.getElementById('aiCanvas'),aiCtx=aiCanvas.getContext('2d');const blurCanvas=document.getElementById('blurCanvas'),blurCtx=blurCanvas.getContext('2d');
 function showAbout(){document.getElementById('aboutPage').style.display='block';}function hideAbout(){document.getElementById('aboutPage').style.display='none';}
-async function init(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:true});video.srcObject=stream; track=stream.getVideoTracks()[0];await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;document.getElementById('stat').innerText='AI loading...';let [cocoM]=await Promise.all([cocoSsd.load({base:'lite_mobilenet_v2'})]);coco=cocoM;document.getElementById('stat').innerText='READY';document.getElementById('see').innerText='✅ v8.3 WanaLab Omni-Camera - Say: Gino, Follow karo';initVoice(); loop();if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }}catch(e){ document.getElementById('stat').innerText='Error:'+e.message; }}
+function showPriceDB(){renderDB();document.getElementById('priceDBPage').style.display='block';}function hidePriceDB(){document.getElementById('priceDBPage').style.display='none';}
+function detectLang(t){const ur=/[\u0600-\u06FF]/; if(ur.test(t)) return 'ur'; const roman=['kya','hai','kar','bhai','paisa','kitna','ye','wo','mera','tera','aap','bill','gino','jalao','band','daam','chehra','qeemat','price','bhai','yaar']; if(roman.some(w=>t.toLowerCase().includes(w))) return 'ur'; return 'en';}
+function speakAuto(text){speechSynthesis.cancel();let lang=detectLang(text);let utt=new SpeechSynthesisUtterance(text);utt.lang=lang==='ur'?'ur-PK':'en-US';utt.rate=0.9;const voices=speechSynthesis.getVoices();if(lang==='ur'){let v=voices.find(x=>x.lang.includes('ur')||x.lang.includes('hi')); if(v) utt.voice=v;}speechSynthesis.speak(utt);document.getElementById('do').innerText=`🔊 ${text}`;}
+
+async function init(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280}},audio:true});video.srcObject=stream; track=stream.getVideoTracks()[0];await video.play(); aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight; blurCanvas.width=video.videoWidth; blurCanvas.height=video.videoHeight;document.getElementById('stat').innerText='Loading Face AI...';let cocoP=cocoSsd.load({base:'lite_mobilenet_v2'});let faceP=blazeface.load().catch(()=>null);let [cocoM,faceM]=await Promise.all([cocoP,faceP]);coco=cocoM; faceModel=faceM;document.getElementById('stat').innerText=faceModel?`READY v9.1 Face OK | DB:${Object.keys(priceDB).length}`:`READY v9.1 Obj | DB:${Object.keys(priceDB).length}`;document.getElementById('see').innerText=`✅ v9.1 Pro - Face Blur + Price DB - Say: Chehra blur karo / Barcode / Price 500`;initVoice(); loop();if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');}catch(e){document.getElementById('stat').innerText='Error:'+e.message;}}
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn').style.display='block'; });
 function installPWA(){ if(deferredPrompt){ deferredPrompt.prompt(); } else { alert('Chrome Menu > Add to Home Screen'); } }
-function initVoice(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;recognition=new SR(); recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-US';recognition.onstart=()=>{ isListening=true; document.getElementById('voiceBadge').classList.add('on'); document.getElementById('voiceBadge').innerText='🎤 SUN RAHA HU...'; };recognition.onend=()=>{ if(isListening) try{ recognition.start(); }catch{} };recognition.onresult=(ev)=>{let t=''; for(let i=ev.resultIndex;i<ev.results.length;i++) t+=ev.results[i][0].transcript; let cmd=t.toLowerCase().trim();document.getElementById('transcript').style.display='block'; document.getElementById('transcript').innerText=`🎤 ${t}`;if(ev.results[ev.results.length-1].isFinal){ handleAll(cmd); setTimeout(()=>document.getElementById('transcript').style.display='none',2000); }};}
+function initVoice(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;recognition=new SR(); recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-US';recognition.onstart=()=>{ isListening=true; document.getElementById('voiceBadge').classList.add('on'); document.getElementById('voiceBadge').innerText='🎤 سن رہا ہوں...'; };recognition.onend=()=>{ if(isListening) try{ recognition.start(); }catch{} };recognition.onresult=(ev)=>{let t=''; for(let i=ev.resultIndex;i<ev.results.length;i++) t+=ev.results[i][0].transcript; let cmd=t.toLowerCase().trim();document.getElementById('transcript').style.display='block'; document.getElementById('transcript').innerText=`🎤 ${t} [${detectLang(t)==='ur'?'اردو':'EN'}]`;if(ev.results[ev.results.length-1].isFinal){ handleAll(t); setTimeout(()=>document.getElementById('transcript').style.display='none',2200); }};}
 function toggleVoice(){ if(!recognition){ alert('Use Chrome'); return; } if(isListening){ isListening=false; recognition.stop(); document.getElementById('voiceBadge').classList.remove('on'); document.getElementById('voiceBadge').innerText='🎤 TAP'; } else { isListening=true; try{ recognition.start(); }catch{} } }
-function handleAll(cmd){if(cmd.includes('torch jalao')||cmd.includes('torch on')){ setTorch(true); }else if(cmd.includes('torch band')){ setTorch(false); }else if(cmd.includes('tasveer')||cmd.includes('capture')){ cap(); }else if(cmd.includes('follow')){ followMode(); }else if(cmd.includes('gino')||cmd.includes('count')){ countStock(); }else if(cmd.includes('yaad')){ rememberThis(); }else if(cmd.includes('bill')){ makeBill(); }else if(cmd.includes('whatsapp')){ sendWhatsApp(); }else if(cmd.includes('about')||cmd.includes('kisne')){ showAbout(); }}
-function speakUrdu(t){ speechSynthesis.cancel(); let u=new SpeechSynthesisUtterance(t); u.lang='ur-PK'; speechSynthesis.speak(u); document.getElementById('do').innerText=`🔊 ${t}`; }
-async function loop(){if(detecting){ requestAnimationFrame(loop); return; } detecting=true;try{let preds=await coco.detect(video, 15, 0.4);aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);let lines=[], countMap={}; stockList=[];for(let p of preds){let [x,y,w,h]=p.bbox; let label=p.class; if(['toilet','sink'].includes(p.class)) label='Power Board'; else if(p.class==='cell phone') label='Charger'; else if(p.class==='book') label='Kitab';countMap[label]=(countMap[label]||0)+1;stockList.push(label);let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;aiCtx.strokeStyle='#0f8'; aiCtx.lineWidth=3; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);lines.push(label);}if(lines.length>0){let uniq=[...new Set(lines)]; lastSeen=uniq.join(', ');document.getElementById('see').innerText=`${lastSeen}`;}}catch(e){}detecting=false; requestAnimationFrame(loop);}
-function setTorch(on){ track.applyConstraints({advanced:[{torch:on}]}).then(()=>{ isTorch=on; }).catch(()=>{}); }
-function toggleTorch(){ setTorch(!isTorch); }
-function followMode(){ if(!lastSeen) return; followTarget=lastSeen.split(',')[0]; isFollow=!isFollow; document.getElementById('followBtn').innerText=isFollow?`🎯 ${followTarget}`:'🎯 FOLLOW'; }
-function countStock(){ let map={}; stockList.forEach(s=>map[s]=(map[s]||0)+1); let txt=Object.entries(map).map(([k,v])=>`${v} ${k}`).join(', '); document.getElementById('see').innerText=`Ginti: ${txt} Total ${stockList.length}`; speakUrdu(txt); }
-function rememberThis(){ if(!lastSeen) return; let key=lastSeen.split(',')[0]; memoryDB[key]={time:Date.now()}; localStorage.setItem('wanaMemory',JSON.stringify(memoryDB)); speakUrdu(`${key} yaad`); }
-function makeBill(){ let map={}; stockList.forEach(s=>map[s]=(map[s]||0)+1); let total=0; let bill=''; Object.entries(map).forEach(([k,v])=>{ total+=200*v; bill+=`${k} x${v} `; }); document.getElementById('see').innerText=`Bill: ${bill} Total ${total} Rs`; }
-function sendWhatsApp(){ let txt=`WanaLab Omni-Camera by Nasir Khan: ${lastSeen} - ${new Date().toLocaleString()}`; window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,'_blank'); }
-function exportAllPDF(){ const { jsPDF } = window.jspdf; let doc=new jsPDF(); doc.text('WanaLab Omni-Camera by Nasir Khan',10,10); doc.save(`WanaLab-Omni-${Date.now()}.pdf`); }
-function cap(){ let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ct=c.getContext('2d'); ct.drawImage(video,0,0); ct.drawImage(aiCanvas,0,0,c.width,c.height); let a=document.createElement('a'); a.download=`WanaLab-Omni-${Date.now()}.png`; a.href=c.toDataURL(); a.click(); }
+
+function handleAll(cmd){
+let lower=cmd.toLowerCase();
+if(lower.includes('face blur')||lower.includes('chehra blur')||lower.includes('چہرہ بلر')||lower.includes('blur karo')){toggleFaceBlur();}
+else if(lower.includes('torch jalao')||lower.includes('torch on')){ setTorch(true); speakAuto('Torch on'); }
+else if(lower.includes('torch band')||lower.includes('torch off')){ setTorch(false); speakAuto('Torch off'); }
+else if(lower.match(/price\s*(\d+)|(\d+)\s*rup|daam\s*(\d+)|qeemat\s*(\d+)|قیمت\s*(\d+)/)){let m=lower.match(/(\d+)/); if(m){let price=parseInt(m[0]); if(lastBarcode){priceDB[lastBarcode]={name:lastSeen||'Product',price:price}; localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB)); speakAuto(priceDB[lastBarcode].name+' save '+price+' rupay'); renderDB();}else{addToBill(null,price);}} }
+else if(lower.includes('barcode')||lower.includes('بارکوڈ')||lower.includes('scan karo')){scanBarcode();}
+else if(lower.includes('ocr')||lower.includes('read')||lower.includes('پڑھو')||lower.includes('تحریر')){readOCR();}
+else if(lower.includes('bill mein')||lower.includes('add to bill')||lower.includes('بل میں')){addToBill();}
+else if(lower.includes('bill banao')||lower.includes('make bill')||lower.includes('بل بناؤ')){exportBill();}
+else if(lower.includes('price list')||lower.includes('قیمت لسٹ')||lower.includes('price db')){showPriceDB();}
+else if(lower.includes('gino')||lower.includes('count')||lower.includes('گنو')){countStock();}
+else if(lower.includes('tasveer')||lower.includes('capture')||lower.includes('تصویر')){cap(); speakAuto(detectLang(cmd)==='ur'?'تصویر لے لی':'Photo captured');}
+else if(lower.includes('salam')){speakAuto(detectLang(cmd)==='ur'?'وعلیکم السلام! وانا لیب v9.1 پرو تیار ہے':'Wa Alaikum Salam! WanaLab v9.1 Pro Ready');}
+else if(lower.includes('about')){showAbout();}
+}
+
+async function loop(){if(detecting){requestAnimationFrame(loop);return;}detecting=true;try{let preds=await coco.detect(video,15,0.4);aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);let lines=[]; stockList=[];for(let p of preds){let [x,y,w,h]=p.bbox; let label=p.class; if(['toilet','sink'].includes(label)) label='Power Board'; else if(label==='cell phone') label='Charger'; else if(label==='book') label='Kitab';stockList.push(label);let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;aiCtx.strokeStyle='#00ff88'; aiCtx.lineWidth=2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);lines.push(label);}if(lines.length>0){lastSeen=[...new Set(lines)].join(', ');document.getElementById('see').innerText=`${lastSeen}`;}
+
+if(isFaceBlur && faceModel){
+let faces=await faceModel.estimateFaces(video,false); blurCtx.clearRect(0,0,blurCanvas.width,blurCanvas.height);
+if(faces.length>0){document.getElementById('faceInfo').innerText=`😐 ${faces.length} face blurred - چہرے بلر`;for(let f of faces){let [x1,y1]=f.topLeft; let [x2,y2]=f.bottomRight; let w=x2-x1,h=y2-y1;let sx=blurCanvas.width/video.videoWidth, sy=blurCanvas.height/video.videoHeight;blurCtx.filter='blur(22px)'; blurCtx.drawImage(video,x1,y1,w,h,x1*sx,y1*sy,w*sx,h*sy); blurCtx.filter='none';}}
+}else{document.getElementById('faceInfo').innerText='';}
+
+}catch(e){}detecting=false; requestAnimationFrame(loop);}
+
+function toggleFaceBlur(){isFaceBlur=!isFaceBlur;document.getElementById('faceStat').innerText=isFaceBlur?'😐 BLUR ON':'😐 OFF';document.getElementById('faceStat').style.background=isFaceBlur?'#f0f':'#333';document.getElementById('faceBtn').style.background=isFaceBlur?'#0f8':'#f0f';if(!isFaceBlur){blurCtx.clearRect(0,0,blurCanvas.width,blurCanvas.height);document.getElementById('faceInfo').innerText='';}speakAuto(isFaceBlur?'Face blur on - چہرہ بلر آن':'Face blur off');}
+function setTorch(on){ track.applyConstraints({advanced:[{torch:on}]}).then(()=>{isTorch=on;}).catch(()=>{}); }function toggleTorch(){ setTorch(!isTorch); }
+async function scanBarcode(){
+document.getElementById('barcodeRes').innerText='🔍 Scanning barcode... بارکوڈ اسکین';
+if('BarcodeDetector' in window){
+try{const detector=new BarcodeDetector({formats:['ean_13','ean_8','code_128','qr_code','upc_a']});const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext('2d').drawImage(video,0,0);const bitmap=await createImageBitmap(canvas);const barcodes=await detector.detect(bitmap);if(barcodes.length>0){handleBarcode(barcodes[0].rawValue);return;}}catch{}
+}
+try{const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;const ctx=canvas.getContext('2d');ctx.drawImage(video,0,0);const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);const code=jsQR(imgData.data,canvas.width,canvas.height);if(code){handleBarcode(code.data);return;}}catch{}
+document.getElementById('barcodeRes').innerText='❌ No barcode - قریب لاؤ';
+}
+function handleBarcode(code){
+lastBarcode=code;
+let dbItem=priceDB[code];
+if(dbItem){document.getElementById('barcodeRes').innerHTML=`✅ <b>${code}</b> → ${dbItem.name} = Rs.${dbItem.price}`;speakAuto(`${dbItem.name} ka ${dbItem.price} rupay`);addToBill(code,dbItem.price,dbItem.name);}
+else{document.getElementById('barcodeRes').innerHTML=`📷 <b>${code}</b> - New! Say: Iska price 500 hai`;speakAuto(`Naya barcode ${code}, price bolo`);}
+}
+function addPriceManual(){let bc=document.getElementById('newBarcode').value.trim();let nm=document.getElementById('newName').value.trim()||'Product';let pr=parseInt(document.getElementById('newPrice').value)||0;if(!bc||!pr){alert('Barcode + Price needed');return;}priceDB[bc]={name:nm,price:pr};localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB));renderDB();document.getElementById('newBarcode').value='';document.getElementById('newName').value='';document.getElementById('newPrice').value='';speakAuto(`${nm} save`);}
+function renderDB(){let html='';let keys=Object.keys(priceDB);if(keys.length==0) html='<p style="color:#888;font-size:8px">No prices - Scan + say price</p>';else{keys.forEach(k=>{let it=priceDB[k]; html+=`<div style="display:flex;justify-content:space-between;padding:5px;background:#111;margin:2px 0;border-radius:6px;font-size:8px"><span><b>${k}</b> ${it.name}</span><span style="color:#0f8">Rs.${it.price}</span><span onclick="deletePrice('${k}')" style="color:#f00;cursor:pointer">❌</span></div>`;});}document.getElementById('dbList').innerHTML=html;document.getElementById('priceDBInfo').innerHTML=`<span style="background:#ff0;color:#000;padding:2px 6px;border-radius:6px">📦 DB: ${keys.length} items</span>`;}
+function deletePrice(k){delete priceDB[k];localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB));renderDB();}
+async function readOCR(){document.getElementById('ocrRes').innerText='🔤 Reading... تحریر پڑھ رہا ہوں';try{const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext('2d').drawImage(video,0,0);const result=await Tesseract.recognize(canvas,'eng+urd');lastOCR=result.data.text.trim().substring(0,150);document.getElementById('ocrRes').innerHTML=`📝 ${lastOCR}`;speakAuto(lastOCR.substring(0,40));let priceMatch=lastOCR.match(/(\d{2,5})/); if(priceMatch && lastBarcode){let pr=parseInt(priceMatch[0]); if(pr>10 && pr<100000) addPriceManualFromOCR(pr);}}catch(e){document.getElementById('ocrRes').innerText='OCR error';}}
+function addPriceManualFromOCR(pr){if(lastBarcode){priceDB[lastBarcode]={name:lastOCR.substring(0,20)||'Product',price:pr};localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB));renderDB();}}
+function countStock(){ let map={}; stockList.forEach(s=>map[s]=(map[s]||0)+1); let txt=Object.entries(map).map(([k,v])=>`${v} ${k}`).join(', '); document.getElementById('see').innerText=`Ginti: ${txt} Total ${stockList.length}`; speakAuto(txt); }
+function addToBill(bc=null,pr=null,name=null){let item=name||bc||lastSeen.split(',')[0]||'Product';let price=pr||250;billItems.push({name:item.substring(0,25),price:price,time:new Date().toLocaleTimeString(),barcode:bc||''});totalBill+=price;renderBill();speakAuto(`${item} ${price}`);}
+function renderBill(){let html=billItems.map((b,i)=>`<span style="background:#00ff88;color:#000;padding:2px 6px;border-radius:6px;margin:1px;display:inline-block;font-size:7px">${i+1}. ${b.name} Rs.${b.price}</span>`).join(' ');html+=`<div style="margin-top:4px;color:#0f8;font-weight:bold;font-size:9px">Total Rs.${totalBill} | ${billItems.length} items</div>`;document.getElementById('billBox').innerHTML=html;}
+function exportBill(){if(billItems.length==0){speakAuto('Bill khali - پہلے شامل کریں');return;}const { jsPDF } = window.jspdf; let doc=new jsPDF(); doc.setFontSize(12); doc.text('WanaLab Omni-Camera v9.1 Pro - By Nasir Khan',10,12); doc.setFontSize(9); doc.text(`Total Rs.${totalBill} | ${new Date().toLocaleString()} | DB:${Object.keys(priceDB).length} items`,10,18);let y=26;billItems.forEach((b,i)=>{doc.text(`${i+1}. ${b.name} - Rs.${b.price} ${b.barcode}`,10,y);y+=6; if(y>280){doc.addPage(); y=10;}});doc.save(`WanaLab-Bill-v91-${Date.now()}.pdf`);speakAuto(`Bill total ${totalBill} rupay`);}
+function sendWhatsAppBill(){if(billItems.length==0){speakAuto('Bill khali');return;}let txt=`*WanaLab v9.1 Pro - Face Blur + Price DB*\nBy Nasir Khan\n\n`;billItems.forEach((b,i)=>txt+=`${i+1}. ${b.name} Rs.${b.price}\n`);txt+=`\n*Total Rs.${totalBill} | ${billItems.length} items*\n${new Date().toLocaleString()}`;window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,'_blank');}
+function cap(){let c=document.createElement('canvas');c.width=video.videoWidth;c.height=video.videoHeight;let ct=c.getContext('2d');ct.drawImage(video,0,0);if(isFaceBlur) ct.drawImage(blurCanvas,0,0,c.width,c.height);ct.drawImage(aiCanvas,0,0,c.width,c.height);let a=document.createElement('a');a.download=`WanaLab-v91-${Date.now()}.png`;a.href=c.toDataURL();a.click();speakAuto('Photo captured');}
 window.addEventListener('load', init);
 </script>
 </body>
