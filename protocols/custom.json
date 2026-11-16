@@ -4,7 +4,7 @@
     "name": "Custom UVC Device (User Add)",
     "type": "UVC",
     "mode": "auto",
-    "description": "User can add own UVC ID here - Example: USB Microscope, Endoscope",
+    "description": "User can add own UVC ID here - Example: USB Microscope, Endoscope, WanaLab Pro",
     "status": "template",
     "vendorId": "0x0000",
     "productId": "0x0000",
@@ -12,7 +12,8 @@
     "fps": 30,
     "protocol": "uvc",
     "addedBy": "user",
-    "version": "9.2.11"
+    "version": "1.1-pro",
+    "os": "God Eye v1.1 PRO"
   },
   {
     "id": "custom-wifi-camera",
@@ -22,7 +23,7 @@
     "ip": "192.168.0.1",
     "url": "http://192.168.0.1/video",
     "rtsp": "rtsp://192.168.0.1:554/stream",
-    "description": "Add your WiFi camera IP - Supports IP Camera, WiFi Microscope, ESP32-CAM",
+    "description": "Add your WiFi camera IP - Supports WiFi Microscope, ESP32-CAM, WanaLab",
     "status": "template",
     "protocol": "mjpeg",
     "port": 80,
@@ -30,7 +31,8 @@
     "password": "",
     "resolution": "1280x720",
     "addedBy": "user",
-    "version": "9.2.11"
+    "version": "1.1-pro",
+    "os": "God Eye v1.1 PRO"
   },
   {
     "id": "custom-ip-camera",
@@ -40,13 +42,30 @@
     "ip": "192.168.1.100",
     "url": "http://192.168.1.100/snapshot.jpg",
     "rtsp": "rtsp://192.168.1.100:554/onvif1",
-    "description": "Add any ONVIF / Hikvision / Dahua / Tapo camera",
+    "description": "Add any ONVIF / Hikvision / Dahua / Tapo / Wana CCTV",
     "status": "template",
     "protocol": "rtsp",
     "port": 554,
     "username": "admin",
     "password": "",
     "addedBy": "user",
-    "version": "9.2.11"
+    "version": "1.1-pro",
+    "os": "God Eye v1.1 PRO"
+  },
+  {
+    "id": "custom-thermal-flir",
+    "name": "Custom Thermal FLIR (User Add)",
+    "type": "THERMAL",
+    "mode": "auto",
+    "description": "Add FLIR ONE / Seek Thermal / InfiRay - Thermal Camera",
+    "status": "template",
+    "protocol": "uvc-thermal",
+    "vendorId": "0x0000",
+    "productId": "0x0000",
+    "resolution": "160x120",
+    "palette": "ironbow",
+    "addedBy": "user",
+    "version": "1.1-pro",
+    "os": "God Eye v1.1 PRO"
   }
 ]
