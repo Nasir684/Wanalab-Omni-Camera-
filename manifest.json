@@ -1,7 +1,7 @@
 {
-  "name": "WanaLab - Omni-Camera",
+  "name": "WanaLab - Omni-Camera v9.2 Pro",
   "short_name": "WanaLab Omni",
-  "description": "WanaLab Omni-Camera by Nasir Khan - AI Camera with Urdu Voice, Stock Count, Follow, Bill, WhatsApp - WanaLab",
+  "description": "WanaLab Omni-Camera v9.2 Play Store Pro by Nasir Khan - Face Blur Privacy, Smart Price DB 1000+ Offline IndexedDB, OCR Urdu Pashto English Auto Detect, Barcode QR, Bill PDF, WhatsApp, AdMob Ready, Pro Unlock - WanaLab",
   "start_url": "/Wanalab-Omni-Camera-/?source=pwa",
   "scope": "/Wanalab-Omni-Camera-/",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "orientation": "any",
   "background_color": "#000000",
   "theme_color": "#00ff88",
-  "categories": ["productivity", "utilities", "business"],
+  "categories": ["productivity", "utilities", "business", "shopping"],
   "lang": "en-PK",
   "dir": "ltr",
   "icons": [
@@ -28,25 +28,41 @@
   ],
   "shortcuts": [
     {
-      "name": "Omni Camera",
-      "short_name": "Camera",
-      "description": "Open Omni Camera",
-      "url": "/Wanalab-Omni-Camera-/",
+      "name": "Omni Camera Pro",
+      "short_name": "Camera Pro",
+      "description": "Open Omni Camera v9.2 Pro",
+      "url": "/Wanalab-Omni-Camera-/?source=pwa",
       "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
     },
     {
-      "name": "Voice Control",
-      "short_name": "Voice",
-      "description": "Urdu Voice Commands",
-      "url": "/Wanalab-Omni-Camera-/?voice=1",
+      "name": "Barcode Scanner",
+      "short_name": "Barcode",
+      "description": "Scan Barcode + Auto Price DB",
+      "url": "/Wanalab-Omni-Camera-/?scan=1",
       "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
     },
     {
-      "name": "About WanaLab",
-      "short_name": "About",
-      "description": "About WanaLab Omni-Camera by Nasir Khan",
-      "url": "/Wanalab-Omni-Camera-/?about=1",
+      "name": "Face Blur Privacy",
+      "short_name": "Face Blur",
+      "description": "Face Blur Privacy Mode",
+      "url": "/Wanalab-Omni-Camera-/?faceblur=1",
       "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Price Database",
+      "short_name": "Price DB",
+      "description": "1000+ Products Offline DB",
+      "url": "/Wanalab-Omni-Camera-/?db=1",
+      "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "wanalab-icon-v8.1.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "WanaLab Omni-Camera v9.2 Pro"
     }
   ]
 }
