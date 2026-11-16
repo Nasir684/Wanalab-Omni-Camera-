@@ -1,85 +1,56 @@
-// Commit: OFFLINE FIX FINAL - Play Store Ready
+// Fix: Cache.addAll fail-safe - Play Store Ready
 // Live: https://nasir684.github.io/Wanalab-Omni-Camera-/
-// Repo: https://github.com/nasir684/Wanalab-Omni-Camera-
-// Fix: Cache-First for offline - solves "You're offline" screen
 // Date: 2026-05-14
 
-const CACHE_NAME = 'wanalab-god-eye-v1-1-pro-offline-fix-v2';
-const urlsToCache = [
-  '/Wanalab-Omni-Camera-/',
-  '/Wanalab-Omni-Camera-/index.html',
-  '/Wanalab-Omni-Camera-/manifest.json',
-  '/Wanalab-Omni-Camera-/wanalab-god-eye-v1-1-icon.png',
-  '/Wanalab-Omni-Camera-/wanalab-icon-v8.1.png'
-];
+const CACHE_NAME = 'wanalab-god-eye-v4-fix-redundant';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
+    caches.open(CACHE_NAME).then(async cache => {
       console.log('Caching God Eye offline');
-      return cache.addAll(urlsToCache);
+      const urls = [
+        './',
+        './index.html',
+        './manifest.json'
+      ];
+      // Add one by one, skip if fails - prevents REDUNDANT bug
+      for (let url of urls) {
+        try {
+          await cache.add(url);
+        } catch (e) {
+          console.log('Skipped cache:', url, e);
+        }
+      }
     })
   );
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(name => {
-          if (name !== CACHE_NAME) return caches.delete(name);
-        })
-      );
+    caches.keys().then(names => {
+      return Promise.all(names.map(n => { if (n !== CACHE_NAME) return caches.delete(n); }));
     }).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', event => {
-  // Don't intercept CDN - let browser handle
   if (event.request.url.includes('cdn.jsdelivr.net') || 
-      event.request.url.includes('unpkg.com') || 
-      event.request.url.includes('cdnjs.cloudflare.com') ||
-      event.request.url.includes('github.com')) {
-    return;
-  }
+      event.request.url.includes('github.com')) return;
 
-  // OFFLINE-FIRST: Try cache first, then network
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        // Return cached and update cache in background
-        event.waitUntil(
-          fetch(event.request).then(networkResponse => {
-            return caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, networkResponse.clone());
-              return networkResponse;
-            });
-          }).catch(() => {})
-        );
-        return cachedResponse;
-      }
-      
-      // Not in cache, try network
-      return fetch(event.request)
-        .then(response => {
-          // Cache new requests
-          if (response && response.status === 200 && response.type === 'basic') {
-            let responseClone = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Offline fallback for navigation
-          if (event.request.mode === 'navigate') {
-            return caches.match('/Wanalab-Omni-Camera-/index.html') || 
-                   caches.match('/Wanalab-Omni-Camera-/');
-          }
-          return new Response('Offline - God Eye cached', {status: 503});
-        });
+    caches.match(event.request).then(cached => {
+      return cached || fetch(event.request).then(resp => {
+        if (resp && resp.status === 200) {
+          const clone = resp.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+        }
+        return resp;
+      }).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html') || caches.match('./');
+        }
+      });
     })
   );
 });
