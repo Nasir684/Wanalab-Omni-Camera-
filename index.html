@@ -1,3 +1,17 @@
+<script>
+// v99.2 EMERGENCY KILL CACHE
+(async()=>{
+  if('caches' in window){
+    const keys=await caches.keys();
+    for(let k of keys){ if(k.includes('wana')) await caches.delete(k); }
+  }
+  localStorage.setItem('wanaVersion','1.9-final-992-nasir684');
+  if(navigator.serviceWorker){
+    const regs=await navigator.serviceWorker.getRegistrations();
+    for(let r of regs) await r.unregister();
+  }
+})();
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
