@@ -1,0 +1,12 @@
+{
+  "id": "dji-tracking-v1",
+  "tracking": {
+    "templateSize": 140,
+    "searchPadding": 80,
+    "matchMethod": "TM_CCOEFF_NORMED",
+    "threshold": 0.6,
+    "showCenterDot": true,
+    "bracketColor": "#00ff88",
+    "lockColor": "#00aaff"
+  }
+}
