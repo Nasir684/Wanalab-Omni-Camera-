@@ -1,4 +1,5 @@
-const CACHE_NAME = 'wanalab-omni-v8-3';
+// WanaLab v9.2.1 FIXED - No Cache hang
+const CACHE_NAME = 'wanalab-v921-fixed-1';
 const urlsToCache = [
   '/Wanalab-Omni-Camera-/',
   '/Wanalab-Omni-Camera-/index.html',
@@ -7,11 +8,8 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
-  );
+  self.skipWaiting();
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
 });
 
 self.addEventListener('activate', event => {
@@ -24,13 +22,11 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    })
   );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
-  );
+  event.respondWith(fetch(event.request).catch(()=>caches.match(event.request)));
 });
