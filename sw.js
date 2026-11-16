@@ -1,5 +1,5 @@
-// WanaLab v9.2.1 FIXED - No Cache hang
-const CACHE_NAME = 'wanalab-v921-fixed-1';
+// WanaLab v9.2.11 - No Cache Hang + Install Fixed - By Nasir
+const CACHE_NAME = 'wanalab-v9-2-11-final';
 const urlsToCache = [
   '/Wanalab-Omni-Camera-/',
   '/Wanalab-Omni-Camera-/index.html',
@@ -9,7 +9,9 @@ const urlsToCache = [
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+  );
 });
 
 self.addEventListener('activate', event => {
@@ -22,11 +24,19 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(fetch(event.request).catch(()=>caches.match(event.request)));
+  // Don't cache external CDN - prevents hang
+  if(event.request.url.includes('cdn.jsdelivr.net') || 
+     event.request.url.includes('unpkg.com') || 
+     event.request.url.includes('cdnjs.cloudflare.com')){
+    return;
+  }
+  // Your original logic - Network first, no hang
+  event.respondWith(
+    fetch(event.request).catch(()=>caches.match(event.request))
+  );
 });
