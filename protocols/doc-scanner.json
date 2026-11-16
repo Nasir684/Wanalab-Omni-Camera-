@@ -1,0 +1,7 @@
+{
+  "id": "doc-scanner-v1",
+  "crop": { "points": 4, "handleRadius": 28, "lineColor": "#00ff88" },
+  "filters": ["original", "magic", "bw", "thermal", "night"],
+  "ocr": { "languages": ["eng", "urd"], "roiOnly": true },
+  "export": ["JPG", "IMG_PDF", "SEARCHABLE_PDF", "TXT", "DOC", "DOCX_IMG"]
+}
