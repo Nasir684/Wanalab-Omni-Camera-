@@ -1,7 +1,7 @@
-// WanaLab God Eye - SW v6 TURBO FASTEST
-// v6-turbo-camscan - Pre-cache + Lazy OCR + Instant Load
+// WanaLab God Eye - SW v9 FINAL ALL-IN-ONE
+// v9-final-camscan - Pre-cache + Thermal/Tracking + DOCX+IMG + Lazy OCR
 // Author: Nasir Khan - Date: 2026-05-14
-const CACHE_NAME = 'god-eye-v6-turbo-camscan-fixed-final';
+const CACHE_NAME = 'god-eye-v9-final-all-in-one';
 const CORE_ASSETS = [
   '/Wanalab-Omni-Camera-/',
   '/Wanalab-Omni-Camera-/index.html',
@@ -9,35 +9,34 @@ const CORE_ASSETS = [
   '/Wanalab-Omni-Camera-/wanalab-god-eye-v1-1-icon.png'
 ];
 
-// CDN libs to pre-cache for speed (except Tesseract - lazy)
+// CDN libs to pre-cache for speed (added DOCX lib for v1.9)
 const CDN_CACHE = [
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
   'https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js',
-  'https://docs.opencv.org/4.8.0/opencv.js'
+  'https://docs.opencv.org/4.8.0/opencv.js',
+  'https://unpkg.com/docx@7.8.2/build/index.js'
 ];
 
 // Install - Pre-cache everything instantly
 self.addEventListener('install', event => {
-  console.log('[SW v6 TURBO] Installing - Pre-caching core + OpenCV');
+  console.log('[SW v9 FINAL] Installing - Pre-caching core + OpenCV + DOCX');
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(async cache => {
-      // Cache core first
       await cache.addAll(CORE_ASSETS);
-      // Then try CDN cache (don't fail if one fails)
       try {
         await Promise.allSettled(CDN_CACHE.map(url => 
           cache.add(url).catch(() => console.log('CDN cache skip:', url))
         ));
       } catch(e){}
-      console.log('[SW v6] All pre-cached - App will be FAST');
+      console.log('[SW v9] All pre-cached - v1.9 FAST READY');
     })
   );
 });
 
 // Activate - Clean old caches
 self.addEventListener('activate', event => {
-  console.log('[SW v6 TURBO] Activating - Cleaning old caches');
+  console.log('[SW v9 FINAL] Activating - Cleaning old caches');
   event.waitUntil(
     caches.keys().then(keys => 
       Promise.all(keys.map(k => {
@@ -50,26 +49,22 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch - TURBO STRATEGY
+// Fetch - TURBO STRATEGY v9
 self.addEventListener('fetch', event => {
   const req = event.request;
   const url = req.url;
-
-  // Skip non-GET
   if(req.method !== 'GET') return;
 
-  // === STRATEGY 1: CDN libs - Cache First, super fast ===
+  // STRATEGY 1: CDN libs - Cache First, super fast (includes DOCX now)
   if(CDN_CACHE.some(cdnUrl => url.includes(cdnUrl.split('/')[2]))) {
     event.respondWith(
       caches.match(req).then(cached => {
         if(cached) {
-          // Update in background for next time
           fetch(req).then(res => {
             if(res.ok) caches.open(CACHE_NAME).then(c => c.put(req, res));
           }).catch(()=>{});
           return cached;
         }
-        // Not cached, fetch and cache
         return fetch(req).then(res => {
           if(res.ok) {
             const clone = res.clone();
@@ -82,12 +77,10 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // === STRATEGY 2: Tesseract - Network First, Lazy ===
-  // Don't cache Tesseract until user uses OCR - saves startup time
-  if(url.includes('tesseract')) {
+  // STRATEGY 2: Tesseract + DOCX heavy - Network First, Lazy
+  if(url.includes('tesseract') || url.includes('docx')) {
     event.respondWith(
       fetch(req).then(res => {
-        // Cache only after first successful OCR use
         if(res.ok) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then(c => c.put(req, clone));
@@ -98,18 +91,16 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // === STRATEGY 3: Core files - Cache First, always fast ===
+  // STRATEGY 3: Core files - Cache First
   event.respondWith(
     caches.match(req).then(cached => {
       if(cached) return cached;
       return fetch(req).then(res => {
-        // Don't cache chrome-extension or other schemes
         if(!res.ok || res.type === 'opaque') return res;
         const clone = res.clone();
         caches.open(CACHE_NAME).then(c => c.put(req, clone));
         return res;
       }).catch(() => {
-        // Offline fallback - return index.html for navigation
         if(req.mode === 'navigate') {
           return caches.match('/Wanalab-Omni-Camera-/index.html');
         }
@@ -118,11 +109,10 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Message handler for skipWaiting
 self.addEventListener('message', event => {
   if(event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-console.log('God Eye SW v6 TURBO Loaded - Fastest Mode ON');
+console.log('God Eye SW v9 FINAL Loaded - Thermal + Tracking + DOCX+IMG ON');
