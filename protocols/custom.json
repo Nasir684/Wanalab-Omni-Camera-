@@ -4,8 +4,15 @@
     "name": "Custom UVC Device (User Add)",
     "type": "UVC",
     "mode": "auto",
-    "description": "User can add own UVC ID here",
-    "status": "template"
+    "description": "User can add own UVC ID here - Example: USB Microscope, Endoscope",
+    "status": "template",
+    "vendorId": "0x0000",
+    "productId": "0x0000",
+    "resolution": "1280x720",
+    "fps": 30,
+    "protocol": "uvc",
+    "addedBy": "user",
+    "version": "9.2.11"
   },
   {
     "id": "custom-wifi-camera",
@@ -14,7 +21,32 @@
     "mode": "auto",
     "ip": "192.168.0.1",
     "url": "http://192.168.0.1/video",
-    "description": "Add your WiFi camera IP",
-    "status": "template"
+    "rtsp": "rtsp://192.168.0.1:554/stream",
+    "description": "Add your WiFi camera IP - Supports IP Camera, WiFi Microscope, ESP32-CAM",
+    "status": "template",
+    "protocol": "mjpeg",
+    "port": 80,
+    "username": "",
+    "password": "",
+    "resolution": "1280x720",
+    "addedBy": "user",
+    "version": "9.2.11"
+  },
+  {
+    "id": "custom-ip-camera",
+    "name": "Custom IP Camera (RTSP/ONVIF)",
+    "type": "IP",
+    "mode": "auto",
+    "ip": "192.168.1.100",
+    "url": "http://192.168.1.100/snapshot.jpg",
+    "rtsp": "rtsp://192.168.1.100:554/onvif1",
+    "description": "Add any ONVIF / Hikvision / Dahua / Tapo camera",
+    "status": "template",
+    "protocol": "rtsp",
+    "port": 554,
+    "username": "admin",
+    "password": "",
+    "addedBy": "user",
+    "version": "9.2.11"
   }
 ]
