@@ -3,41 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab God Eye v99.2 - Cam Voice Count FIXED</title>
+<title>WanaLab God Eye v99.3 PRO - Nasir Khan</title>
 <meta name="theme-color" content="#00ff88">
-<link rel="manifest" href="./manifest.json?v=19&force=992">
+<link rel="manifest" href="./manifest.json?v=19&force=993">
 <script>
-// v99.2 EMERGENCY CACHE KILLER
-(async()=>{
-  if('caches' in window){
-    const k=await caches.keys();
-    for(let c of k){ if(c.includes('wana')) await caches.delete(c); }
-  }
-  localStorage.setItem('wanaVersion','v99.2-992');
-  if(navigator.serviceWorker){
-    const r=await navigator.serviceWorker.getRegistrations();
-    for(let x of r) await x.unregister();
-  }
-  console.log('v99.2 cache killed');
-})();
+// v99.3 PRO CACHE KILLER
+(async()=>{ if('caches' in window){ const k=await caches.keys(); for(let c of k){ if(c.includes('wana')) await caches.delete(c);} } if(navigator.serviceWorker){ const r=await navigator.serviceWorker.getRegistrations(); for(let x of r) await x.unregister(); } })();
 </script>
 <script src="https://docs.opencv.org/4.8.0/opencv.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#00ff88;font-family:monospace;overflow:hidden;touch-action:none}
+body{background:#000;color:#e0ffe0;font-family:'Inter','Segoe UI',system-ui;overflow:hidden;touch-action:none}
 #video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:auto}
-#ui{position:absolute;top:0;left:0;width:100%;z-index:10;padding:6px}
-.row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
-.btn{background:#111;border:1px solid #00ff88;color:#00ff88;padding:6px 8px;border-radius:6px;font-size:11px;cursor:pointer}
-.btn.active{background:#00ff88;color:#000;font-weight:bold}
-#stat{font-size:10px;background:#000a;padding:4px;border-radius:4px;margin-bottom:4px}
-#see{font-size:11px;background:#000c;padding:4px;border-radius:4px;min-height:20px}
-#bottom{position:absolute;bottom:0;left:0;width:100%;z-index:10;padding:6px;background:linear-gradient(transparent,#000)}
-.badge{font-size:9px;padding:2px 5px;border-radius:10px;border:1px solid #00ff88}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2}
+#ui{position:absolute;top:0;left:0;width:100%;z-index:10;padding:12px}
+.glass{background:rgba(15,15,15,0.75);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(0,255,136,0.2);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.1)}
+#stat{padding:10px 14px;font-size:11px;letter-spacing:0.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+#stat::before{content:'●';color:#00ff88;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.btn{padding:9px 14px;border-radius:24px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);border:1px solid rgba(0,255,136,0.3);background:rgba(0,0,0,0.6);color:#00ff88;letter-spacing:0.3px}
+.btn:hover{background:rgba(0,255,136,0.15);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,255,136,0.2)}
+.btn:active{transform:scale(0.96)}
+.btn.active{background:linear-gradient(135deg,#00ff88,#00cc6a);color:#000;border-color:#00ff88;box-shadow:0 0 20px rgba(0,255,136,0.5),inset 0 1px 0 rgba(255,255,255,0.3);font-weight:700}
+.btn-voice{background:linear-gradient(135deg,#00ff88,#00ffaa);color:#000;border:none;font-weight:800;padding:10px 18px}
+.btn-voice.listening{background:linear-gradient(135deg,#ff3b30,#ff6b6b);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,59,48,0.7)}70%{box-shadow:0 0 0 10px rgba(255,59,48,0)}100%{box-shadow:0 0 0 0 rgba(255,59,48,0)}}
+#see{padding:12px 16px;text-align:center;font-size:12px;font-weight:500;letter-spacing:0.3px;margin-top:4px}
+#bottom{position:absolute;bottom:0;left:0;width:100%;z-index:10;padding:12px}
+.bottom-glass{display:flex;gap:8px;justify-content:space-between;padding:10px 14px}
+.badge{padding:6px 12px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.7);border:1px solid rgba(0,255,136,0.3);letter-spacing:0.5px}
+#sliderPanel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;max-width:380px;z-index:30;padding:20px}
+#sliderPanel h4{margin-bottom:12px;display:flex;justify-content:space-between}
+#sliderPanel input{width:100%;margin:8px 0 16px;accent-color:#00ff88}
+.logo{font-weight:900;letter-spacing:1px;background:linear-gradient(90deg,#00ff88,#00ffaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:12px}
 </style>
 </head>
 <body>
@@ -48,18 +48,20 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-e
 <canvas id="trackCanvas"></canvas>
 
 <div id="ui">
-<div id="stat">Loading v99.2...</div>
+<div id="stat" class="glass"><span class="logo">GOD EYE v99.3 PRO</span><span id="statText">Loading PRO...</span></div>
 <div class="row">
 <button class="btn" onclick="switchDevice()">📱 DEVICES (5)</button>
-<button class="btn" id="voiceBtn" onclick="toggleVoice()">🎤 TAP TO START VOICE</button>
-<span id="voiceBadge" class="badge">🔇 Voice OFF</span>
+<button class="btn btn-voice" id="voiceBtn" onclick="toggleVoice()">🎤 TAP TO START VOICE</button>
+<span id="voiceBadge" class="badge">🔇 OFF</span>
 <span id="langBadge" class="badge">EN</span>
 </div>
 <div class="row">
 <button class="btn" onclick="setMode('doc')">📄 DOC SCAN</button>
 <button class="btn" id="countBtn" onclick="setMode('count')">🔢 COUNT ROI</button>
 <button class="btn" onclick="setMode('ocr')">🔤 OCR ROI</button>
-<button class="btn" onclick="setMode('barcode')">📷 BARCODE ROI</button>
+<button class="btn" onclick="setMode('barcode')">📷 BARCODE</button>
+</div>
+<div class="row">
 <button class="btn" onclick="setMode('track')">🎯 TRACK</button>
 <button class="btn" onclick="setMode('bill')">🧾 TAP BILL</button>
 <button class="btn" onclick="toggleTorch()">🔦 TORCH</button>
@@ -67,223 +69,97 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-e
 </div>
 <div class="row">
 <button class="btn" onclick="openSliders()">🎛️ SLIDERS</button>
-<button class="btn" onclick="capture()">📸 CAPTURE</button>
-<button class="btn" onclick="location.href='./export.html?v=19&force=992'">💾 EXPORT</button>
+<button class="btn" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#000;font-weight:800" onclick="capture()">📸 CAPTURE</button>
+<button class="btn" onclick="location.href='./export.html?v=19&force=993'">💾 EXPORT</button>
 <button class="btn" onclick="installPWA()">📲 INSTALL</button>
 </div>
-<div id="see">Ready v99.2 — Draw box for COUNT — Say COUNT</div>
+<div id="see" class="glass">✨ v99.3 PRO — Ready — Draw box for COUNT — Say COUNT</div>
 </div>
 
-<div id="bottom">
-<div class="row">
+<div id="bottom"><div class="bottom-glass glass">
 <span id="countInfo" class="badge">Count: 0</span>
-<span id="billInfo" class="badge">Bill: Rs. 0 | Items: 0</span>
-<span id="deviceInfo" class="badge">Device: Omni Cam</span>
-</div>
-</div>
+<span id="billInfo" class="badge">Bill: Rs. 0 | 0 items</span>
+<span id="deviceInfo" class="badge">Omni Cam</span>
+</div></div>
 
-<div id="sliderPanel" style="display:none;position:absolute;top:50%;left:5%;width:90%;background:#111;border:1px solid #00ff88;padding:10px;z-index:20;border-radius:8px">
-<h4>🎛️ v99.2 Sliders <span style="float:right" onclick="openSliders()">X</span></h4>
-<label>EXP <span id="expV">50</span></label><input type="range" id="exp" min="0" max="100" value="50" style="width:100%">
-<label>NIGHT <span id="nightV">0</span></label><input type="range" id="night" min="0" max="100" value="0" style="width:100%">
-<label>THERMAL <span id="thermalV">0</span></label><input type="range" id="thermal" min="0" max="100" value="0" style="width:100%">
-<label>HDR <span id="hdrV">0</span></label><input type="range" id="hdr" min="0" max="100" value="0" style="width:100%">
+<div id="sliderPanel" class="glass" style="display:none">
+<h4><span>🎛️ PRO Sliders</span><span onclick="openSliders()" style="cursor:pointer">✕</span></h4>
+<label>Exposure <span id="expV">50</span></label><input type="range" id="exp" min="0" max="100" value="50">
+<label>Night Boost <span id="nightV">0</span></label><input type="range" id="night" min="0" max="100" value="0">
+<label>Thermal JET <span id="thermalV">0</span></label><input type="range" id="thermal" min="0" max="100" value="0">
+<label>HDR <span id="hdrV">0</span></label><input type="range" id="hdr" min="0" max="100" value="0">
 </div>
 
 <script>
 let video=document.getElementById('video'), aiCanvas=document.getElementById('aiCanvas'), docCanvas=document.getElementById('docCanvas'), thermalCanvas=document.getElementById('thermalCanvas'), trackCanvas=document.getElementById('trackCanvas');
 let aiCtx=aiCanvas.getContext('2d'), docCtx=docCanvas.getContext('2d'), thermalCtx=thermalCanvas.getContext('2d'), trackCtx=trackCanvas.getContext('2d');
-let stream=null, track=null, mode='none', isDrawing=false, startX=0, startY=0, currentROI=null, scannedPages=[], billItems=[], billTotal=0, torchOn=false, lang='en-US', voiceOn=false, recognition=null;
-let devices=[
- {id:'wanalab-omni-cam',name:'WanaLab Omni Cam',type:'phone'},
- {id:'dji-mini-4-pro',name:'DJI Mini 4 Pro',type:'drone'},
- {id:'flir-one-pro',name:'FLIR ONE Pro',type:'thermal'},
- {id:'usb-doc-cam',name:'USB Doc Camera',type:'doc'},
- {id:'ip-camera',name:'IP Camera RTSP',type:'ip'}
-], currentDevice=0;
+let stream=null,track=null,mode='none',isDrawing=false,startX=0,startY=0,currentROI=null,scannedPages=[],billItems=[],billTotal=0,torchOn=false,lang='en-US',voiceOn=false,recognition=null;
+let devices=[{id:'wanalab-omni-cam',name:'WanaLab Omni'},{id:'dji-mini-4-pro',name:'DJI Mini 4 Pro'},{id:'flir-one-pro',name:'FLIR ONE Pro'},{id:'usb-doc-cam',name:'USB Doc Cam'},{id:'ip-camera',name:'IP Cam RTSP'}],currentDevice=0;
 
-// INIT CAMERA v99.2 ROBUST
 async function init(){
-  document.getElementById('stat').innerText='v99.2 Starting camera...';
-  try{
-    if(stream) stream.getTracks().forEach(t=>t.stop());
-    let cons=[
-      {video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}},audio:true},
-      {video:{facingMode:'environment'},audio:true},
-      {video:true,audio:false}
-    ];
-    let ok=false;
-    for(let c of cons){
-      try{ stream=await navigator.mediaDevices.getUserMedia(c); ok=true; break; }catch(e){ console.log('cam fail',e.message); }
-    }
-    if(!ok) throw new Error('Camera blocked - Allow in Chrome 🔒 settings');
-    video.srcObject=stream;
-    track=stream.getVideoTracks()[0];
-    await video.play();
-    let w=video.videoWidth||1280, h=video.videoHeight||720;
-    [aiCanvas,docCanvas,thermalCanvas,trackCanvas].forEach(c=>{ c.width=w; c.height=h; });
-    document.getElementById('stat').innerText='✅ Ready v99.2 - Cam ON - Say COUNT / Ginti karo - Pages:'+scannedPages.length;
-    initVoice(); startThermalLoop();
-  }catch(e){
-    document.getElementById('stat').innerText='❌ '+e.message;
-    document.getElementById('see').innerHTML=`❌ CAMERA BLOCKED: ${e.message}<br>1. Open in CHROME<br>2. Must be https://<br>3. Tap 🔒 → Allow Camera+Mic<br>4. Reload ?v=19&force=99&v=992`;
-    setTimeout(init,3000);
-  }
+ document.getElementById('statText').innerText='Starting camera...';
+ try{
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  let cons=[{video:{facingMode:'environment',width:{ideal:1920}},audio:true},{video:{facingMode:'environment'},audio:true},{video:true,audio:false}];
+  for(let c of cons){ try{ stream=await navigator.mediaDevices.getUserMedia(c); break; }catch(e){} }
+  if(!stream) throw new Error('Allow Camera in 🔒');
+  video.srcObject=stream; track=stream.getVideoTracks()[0]; await video.play();
+  let w=video.videoWidth||1280,h=video.videoHeight||720; [aiCanvas,docCanvas,thermalCanvas,trackCanvas].forEach(c=>{c.width=w;c.height=h});
+  document.getElementById('statText').innerText=`✅ Cam ON - v99.3 PRO - Pages:${scannedPages.length}`;
+  initVoice(); startThermalLoop();
+ }catch(e){ document.getElementById('statText').innerText='❌ '+e.message; document.getElementById('see').innerText='❌ Allow Camera+Mic in 🔒 then reload'; setTimeout(init,3000); }
 }
-
-function updateLangUI(){ document.getElementById('langBadge').innerText=lang.includes('ur')?'UR':lang.includes('ps')?'PS':'EN'; }
-
-// VOICE v99.2 FIXED
 function initVoice(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){ document.getElementById('see').innerText='Voice not supported - Use Chrome'; return; }
-  recognition=new SR();
-  recognition.continuous=true; recognition.interimResults=false; recognition.lang=lang;
-  recognition.onresult=(e)=>{
-    let t=e.results[e.results.length-1][0].transcript.toLowerCase().trim();
-    document.getElementById('see').innerText='🎤 Heard: '+t;
-    handleVoice(t);
-  };
-  recognition.onerror=(e)=>{ console.log('voice err',e.error); if(voiceOn) setTimeout(()=>{ try{ recognition.start(); }catch{} },1000); };
-  recognition.onend=()=>{ if(voiceOn) try{ recognition.start(); }catch{} };
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
+ recognition=new SR(); recognition.continuous=true; recognition.interimResults=false; recognition.lang=lang;
+ recognition.onresult=(e)=>{ let t=e.results[e.results.length-1][0].transcript.toLowerCase(); document.getElementById('see').innerText='🎤 '+t; handleVoice(t); };
+ recognition.onend=()=>{ if(voiceOn) try{recognition.start()}catch{} };
 }
 function toggleVoice(){
-  if(!recognition) initVoice();
-  if(voiceOn){ recognition.stop(); voiceOn=false; document.getElementById('voiceBadge').innerText='🔇 Voice OFF'; document.getElementById('voiceBtn').classList.remove('active'); }
-  else{
-    try{ recognition.lang=lang; recognition.start(); voiceOn=true; document.getElementById('voiceBadge').innerText='🔴 LISTENING'; document.getElementById('voiceBadge').style.background='#f00'; document.getElementById('voiceBtn').classList.add('active'); document.getElementById('see').innerText='🎤 Listening... Say COUNT / GINTI / DEVICES'; }catch(e){ document.getElementById('see').innerText='❌ Mic blocked - Allow Mic in 🔒'; }
-  }
+ if(!recognition) initVoice();
+ if(voiceOn){ recognition.stop(); voiceOn=false; document.getElementById('voiceBtn').classList.remove('listening'); document.getElementById('voiceBadge').innerText='🔇 OFF'; document.getElementById('voiceBtn').innerText='🎤 TAP TO START VOICE'; }
+ else{ try{ recognition.lang=lang; recognition.start(); voiceOn=true; document.getElementById('voiceBtn').classList.add('listening'); document.getElementById('voiceBadge').innerText='🔴 LISTENING'; document.getElementById('voiceBtn').innerText='🔴 STOP VOICE'; document.getElementById('see').innerText='🎤 Listening... Say COUNT / GINTI / DEVICES / BILL'; }catch{ document.getElementById('see').innerText='❌ Allow Mic in 🔒'; } }
 }
 function handleVoice(t){
-  if(t.includes('count')||t.includes('ginti')||t.includes('گنتی')||t.includes('شمار')||t.includes('shumar')){ setMode('count'); speak('Count mode on. Draw box'); }
-  else if(t.includes('device')||t.includes('ڈیوائس')){ switchDevice(); }
-  else if(t.includes('photo')||t.includes('capture')||t.includes('shutter')||t.includes('تصویر')){ capture(); }
-  else if(t.includes('bill')||t.includes('بل')){ setMode('bill'); }
-  else if(t.includes('thermal')||t.includes('گرمی')){ setMode('thermal'); }
-  else if(t.includes('night')||t.includes('رات')){ document.getElementById('thermal').value=0; document.getElementById('night').value=70; }
-  else if(t.includes('torch')||t.includes('ٹارچ')){ toggleTorch(); }
-  else if(t.includes('clear')||t.includes('صاف')){ clearAll(); }
-  else if(t.includes('urdu')||t.includes('اردو')){ lang='ur-PK'; updateLangUI(); if(recognition) recognition.lang=lang; speak('Urdu on'); }
-  else if(t.includes('pashto')||t.includes('پشتو')){ lang='ps-AF'; updateLangUI(); if(recognition) recognition.lang=lang; }
-  else if(t.includes('english')){ lang='en-US'; updateLangUI(); if(recognition) recognition.lang=lang; }
+ if(t.includes('count')||t.includes('ginti')||t.includes('گنتی')||t.includes('shumar')){ setMode('count'); }
+ else if(t.includes('device')) switchDevice();
+ else if(t.includes('photo')||t.includes('capture')||t.includes('تصویر')) capture();
+ else if(t.includes('bill')||t.includes('بل')) setMode('bill');
+ else if(t.includes('torch')) toggleTorch();
+ else if(t.includes('clear')||t.includes('صاف')) clearAll();
 }
-function speak(txt){ if('speechSynthesis' in window){ let u=new SpeechSynthesisUtterance(txt); u.lang=lang; speechSynthesis.speak(u); } }
-
-// MODES
-function setMode(m){
-  mode=m;
-  document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));
-  if(m==='count') document.getElementById('countBtn').classList.add('active');
-  document.getElementById('see').innerText=`Mode: ${m.toUpperCase()} - Draw box with finger`;
-  clearCanvas();
-}
+function setMode(m){ mode=m; document.querySelectorAll('.btn').forEach(b=>{ if(b.id==='countBtn' && m==='count') b.classList.add('active'); else if(b.id!=='voiceBtn' && m!=='count') b.classList.remove('active'); }); if(m==='count') document.getElementById('countBtn').classList.add('active'); document.getElementById('see').innerText=`Mode: ${m.toUpperCase()} — Draw box with finger`; clearCanvas(); }
 function clearCanvas(){ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); docCtx.clearRect(0,0,docCanvas.width,docCanvas.height); trackCtx.clearRect(0,0,trackCanvas.width,trackCanvas.height); }
-function clearAll(){ clearCanvas(); currentROI=null; billItems=[]; billTotal=0; document.getElementById('billInfo').innerText='Bill: Rs. 0 | Items: 0'; document.getElementById('countInfo').innerText='Count: 0'; document.getElementById('see').innerText='Cleared v99.2'; }
-
-// DRAW ROI - TOUCH + MOUSE
-function getPos(e){
-  let rect=aiCanvas.getBoundingClientRect();
-  let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
-  let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
-  x=x*(aiCanvas.width/rect.width); y=y*(aiCanvas.height/rect.height);
-  return {x,y};
-}
-aiCanvas.addEventListener('mousedown',(e)=>{ isDrawing=true; let p=getPos(e); startX=p.x; startY=p.y; });
-aiCanvas.addEventListener('mousemove',(e)=>{ if(!isDrawing) return; let p=getPos(e); drawRect(startX,startY,p.x-startX,p.y-startY); });
-aiCanvas.addEventListener('mouseup',(e)=>{ if(!isDrawing) return; isDrawing=false; let p=getPos(e); currentROI={x:Math.min(startX,p.x),y:Math.min(startY,p.y),w:Math.abs(p.x-startX),h:Math.abs(p.y-startY)}; onROI(); });
-aiCanvas.addEventListener('touchstart',(e)=>{ isDrawing=true; let p=getPos(e); startX=p.x; startY=p.y; e.preventDefault(); },{passive:false});
-aiCanvas.addEventListener('touchmove',(e)=>{ if(!isDrawing) return; let p=getPos(e); drawRect(startX,startY,p.x-startX,p.y-startY); e.preventDefault(); },{passive:false});
-aiCanvas.addEventListener('touchend',(e)=>{ if(!isDrawing) return; isDrawing=false; let p=getPos(e.changedTouches?e.changedTouches[0]:e); if(e.changedTouches) p=getPos({touches:[e.changedTouches[0]]}); else p=getPos(e); currentROI={x:Math.min(startX,p.x),y:Math.min(startY,p.y),w:Math.abs(p.x-startX),h:Math.abs(p.y-startY)}; onROI(); e.preventDefault(); },{passive:false});
-
-function drawRect(x,y,w,h){ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); aiCtx.strokeStyle='#00ff88'; aiCtx.lineWidth=3; aiCtx.strokeRect(x,y,w,h); }
-
-async function onROI(){
-  if(!currentROI||currentROI.w<20) return;
-  if(mode==='count'){ await doCountROI(); }
-  else if(mode==='ocr'){ doOCRROI(); }
-  else if(mode==='barcode'){ doBarcodeROI(); }
-  else if(mode==='track'){ document.getElementById('see').innerText='🎯 Tracking locked'; }
-  else if(mode==='bill'){ let price=prompt('Enter price Rs. for this item:','100'); if(price){ billItems.push({roi:currentROI,price:parseFloat(price)}); billTotal+=parseFloat(price); document.getElementById('billInfo').innerText=`Bill: Rs. ${billTotal} | Items: ${billItems.length}`; document.getElementById('see').innerText=`Added Rs. ${price} - Total Rs. ${billTotal}`; } }
-}
-
-// COUNT v99.2 FIXED - OTSU
+function clearAll(){ clearCanvas(); currentROI=null; billItems=[]; billTotal=0; document.getElementById('billInfo').innerText='Bill: Rs. 0 | 0 items'; document.getElementById('countInfo').innerText='Count: 0'; document.getElementById('see').innerText='✨ Cleared PRO'; }
+function getPos(e){ let rect=aiCanvas.getBoundingClientRect(); let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left; let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top; x=x*(aiCanvas.width/rect.width); y=y*(aiCanvas.height/rect.height); return{x,y}; }
+aiCanvas.addEventListener('mousedown',e=>{isDrawing=true; let p=getPos(e); startX=p.x; startY=p.y;});
+aiCanvas.addEventListener('mousemove',e=>{ if(!isDrawing) return; let p=getPos(e); drawRect(startX,startY,p.x-startX,p.y-startY); });
+aiCanvas.addEventListener('mouseup',e=>{ if(!isDrawing) return; isDrawing=false; let p=getPos(e); currentROI={x:Math.min(startX,p.x),y:Math.min(startY,p.y),w:Math.abs(p.x-startX),h:Math.abs(p.y-startY)}; onROI(); });
+aiCanvas.addEventListener('touchstart',e=>{isDrawing=true; let p=getPos(e); startX=p.x; startY=p.y; e.preventDefault();},{passive:false});
+aiCanvas.addEventListener('touchmove',e=>{ if(!isDrawing) return; let p=getPos(e); drawRect(startX,startY,p.x-startX,p.y-startY); e.preventDefault();},{passive:false});
+aiCanvas.addEventListener('touchend',e=>{ isDrawing=false; let t=e.changedTouches[0]; let p=getPos({touches:[t]}); currentROI={x:Math.min(startX,p.x),y:Math.min(startY,p.y),w:Math.abs(p.x-startX),h:Math.abs(p.y-startY)}; onROI(); e.preventDefault();},{passive:false});
+function drawRect(x,y,w,h){ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); aiCtx.strokeStyle='#00ff88'; aiCtx.lineWidth=3; aiCtx.setLineDash([8,4]); aiCtx.strokeRect(x,y,w,h); aiCtx.fillStyle='rgba(0,255,136,0.1)'; aiCtx.fillRect(x,y,w,h); aiCtx.setLineDash([]); }
+async function onROI(){ if(!currentROI||currentROI.w<15) return; if(mode==='count') await doCountROI(); else if(mode==='ocr') doOCRROI(); else if(mode==='barcode') doBarcodeROI(); else if(mode==='bill'){ let price=prompt('Enter price Rs.:','100'); if(price){ billItems.push({price:parseFloat(price)}); billTotal+=parseFloat(price); document.getElementById('billInfo').innerText=`Bill: Rs. ${billTotal} | ${billItems.length} items`; document.getElementById('see').innerText=`Added Rs.${price} — Total Rs.${billTotal}`; } } }
 async function doCountROI(){
-  try{
-    document.getElementById('see').innerText='🔢 Counting...';
-    let c=document.createElement('canvas'); c.width=currentROI.w; c.height=currentROI.h;
-    let ctx=c.getContext('2d'); ctx.drawImage(video,currentROI.x,currentROI.y,currentROI.w,currentROI.h,0,0,currentROI.w,currentROI.h);
-    if(typeof cv!=='undefined' && cv.Mat){
-      let src=cv.imread(c); let gray=new cv.Mat(); let blur=new cv.Mat(); let thresh=new cv.Mat();
-      cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY);
-      cv.GaussianBlur(gray,blur,new cv.Size(5,5),0);
-      cv.threshold(blur,thresh,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU);
-      let contours=new cv.MatVector(); let hier=new cv.Mat();
-      cv.findContours(thresh,contours,hier,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);
-      let cnt=0;
-      for(let i=0;i<contours.size();i++){ let area=cv.contourArea(contours.get(i)); if(area>120) cnt++; }
-      document.getElementById('countInfo').innerText=`Count: ${cnt}`; document.getElementById('see').innerText=`🔢 Count ROI: ${cnt} objects - Draw again to recount`;
-      src.delete(); gray.delete(); blur.delete(); thresh.delete(); contours.delete(); hier.delete();
-    }else{
-      // Fallback simple count
-      let data=ctx.getImageData(0,0,c.width,c.height).data; let dark=0; for(let i=0;i<data.length;i+=4){ if(data[i]<100) dark++; } let est=Math.floor(dark/500);
-      document.getElementById('countInfo').innerText=`Count: ~${est}`; document.getElementById('see').innerText=`🔢 Count ~${est} (OpenCV loading...)`;
-    }
-  }catch(e){ document.getElementById('see').innerText='❌ Count error: '+e.message; console.error(e); }
+ try{
+  document.getElementById('see').innerText='🔢 Counting PRO...'; let c=document.createElement('canvas'); c.width=currentROI.w; c.height=currentROI.h; let ctx=c.getContext('2d'); ctx.drawImage(video,currentROI.x,currentROI.y,currentROI.w,currentROI.h,0,0,currentROI.w,currentROI.h);
+  if(typeof cv!=='undefined' && cv.Mat){
+   let src=cv.imread(c), gray=new cv.Mat(), blur=new cv.Mat(), thresh=new cv.Mat(); cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY); cv.GaussianBlur(gray,blur,new cv.Size(5,5),0); cv.threshold(blur,thresh,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU);
+   let contours=new cv.MatVector(), hier=new cv.Mat(); cv.findContours(thresh,contours,hier,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE); let cnt=0; for(let i=0;i<contours.size();i++){ if(cv.contourArea(contours.get(i))>120) cnt++; }
+   document.getElementById('countInfo').innerText=`Count: ${cnt}`; document.getElementById('see').innerText=`🔢 PRO Count: ${cnt} objects`; src.delete(); gray.delete(); blur.delete(); thresh.delete(); contours.delete(); hier.delete();
+  }else{ document.getElementById('see').innerText='⏳ OpenCV loading... retry'; }
+ }catch(e){ document.getElementById('see').innerText='❌ Count: '+e.message; }
 }
-
-// OCR, BARCODE, THERMAL, ETC
-async function doOCRROI(){
-  document.getElementById('see').innerText='🔤 OCR...';
-  let c=document.createElement('canvas'); c.width=currentROI.w; c.height=currentROI.h;
-  c.getContext('2d').drawImage(video,currentROI.x,currentROI.y,currentROI.w,currentROI.h,0,0,currentROI.w,currentROI.h);
-  try{ let r=await Tesseract.recognize(c,'eng'); document.getElementById('see').innerText='🔤 OCR: '+r.data.text.substring(0,100); }catch(e){ document.getElementById('see').innerText='OCR fail '+e.message; }
-}
-async function doBarcodeROI(){
-  document.getElementById('see').innerText='📷 Barcode...';
-  if('BarcodeDetector' in window){
-    let c=document.createElement('canvas'); c.width=currentROI.w; c.height=currentROI.h;
-    c.getContext('2d').drawImage(video,currentROI.x,currentROI.y,currentROI.w,currentROI.h,0,0,currentROI.w,currentROI.h);
-    let det=new BarcodeDetector({formats:['ean_13','qr_code','code_128']});
-    let codes=await det.detect(c); document.getElementById('see').innerText=codes.length?'Barcode: '+codes[0].rawValue:'No barcode';
-  }else document.getElementById('see').innerText='Barcode not supported in this Chrome';
-}
-function startThermalLoop(){
-  function loop(){
-    let tv=document.getElementById('thermal').value;
-    if(tv>0 && typeof cv!=='undefined' && cv.Mat){
-      try{
-        let tmp=document.createElement('canvas'); tmp.width=video.videoWidth; tmp.height=video.videoHeight;
-        tmp.getContext('2d').drawImage(video,0,0);
-        let src=cv.imread(tmp); let dst=new cv.Mat();
-        cv.applyColorMap(src,dst,cv.COLORMAP_JET);
-        cv.imshow('thermalCanvas',dst); src.delete(); dst.delete();
-        thermalCanvas.style.opacity=tv/100;
-      }catch{}
-    }else thermalCanvas.style.opacity=0;
-    requestAnimationFrame(loop);
-  }
-  loop();
-}
-function toggleTorch(){ if(track&&track.getCapabilities&&track.getCapabilities().torch){ track.applyConstraints({advanced:[{torch:!torchOn}]}); torchOn=!torchOn; document.getElementById('see').innerText=torchOn?'🔦 Torch ON':'🔦 Torch OFF'; }else document.getElementById('see').innerText='Torch not supported'; }
-function switchDevice(){ currentDevice=(currentDevice+1)%devices.length; document.getElementById('deviceInfo').innerText='Device: '+devices[currentDevice].name; document.getElementById('see').innerText='📱 Switched to '+devices[currentDevice].name; speak(devices[currentDevice].name); }
+async function doOCRROI(){ document.getElementById('see').innerText='🔤 OCR...'; let c=document.createElement('canvas'); c.width=currentROI.w; c.height=currentROI.h; c.getContext('2d').drawImage(video,currentROI.x,currentROI.y,currentROI.w,currentROI.h,0,0,currentROI.w,currentROI.h); try{ let r=await Tesseract.recognize(c,'eng'); document.getElementById('see').innerText='🔤 '+r.data.text.substring(0,120); }catch{} }
+async function doBarcodeROI(){ if('BarcodeDetector' in window){ let c=document.createElement('canvas'); c.width=currentROI.w; c.height=currentROI.h; c.getContext('2d').drawImage(video,currentROI.x,currentROI.y,currentROI.w,currentROI.h,0,0,currentROI.w,currentROI.h); let d=new BarcodeDetector({formats:['ean_13','qr_code']}); let codes=await d.detect(c); document.getElementById('see').innerText=codes.length?'📷 '+codes[0].rawValue:'No code'; }else document.getElementById('see').innerText='Barcode needs Chrome'; }
+function startThermalLoop(){ function loop(){ let tv=document.getElementById('thermal').value; if(tv>0 && typeof cv!=='undefined' && cv.Mat){ try{ let tmp=document.createElement('canvas'); tmp.width=video.videoWidth; tmp.height=video.videoHeight; tmp.getContext('2d').drawImage(video,0,0); let src=cv.imread(tmp), dst=new cv.Mat(); cv.applyColorMap(src,dst,cv.COLORMAP_JET); cv.imshow('thermalCanvas',dst); src.delete(); dst.delete(); thermalCanvas.style.opacity=tv/100; }catch{} }else thermalCanvas.style.opacity=0; requestAnimationFrame(loop); } loop(); }
+function toggleTorch(){ if(track&&track.getCapabilities&&track.getCapabilities().torch){ track.applyConstraints({advanced:[{torch:!torchOn}]}); torchOn=!torchOn; } }
+function switchDevice(){ currentDevice=(currentDevice+1)%devices.length; document.getElementById('deviceInfo').innerText=devices[currentDevice].name; document.getElementById('see').innerText='📱 '+devices[currentDevice].name; }
 function openSliders(){ let p=document.getElementById('sliderPanel'); p.style.display=p.style.display==='none'?'block':'none'; }
-document.getElementById('exp').oninput=(e)=>{ document.getElementById('expV').innerText=e.target.value; if(track) track.applyConstraints({advanced:[{exposureCompensation:e.target.value/10-5}]}); };
-document.getElementById('night').oninput=(e)=>{ document.getElementById('nightV').innerText=e.target.value; aiCanvas.style.filter=`brightness(${1+e.target.value/100})`; };
-document.getElementById('thermal').oninput=(e)=>{ document.getElementById('thermalV').innerText=e.target.value; };
-document.getElementById('hdr').oninput=(e)=>{ document.getElementById('hdrV').innerText=e.target.value; };
-function capture(){
-  let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight;
-  c.getContext('2d').drawImage(video,0,0);
-  scannedPages.push(c.toDataURL('image/jpeg',0.9));
-  document.getElementById('stat').innerText='Captured Pages:'+scannedPages.length+' - v99.2';
-  document.getElementById('see').innerText='📸 Captured page '+scannedPages.length;
-  if(navigator.vibrate) navigator.vibrate(100);
-}
-function installPWA(){ document.getElementById('see').innerText='Tap Chrome menu ⋮ → Install app'; }
-window.onload=()=>{
-  init();
-  if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js?v=992').then(()=>console.log('SW v99.2 registered')); }
-};
+document.getElementById('exp').oninput=e=>{document.getElementById('expV').innerText=e.target.value}; document.getElementById('night').oninput=e=>{document.getElementById('nightV').innerText=e.target.value; aiCanvas.style.filter=`brightness(${1+e.target.value/100})`}; document.getElementById('thermal').oninput=e=>{document.getElementById('thermalV').innerText=e.target.value}; document.getElementById('hdr').oninput=e=>{document.getElementById('hdrV').innerText=e.target.value};
+function capture(){ let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; c.getContext('2d').drawImage(video,0,0); scannedPages.push(c.toDataURL()); document.getElementById('statText').innerText=`✅ Pages:${scannedPages.length} — PRO`; document.getElementById('see').innerText=`📸 Captured ${scannedPages.length}`; if(navigator.vibrate) navigator.vibrate(80); }
+function installPWA(){ document.getElementById('see').innerText='Chrome ⋮ → Install app'; }
+window.onload=()=>{ init(); if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=993').then(()=>console.log('SW PRO 993')); };
 </script>
 </body>
 </html>
