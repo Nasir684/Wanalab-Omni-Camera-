@@ -1,26 +1,19 @@
 {
-  "_comment": "God Eye v1.9 FINAL ALL-IN-ONE - FIXED for nasir684 - Nasir Khan 2026-05-14",
-  "id": "/Wanalab-Omni-Camera-/?v=19",
-  "name": "WanaLab God Eye v1.9 FINAL - All Features + Manual Crop + Tracking + Thermal + DOCX IMG",
-  "short_name": "God Eye v1.9",
-  "description": "WanaLab God Eye v1.9 FINAL - Manual 4-corner crop + COUNT ROI + OCR ROI + BARCODE ROI + TAP BILL + DJI Tracking + Thermal/Night/HDR + Searchable PDF + TXT/DOC/DOCX+IMG - WanaLab Dera Ismail Khan",
-  "start_url": "/Wanalab-Omni-Camera-/?source=pwa&v=19",
+  "name": "WanaLab God Eye v1.9 FINAL v99.1 - Count Voice Fixed",
+  "short_name": "God Eye v99.1",
+  "description": "WanaLab God Eye - Doc Scan + Manual Crop + ROI Count + Tracking + Thermal + Tap Bill + Devices (5) + Voice EN/UR/PS - Nasir Khan",
+  "start_url": "./?v=19&force=99",
   "scope": "/Wanalab-Omni-Camera-/",
   "display": "standalone",
-  "display_override": ["standalone", "window-controls-overlay"],
   "orientation": "any",
-  "background_color": "#000000",
   "theme_color": "#00ff88",
-  "categories": ["productivity", "utilities", "business", "photo", "scanner", "camera"],
-  "lang": "en-PK",
-  "dir": "ltr",
-  "launch_handler": { "client_mode": ["navigate-existing", "auto"] },
+  "background_color": "#000000",
   "icons": [
     {
       "src": "./wanalab-god-eye-v1-1-icon.png?v=19",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "./wanalab-god-eye-v1-1-icon.png?v=19",
@@ -29,96 +22,6 @@
       "purpose": "any maskable"
     }
   ],
-  "shortcuts": [
-    {
-      "name": "📄 Doc Scanner v1.9",
-      "short_name": "Doc Scan",
-      "description": "Manual 4-corner crop + Magic/BW/Thermal/Night + Searchable PDF/DOCX+IMG",
-      "url": "/Wanalab-Omni-Camera-/?mode=docscan&v=19",
-      "icons": [{ "src": "./wanalab-god-eye-v1-1-icon.png?v=19", "sizes": "96x96" }]
-    },
-    {
-      "name": "🎯 DJI Tracking",
-      "short_name": "Tracking",
-      "description": "Tap object to lock - DJI style auto follow",
-      "url": "/Wanalab-Omni-Camera-/?mode=tracking&v=19",
-      "icons": [{ "src": "./wanalab-god-eye-v1-1-icon.png?v=19", "sizes": "96x96" }]
-    },
-    {
-      "name": "🔥 Thermal + Night HDR",
-      "short_name": "Thermal",
-      "description": "Thermal JET map + Night HDR + Sliders - FLIR style",
-      "url": "/Wanalab-Omni-Camera-/?mode=thermal&v=19",
-      "icons": [{ "src": "./wanalab-god-eye-v1-1-icon.png?v=19", "sizes": "96x96" }]
-    },
-    {
-      "name": "🔢 Count ROI + OCR ROI",
-      "short_name": "Count ROI",
-      "description": "Drag box to count objects or OCR only inside area",
-      "url": "/Wanalab-Omni-Camera-/?mode=count&v=19",
-      "icons": [{ "src": "./wanalab-god-eye-v1-1-icon.png?v=19", "sizes": "96x96" }]
-    },
-    {
-      "name": "🧾 Tap Bill Scanner",
-      "short_name": "Tap Bill",
-      "description": "Tap products to add price tag - Total bill",
-      "url": "/Wanalab-Omni-Camera-/?mode=bill&v=19",
-      "icons": [{ "src": "./wanalab-god-eye-v1-1-icon.png?v=19", "sizes": "96x96" }]
-    },
-    {
-      "name": "📘 DOCX+IMG Export",
-      "short_name": "DOCX IMG",
-      "description": "Export as DOCX with images + searchable text",
-      "url": "/Wanalab-Omni-Camera-/export.html?v=19",
-      "icons": [{ "src": "./wanalab-god-eye-v1-1-icon.png?v=19", "sizes": "96x96" }]
-    },
-    {
-      "name": "📷 Barcode ROI Scanner",
-      "short_name": "Barcode ROI",
-      "description": "Drag small box to scan barcode only inside - 3x faster",
-      "url": "/Wanalab-Omni-Camera-/?scan=1&mode=barcode&v=19",
-      "icons": [{ "src": "./wanalab-god-eye-v1-1-icon.png?v=19", "sizes": "96x96" }]
-    },
-    {
-      "name": "God Eye Camera v1.9",
-      "short_name": "God Eye",
-      "description": "Open God Eye v1.9 FINAL - All features",
-      "url": "/Wanalab-Omni-Camera-/?source=pwa&v=19",
-      "icons": [{ "src": "./wanalab-god-eye-v1-1-icon.png?v=19", "sizes": "96x96" }]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "./wanalab-god-eye-v1-1-icon.png?v=19",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "WanaLab God Eye v1.9 FINAL - Manual Crop + ROI + Tracking + Thermal + DOCX+IMG + Tap Bill"
-    }
-  ],
-  "file_handlers": [
-    {
-      "action": "/Wanalab-Omni-Camera-/?file=1&v=19",
-      "accept": {
-        "image/*": [".jpg", ".jpeg", ".png"],
-        "application/pdf": [".pdf"],
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"]
-      }
-    }
-  ],
-  "share_target": {
-    "action": "/Wanalab-Omni-Camera-/?share=1&v=19",
-    "method": "GET",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url",
-      "files": [
-        {
-          "name": "file",
-          "accept": ["image/*", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
-        }
-      ]
-    }
-  }
+  "version": "1.9.99.1",
+  "author": "Nasir Khan - WanaLab Dera Ismail Khan"
 }
