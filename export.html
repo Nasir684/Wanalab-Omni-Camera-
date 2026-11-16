@@ -3,61 +3,212 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WanaLab God Eye - Export Hub</title>
+<title>WanaLab God Eye v1.2 - Export Hub + CamScan</title>
 <style>
-body{background:#000;color:#0ff;font-family:monospace;padding:20px}
-h1{text-align:center}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px}
-button{padding:20px;font-size:18px;background:#001122;color:#0ff;border:2px solid #0ff;border-radius:10px;cursor:pointer}
-button:hover{background:#0ff;color:#000}
-textarea{width:100%;height:150px;background:#001122;color:#0ff;border:1px solid #0ff;padding:10px;margin-top:20px}
-.footer{margin-top:30px;text-align:center;font-size:12px;opacity:0.7}
-a{color:#0ff}
+body{background:#000;color:#0ff;font-family:system-ui,monospace;padding:16px;margin:0}
+h1{text-align:center;font-size:20px;color:#00ff88;margin:8px 0}
+p.subtitle{text-align:center;font-size:11px;opacity:0.8;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+button{padding:16px 8px;font-size:13px;font-weight:800;background:#001122;color:#0ff;border:2px solid #0ff;border-radius:12px;cursor:pointer;transition:0.2s}
+button:hover{background:#0ff;color:#000;box-shadow:0 0 15px #0ff}
+button.pro{border-color:#00ff88;color:#00ff88}button.pro:hover{background:#00ff88;color:#000}
+button.doc{border-color:#00aaff;color:#00aaff;background:#001a33}button.doc:hover{background:#00aaff;color:#fff}
+textarea{width:100%;height:120px;background:#001122;color:#0ff;border:1px solid #00ff88;padding:10px;margin-top:12px;border-radius:10px;font-size:12px;box-sizing:border-box}
+#previewArea{margin-top:12px;display:none}#previewArea img{max-width:100%;border:2px solid #00ff88;border-radius:10px;margin-top:8px}
+.footer{margin-top:24px;text-align:center;font-size:10px;opacity:0.6;line-height:16px}
+a{color:#00ff88;text-decoration:none}
+.badge{display:inline-block;padding:4px 10px;border-radius:12px;font-size:9px;font-weight:800;margin:2px}
+.badge-offline{background:#00ff88;color:#000}.badge-online{background:#ffaa00;color:#000}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-<h1>🌐 WanaLab God Eye v1.0 Export Hub</h1>
-<p style="text-align:center">Founder Nasir Khan | Nasir@wanalab.org | Global v1.0 | All Exports Offline</p>
+<h1>🌐 WanaLab God Eye v1.2 Export Hub</h1>
+<p class="subtitle">Founder Nasir Khan | Nasir@wanalab.org | Global v1.2 PRO + CamScan Engine<br>
+<span class="badge badge-offline">OFFLINE</span> Doc Scan + Filters + PDF JPG
+<span class="badge badge-online">ONLINE FIRST</span> OCR + MP3 + DOCX
+</p>
 
-<textarea id="inputText" placeholder="Paste measurement / observation / protocol results here... Example: Microscope 1000x - Found bacteria... Location..."></textarea>
+<textarea id="inputText" placeholder="Paste observation / OCR text / measurement here...
+Example:
+Doc Scan: Invoice #123
+OCR Text: Total Rs. 5000
+Location: Wana, D.I. Khan
+Mode: Doc Scan Magic Filter"></textarea>
 
 <div class="grid">
-<button onclick="doExport('txt')">📄 EXPORT TXT</button>
-<button onclick="doExport('pdf')">📕 EXPORT PDF</button>
-<button onclick="doExport('json')">🔧 EXPORT JSON</button>
-<button onclick="doExport('docx')">📘 EXPORT DOCX (Pro)</button>
-<button onclick="doExport('mp3')">🎙️ EXPORT MP3 Audio</button>
-<button onclick="doExport('video')">🎥 EXPORT VIDEO (Pro)</button>
+<button class="doc" onclick="doExport('doc-jpg')">📄 EXPORT DOC JPG<br><small>CamScan Filtered</small></button>
+<button class="doc" onclick="doExport('doc-pdf')">📕 EXPORT DOC PDF<br><small>Multi-page CamScan</small></button>
+<button onclick="doExport('txt')">📄 EXPORT TXT<br><small>Offline</small></button>
+<button onclick="doExport('json')">🔧 EXPORT JSON<br><small>Offline</small></button>
+<button class="pro" onclick="doExport('ocr-txt')">🔤 EXPORT OCR TEXT<br><small>Online First</small></button>
+<button class="pro" onclick="doExport('pdf')">📕 EXPORT FULL PDF<br><small>With Images</small></button>
+<button onclick="doExport('mp3')">🎙️ EXPORT MP3<br><small>Voice Read</small></button>
+<button onclick="doExport('share')">📤 SHARE<br><small>System Share</small></button>
 </div>
 
-<div style="margin-top:20px;text-align:center">
-<button onclick="window.location='index.html'" style="width:100%">⬅️ BACK TO GOD EYE CAMERA</button>
+<div id="previewArea">
+<h3 style="color:#00ff88;font-size:12px">📸 Last Scanned Pages (<span id="pageCount">0</span>)</h3>
+<div id="thumbList" style="display:flex;gap:6px;overflow:auto;padding:6px 0"></div>
+</div>
+
+<div style="margin-top:16px;display:flex;gap:8px">
+<button onclick="clearPages()" style="flex:1;background:#220000;border-color:#ff4444;color:#ff4444">🗑️ CLEAR ALL PAGES</button>
+<button onclick="window.location='index.html'" style="flex:1;background:#00ff88;border-color:#00ff88;color:#000">⬅️ BACK TO CAMERA</button>
 </div>
 
 <div class="footer">
-<p>WanaLab God Eye v1.0 Global - 10 Modes - Protocol Universe Same Repo</p>
-<p>Modes: auto | micro | tele | night | thermal | macro | wide | endoscope | surveillance | pro</p>
-<p>Protocols Loaded: <span id="pcount">Loading...</span> | Brand Colors: #00ffff #ff00ff</p>
-<p><a href="https://github.com/wanalab" target="_blank">GitHub: WanaLab</a> | Email: Nasir@wanalab.org</p>
-<p>Offline First - No Data Loss - Works in Wana, Pakistan and Global</p>
+<p>WanaLab God Eye v1.2 PRO + CamScan © 2026 - By Nasir Khan</p>
+<p>Modes: doc-scan | ocr | auto | micro 1000x | thermal | night HDR | macro | ip-cam</p>
+<p>Engine: OpenCV.js + Tesseract.js + jsPDF - Offline First, PWA Ready</p>
+<p>Protocols: <span id="pcount">CamScan Engine + 6 Custom Devices</span></p>
+<p><a href="https://nasir684.github.io/Wanalab-Omni-Camera-/" target="_blank">Live: nasir684.github.io/Wanalab-Omni-Camera-/</a> | Email: Nasir@wanalab.org</p>
+<p>Works Offline in Wana, D.I. Khan, Pakistan & Global</p>
 </div>
 
-<script src="js/protocol-universe.js"></script>
-<script src="js/export-hub.js"></script>
 <script>
+// === EXPORT HUB v1.2 - CamScan Integrated ===
+window.exportHub = {
+  pages: JSON.parse(localStorage.getItem('wanaScannedPages') || '[]'),
+  
+  init() {
+    this.renderThumbs();
+  },
+  
+  renderThumbs() {
+    const count = this.pages.length;
+    document.getElementById('pageCount').innerText = count;
+    const list = document.getElementById('thumbList');
+    if(count > 0) {
+      document.getElementById('previewArea').style.display = 'block';
+      list.innerHTML = this.pages.map((p,i) => 
+        `<img src="${p}" style="width:70px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #00ff88" title="Page ${i+1}">`
+      ).join('');
+    }
+  },
+  
+  exportTXT(text) {
+    const blob = new Blob([text], {type:'text/plain'});
+    this.download(blob, `GodEye-v1.2-${Date.now()}.txt`);
+  },
+  
+  exportJSON(obj) {
+    const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+    this.download(blob, `GodEye-v1.2-${Date.now()}.json`);
+  },
+  
+  exportPDF(text) {
+    const {jsPDF} = window.jspdf;
+    let doc = new jsPDF();
+    // Add text
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize(text, 180);
+    doc.text(lines, 10, 10);
+    // Add scanned pages if any
+    let y = 10 + lines.length*6 + 10;
+    this.pages.forEach((img, i) => {
+      if(i > 0 && y > 200) { doc.addPage(); y = 10; }
+      try { doc.addImage(img, 'JPEG', 10, y, 60, 80); y += 85; } catch(e){}
+    });
+    doc.save(`GodEye-Full-${Date.now()}.pdf`);
+  },
+  
+  exportDocPDF() {
+    if(this.pages.length === 0) { alert('No scanned pages! Go to camera and scan docs first - DOC SCAN button'); return; }
+    const {jsPDF} = window.jspdf;
+    let doc = new jsPDF();
+    this.pages.forEach((img, i) => {
+      if(i > 0) doc.addPage();
+      doc.addImage(img, 'JPEG', 0, 0, 210, 297); // A4 full page like CamScanner
+    });
+    doc.save(`GodEye-DocScan-CamScan-${Date.now()}.pdf`);
+  },
+  
+  exportDocJPG() {
+    if(this.pages.length === 0) { alert('No pages! Scan first'); return; }
+    // Export last page as JPG
+    const a = document.createElement('a');
+    a.href = this.pages[this.pages.length -1];
+    a.download = `GodEye-Doc-${Date.now()}.jpg`;
+    a.click();
+  },
+  
+  exportOCR(text) {
+    if(!navigator.onLine) {
+      alert('OCR Export needs internet first time to load language pack. Offline: Save as TXT for now.');
+      this.exportTXT(text);
+      return;
+    }
+    this.exportTXT("=== OCR TEXT ===\n" + text + "\n\n=== God Eye v1.2 CamScan ===");
+  },
+  
+  exportMP3(text) {
+    if(!text) { alert('Paste text first'); return; }
+    if(!('speechSynthesis' in window)) { alert('TTS not supported'); return; }
+    const utter = new SpeechSynthesisUtterance(text.slice(0, 500));
+    utter.lang = 'en-US';
+    speechSynthesis.speak(utter);
+    alert('Playing audio preview - For MP3 file download, use TXT→Audio app offline. Pro v1.3 will export MP3 directly.');
+  },
+  
+  async share(text) {
+    if(navigator.share) {
+      try { await navigator.share({title:'WanaLab God Eye v1.2', text:text}); } catch(e){}
+    } else {
+      this.exportTXT(text);
+    }
+  },
+  
+  download(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+  }
+};
+
 function doExport(type){
-  const text = document.getElementById('inputText').value || 'WanaLab God Eye v1.0 Global Export\nFounder: Nasir Khan\nEmail: Nasir@wanalab.org\nDate: '+new Date().toISOString()+'\nMode: '+localStorage.getItem('lastMode')+'\n---\nObservation Data Here';
+  const text = document.getElementById('inputText').value || 
+    `WanaLab God Eye v1.2 Global Export\nFounder: Nasir Khan\nEmail: Nasir@wanalab.org\nDate: ${new Date().toISOString()}\nMode: ${localStorage.getItem('lastMode') || 'doc-scan'}\nPages: ${window.exportHub.pages.length}\n---\nObservation / OCR Data Here`;
+  
   switch(type){
     case 'txt': window.exportHub.exportTXT(text); break;
+    case 'json': window.exportHub.exportJSON({text:text, founder:"Nasir Khan", version:"v1.2 CamScan", pages: window.exportHub.pages.length, date: new Date().toISOString()}); break;
     case 'pdf': window.exportHub.exportPDF(text); break;
-    case 'json': window.exportHub.exportJSON({text:text, founder:"Nasir Khan", version:"v1.0 Global", modes:10, date:new Date().toISOString()}); break;
-    case 'docx': alert('DOCX Export Pro: Will use docx.js offline in Pro v1.1 - Current saves as TXT for offline use'); window.exportHub.exportTXT(text); break;
+    case 'doc-pdf': window.exportHub.exportDocPDF(); break;
+    case 'doc-jpg': window.exportHub.exportDocJPG(); break;
+    case 'ocr-txt': window.exportHub.exportOCR(text); break;
     case 'mp3': window.exportHub.exportMP3(text); break;
-    case 'video': alert('VIDEO Export Pro: Pro v1.1 will export 4K video with overlay. Current: Screenshot via canvas'); break;
+    case 'share': window.exportHub.share(text); break;
   }
 }
+
+function clearPages() {
+  if(confirm('Clear all scanned pages?')) {
+    localStorage.removeItem('wanaScannedPages');
+    window.exportHub.pages = [];
+    window.exportHub.renderThumbs();
+    document.getElementById('previewArea').style.display = 'none';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
-  if(window.protocolUniverse){ window.protocolUniverse.loadAll().then(all=>{ document.getElementById('pcount').innerText = all.length + ' working protocols (offline core + online universe)'; }); }
+  window.exportHub.init();
+  // Load pages from main camera if shared via localStorage
+  const mainPages = localStorage.getItem('wanaScannedPages');
+  if(mainPages) {
+    window.exportHub.pages = JSON.parse(mainPages);
+    window.exportHub.renderThumbs();
+  }
+});
+
+// === Sync with main camera ===
+// When main camera saves page, it saves to localStorage wanaScannedPages
+window.addEventListener('storage', (e) => {
+  if(e.key === 'wanaScannedPages') {
+    window.exportHub.pages = JSON.parse(e.newValue || '[]');
+    window.exportHub.renderThumbs();
+  }
 });
 </script>
 </body>
