@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab Omni-Camera v9.2.9 Pro - By Nasir Khan</title>
+<title>WanaLab v9.2.11 Install - By Nasir Khan</title>
 <meta name="theme-color" content="#00ff88">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="wanalab-icon-v8.1.png">
@@ -16,7 +16,14 @@
 #scanBox{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:320px;height:160px;border:3px solid #ff0;border-radius:12px;z-index:3;display:none}
 #scanLine{position:absolute;top:0;left:0;width:100%;height:3px;background:#ff0;animation:scan 1.5s infinite}
 @keyframes scan{0%{top:0}50%{top:97%}100%{top:0}}
-#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.85);color:#0f8;padding:6px 8px;display:flex;justify-content:space-between;font-size:8px;border-bottom:1px solid #0f8}
+#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.85);color:#0f8;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;font-size:8px;border-bottom:1px solid #0f8}
+#installBtn{position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:8px 16px;border-radius:20px;font-weight:bold;font-size:11px;display:none;box-shadow:0 0 15px #00ff88;animation:pop 0.5s;cursor:pointer;border:none}
+@keyframes pop{0%{transform:translateX(-50%) scale(0)}100%{transform:translateX(-50%) scale(1)}}
+#voiceBadge{position:fixed;top:32px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:10px;cursor:pointer}
+#voiceBadge.on{background:#0f8;color:#000}
+#langSel{position:fixed;top:58px;right:6px;z-index:12;background:#000;border:1px solid #0f8;border-radius:20px;padding:2px 4px;display:flex;gap:2px}
+#langSel button{border:none;padding:3px 6px;border-radius:10px;font-size:7px;font-weight:bold;cursor:pointer}
+#transcript{position:fixed;top:82px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.9);color:#ff0;padding:6px 10px;border-radius:8px;font-size:9px;display:none;border:1px solid #ff0;text-align:center}
 #shutter{position:fixed;bottom:98px;left:50%;transform:translateX(-50%);z-index:12;width:72px;height:72px;border-radius:50%;background:#fff;border:4px solid #00ff88;box-shadow:0 0 12px #00ff88;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer}
 #shutter:active{transform:translateX(-50%) scale(0.88)}
 #info{position:fixed;bottom:170px;left:4px;right:4px;z-index:10;background:rgba(0,0,0,0.85);color:#fff;padding:5px 6px;border-radius:8px;font-size:8px;border:1px solid #0f8;max-height:16vh;overflow:auto}
@@ -31,13 +38,22 @@
 <body>
 <video id="godVideo" autoplay playsinline muted></video><canvas id="aiCanvas"></canvas>
 <div id="scanBox"><div id="scanLine"></div></div>
-<div id="top"><span onclick="showAbout()" style="cursor:pointer">♾️ v9.2.9 Pro</span><span id="stat">Ready</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:2px 8px;border-radius:10px;cursor:pointer">ℹ️ ABOUT</span></div>
+<div id="top"><span>♾️ v9.2.11 Pro</span><span id="stat">Ready</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:bold">ℹ️ ABOUT</span></div>
+
+<!-- INSTALL BUTTON - Shows only if not installed -->
+<button id="installBtn" onclick="installApp()">📲 INSTALL APP</button>
+
+<div id="voiceBadge" onclick="toggleVoice()">🎤 TAP TO START</div>
+<div id="langSel"><button onclick="setLang('en')" id="btnEn" style="background:#0f8;color:#000">EN</button><button onclick="setLang('ur')" id="btnUr" style="background:#333;color:#fff">اردو</button><button onclick="setLang('ps')" id="btnPs" style="background:#333;color:#fff">پښتو</button><button onclick="setLang('auto')" id="btnAuto" style="background:#a0f;color:#fff">AUTO</button></div>
+<div id="transcript"></div>
+
 <button id="shutter" onclick="capturePhoto()">📸</button>
 <div id="info"><div id="see" style="color:#0f8;font-weight:bold">Ready...</div><div id="barcodeRes" style="color:#ff0;font-size:10px;font-weight:bold"></div><div id="billBox"></div></div>
+
 <div id="controls">
-<button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE</button><button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button><button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD BILL</button><button onclick="showPriceDB()" style="background:#fff;color:#000">📦 DB</button><button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL</button><button onclick="toggleAI()" id="aiBtn" style="background:#222;color:#888">🤖 AI</button>
+<button onclick="toggleVoice()" style="background:#f00;color:#fff">🎤 VOICE</button><button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE</button><button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button><button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD</button><button onclick="showPriceDB()" style="background:#fff;color:#000">📦 DB</button><button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL</button><button onclick="toggleAI()" id="aiBtn" style="background:#222;color:#888">🤖 AI</button>
 </div>
-<div id="adBanner"><span>WanaLab v9.2.9 Pro - By Nasir Khan</span></div>
+<div id="adBanner"><span>WanaLab v9.2.11 - By Nasir Khan</span></div>
 
 <div id="preview"><img id="previewImg"><div style="display:flex;gap:8px;margin-top:10px;width:95%"><button onclick="savePhoto()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">💾 SAVE</button><button onclick="closePreview()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">❌ CLOSE</button></div></div>
 
@@ -46,29 +62,85 @@
 <div id="aboutPage"><div style="max-width:380px;width:100%;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:18px;padding:20px;text-align:center">
 <img src="wanalab-icon-v8.1.png" style="width:90px;height:90px;border-radius:20px;border:2px solid #00ff88" onerror="this.style.display='none'">
 <h2 style="color:#00ff88;margin:12px 0 6px 0">WanaLab Omni-Camera</h2>
-<p style="color:#aaa;font-size:11px;margin-bottom:12px">v9.2.9 Pro</p>
+<p style="color:#aaa;font-size:11px;margin-bottom:12px">v9.2.11 Pro</p>
 <div style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:12px;text-align:left;font-size:10px;color:#0f8;line-height:16px">
-🇵🇰 By Nasir Khan - WanaLab<br><br>
+🇵🇰 By Nasir Khan<br><br>
 ✅ Capture Photo<br>
-✅ Barcode Reader Pro<br>
-✅ Price Database Offline<br>
-✅ Bill PDF & WhatsApp<br>
-✅ Torch & Focus Control<br>
-✅ AI Detection (Optional)
+✅ Barcode Reader<br>
+✅ Price DB Offline<br>
+✅ Installable PWA<br>
+✅ Voice Control<br>
+✅ Torch Control
 </div>
-<p style="font-size:8px;color:#666;margin:12px 0">© 2026 WanaLab - Professional Business Tool</p>
+<div id="aboutInstallArea"></div>
+<p style="font-size:8px;color:#666;margin:12px 0">© 2026 WanaLab</p>
 <button onclick="hideAbout()" style="width:100%;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:bold;font-size:14px;cursor:pointer">✅ BACK TO CAMERA</button>
 </div></div>
 
 <script>
-let stream=null, track=null, coco=null, detecting=false, lastSeen='', stockList=[], billItems=[], totalBill=0, lastBarcode='', priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'), capturedDataUrl='', barcodeMode=false, barcodeInterval=null, codeReader=null, isTorch=false, aiEnabled=false;
+let deferredPrompt=null;
+let isInstalled=false;
+
+// Check if already installed
+function checkInstalled(){
+  if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || localStorage.getItem('wanaInstalled')==='true'){
+    isInstalled=true;
+    document.getElementById('installBtn').style.display='none';
+    let area=document.getElementById('aboutInstallArea');
+    if(area) area.innerHTML='<div style="background:#0f8;color:#000;padding:8px;border-radius:8px;margin:10px 0;font-weight:bold;font-size:10px">✅ App Installed - Thank you!</div>';
+    return true;
+  }
+  return false;
+}
+
+// Listen for install prompt
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  if(!checkInstalled()){
+    document.getElementById('installBtn').style.display='block';
+    // Hide voice badge temporarily to show install button clearly
+    let vb=document.getElementById('voiceBadge');
+    if(vb) vb.style.top='70px';
+    let aboutArea=document.getElementById('aboutInstallArea');
+    if(aboutArea) aboutArea.innerHTML='<button onclick="installApp()" style="width:100%;margin:10px 0;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">📲 INSTALL APP</button>';
+  }
+});
+
+async function installApp(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    let choice=await deferredPrompt.userChoice;
+    if(choice.outcome==='accepted'){
+      localStorage.setItem('wanaInstalled','true');
+      document.getElementById('installBtn').style.display='none';
+      document.getElementById('voiceBadge').style.top='32px';
+    }
+    deferredPrompt=null;
+  } else {
+    // Fallback manual instructions
+    alert('To install:\nChrome menu (⋮) → Add to Home screen / Install app\n\nAfter install, this button will never show again!');
+  }
+}
+
+window.addEventListener('appinstalled', ()=>{
+  localStorage.setItem('wanaInstalled','true');
+  document.getElementById('installBtn').style.display='none';
+  document.getElementById('voiceBadge').style.top='32px';
+  checkInstalled();
+});
+
+let stream=null, track=null, coco=null, detecting=false, lastSeen='', stockList=[], billItems=[], totalBill=0, lastBarcode='', priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'), capturedDataUrl='', barcodeMode=false, barcodeInterval=null, codeReader=null, isTorch=false, aiEnabled=false, isListening=false, recognition=null, currentLangMode=localStorage.getItem('wanaLang')||'auto';
 const video=document.getElementById('godVideo'); const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
 
-function showAbout(){ let el=document.getElementById('aboutPage'); el.classList.add('show'); el.style.display='flex'; }
+function showAbout(){ let el=document.getElementById('aboutPage'); el.classList.add('show'); el.style.display='flex'; checkInstalled(); }
 function hideAbout(){ let el=document.getElementById('aboutPage'); el.classList.remove('show'); el.style.display='none'; }
 function showPriceDB(){renderDB();document.getElementById('priceDBPage').style.display='block';}function hidePriceDB(){document.getElementById('priceDBPage').style.display='none';}
+function setLang(l){ currentLangMode=l; localStorage.setItem('wanaLang',l); updateLangUI(); }
+function updateLangUI(){ document.querySelectorAll('#langSel button').forEach(b=>b.style.background='#333'); let id={en:'btnEn',ur:'btnUr',ps:'btnPs',auto:'btnAuto'}[currentLangMode]; if(id){ document.getElementById(id).style.background='#0f8'; document.getElementById(id).style.color='#000'; } }
 
 async function init(){
+  checkInstalled();
   try{
     let constraints={video:{facingMode:'environment', width:{ideal:720}, height:{ideal:480}}, audio:false};
     stream=await navigator.mediaDevices.getUserMedia(constraints);
@@ -77,8 +149,25 @@ async function init(){
     aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
     document.getElementById('stat').innerText='Ready';
     document.getElementById('see').innerText='Ready - Tap 📸 to capture';
+    updateLangUI(); initVoice();
   }catch(e){ document.getElementById('stat').innerText='Allow camera'; setTimeout(init,1000); }
 }
+
+function initVoice(){
+  let SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
+  recognition=new SR(); recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-US';
+  recognition.onresult=(ev)=>{
+    let t=''; for(let i=ev.resultIndex;i<ev.results.length;i++) t+=ev.results[i][0].transcript;
+    document.getElementById('transcript').style.display='block'; document.getElementById('transcript').innerText=t;
+    if(ev.results[ev.results.length-1].isFinal) handleVoice(t);
+  };
+}
+function toggleVoice(){
+  if(!recognition){ alert('Use Chrome'); return; }
+  if(isListening){ isListening=false; try{recognition.stop();}catch{} document.getElementById('voiceBadge').classList.remove('on'); document.getElementById('voiceBadge').innerText='🎤 TAP TO START'; }
+  else { isListening=true; try{recognition.start();}catch{} document.getElementById('voiceBadge').classList.add('on'); document.getElementById('voiceBadge').innerText='🔴 LISTENING'; }
+}
+function handleVoice(cmd){ let l=cmd.toLowerCase(); if(l.includes('capture')||l.includes('photo')) capturePhoto(); else if(l.includes('barcode')) toggleBarcodeMode(); else if(l.includes('about')) showAbout(); }
 
 async function toggleAI(){
   if(aiEnabled){ aiEnabled=false; coco=null; aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); document.getElementById('aiBtn').style.background='#222'; document.getElementById('aiBtn').style.color='#888'; return; }
@@ -99,9 +188,9 @@ function savePhoto(){let a=document.createElement('a'); a.href=capturedDataUrl; 
 function addPriceManual(){let bc=document.getElementById('newBarcode').value.trim(); let nm=document.getElementById('newName').value.trim()||'Product'; let pr=parseInt(document.getElementById('newPrice').value)||0; if(!bc||!pr) return; priceDB[bc]={name:nm,price:pr}; localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB)); renderDB();}
 function renderDB(){let h=''; let k=Object.keys(priceDB); if(k.length==0) h='Empty'; else k.forEach(x=>{h+=`<div style="display:flex;justify-content:space-between;padding:4px;background:#111;margin:2px 0;border-radius:6px;font-size:7px"><span>${x} ${priceDB[x].name}</span><span style="color:#0f8">Rs.${priceDB[x].price}</span></div>`;}); document.getElementById('dbList').innerHTML=h;}
 function addToBill(bc=null,pr=null,name=null){let it=name||bc||lastSeen||'Product'; let p=pr||250; billItems.push({name:it,price:p}); totalBill+=p; document.getElementById('billBox').innerHTML=`Total Rs.${totalBill}`;}
-function exportBill(){if(billItems.length==0) return; const {jsPDF}=window.jspdf; let doc=new jsPDF(); doc.text('WanaLab v9.2.9 Total Rs.'+totalBill,10,12); doc.save(`Bill-${Date.now()}.pdf`);}
+function exportBill(){if(billItems.length==0) return; const {jsPDF}=window.jspdf; let doc=new jsPDF(); doc.text('WanaLab v9.2.11 Total Rs.'+totalBill,10,12); doc.save(`Bill-${Date.now()}.pdf`);}
 
-window.addEventListener('load', init);
+window.addEventListener('load', ()=>{ checkInstalled(); init(); });
 </script>
 </body>
 </html>
