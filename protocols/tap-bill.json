@@ -1,0 +1,11 @@
+{
+  "id": "tap-bill-v1",
+  "bill": {
+    "currency": "Rs.",
+    "defaultPrice": 250,
+    "markerColor": "#00ff88",
+    "fontSize": 20,
+    "export": "BILL_PDF"
+  },
+  "priceDB": { "storage": "localStorage", "key": "wanaPriceDB" }
+}
