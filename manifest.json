@@ -1,17 +1,17 @@
 {
-  "_comment": "God Eye v1.2 PRO + CamScan - Doc Scan + OCR + PDF - Play Store Ready - Author Nasir Khan 2026-05-14",
+  "_comment": "God Eye v1.9 FINAL ALL-IN-ONE - Manual Crop + ROI + Tracking + Thermal + DOCX+IMG - Author Nasir Khan 2026-05-14",
   "id": "/Wanalab-Omni-Camera-/",
-  "name": "WanaLab God Eye v1.2 PRO - Doc Scanner + Universal Camera OS",
-  "short_name": "God Eye Pro",
-  "description": "WanaLab God Eye v1.2 PRO - World's first offline-first universal camera + CamScanner engine: Doc Scan with auto edge + Magic Filters + OCR + Multi-page PDF + Microscope 1000x, Thermal FLIR, Night God HDR, Barcode + Bill - PWA for Wana, Pakistan & Global",
-  "start_url": "/Wanalab-Omni-Camera-/?source=pwa",
+  "name": "WanaLab God Eye v1.9 FINAL - All Features + Manual Crop + Tracking + Thermal + DOCX IMG",
+  "short_name": "God Eye v1.9",
+  "description": "WanaLab God Eye v1.9 FINAL - Manual 4-corner crop + COUNT ROI + OCR ROI + BARCODE ROI + TAP BILL + DJI Tracking + Thermal/Night/HDR Sliders + Searchable PDF + TXT/DOC/DOCX+IMG + Offline PWA - World's most advanced doc scanner + camera OS - WanaLab, Dera Ismail Khan",
+  "start_url": "/Wanalab-Omni-Camera-/?source=pwa&v=19",
   "scope": "/Wanalab-Omni-Camera-/",
   "display": "standalone",
   "display_override": ["standalone", "window-controls-overlay"],
   "orientation": "any",
   "background_color": "#000000",
   "theme_color": "#00ff88",
-  "categories": ["productivity", "utilities", "business", "photo", "scanner"],
+  "categories": ["productivity", "utilities", "business", "photo", "scanner", "camera"],
   "lang": "en-PK",
   "dir": "ltr",
   "launch_handler": {
@@ -39,38 +39,59 @@
   ],
   "shortcuts": [
     {
-      "name": "📄 Doc Scanner",
+      "name": "📄 Doc Scanner v1.9",
       "short_name": "Doc Scan",
-      "description": "CamScan Engine - Auto Edge + Magic Filter + OCR to PDF",
-      "url": "/Wanalab-Omni-Camera-/?mode=docscan",
+      "description": "Manual 4-corner crop + Magic/BW/Thermal/Night + Searchable PDF/DOCX+IMG",
+      "url": "/Wanalab-Omni-Camera-/?mode=docscan&v=19",
       "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
     },
     {
-      "name": "God Eye Camera OS",
+      "name": "🎯 DJI Tracking",
+      "short_name": "Tracking",
+      "description": "Tap object to lock - DJI style auto follow with corner brackets",
+      "url": "/Wanalab-Omni-Camera-/?mode=tracking&v=19",
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "🔥 Thermal + Night HDR",
+      "short_name": "Thermal",
+      "description": "Thermal JET map + Night HDR + Exposure Sliders - FLIR style",
+      "url": "/Wanalab-Omni-Camera-/?mode=thermal&v=19",
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "🔢 Count ROI + OCR ROI",
+      "short_name": "Count ROI",
+      "description": "Drag box to count objects or OCR only inside area - 95% accuracy",
+      "url": "/Wanalab-Omni-Camera-/?mode=count&v=19",
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "🧾 Tap Bill Scanner",
+      "short_name": "Tap Bill",
+      "description": "Tap products in camera to add price tag - Total bill overlay",
+      "url": "/Wanalab-Omni-Camera-/?mode=bill&v=19",
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "📘 DOCX+IMG Export",
+      "short_name": "DOCX IMG",
+      "description": "Export all pages as DOCX with images + searchable text",
+      "url": "/Wanalab-Omni-Camera-/export.html?v=19",
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "📷 Barcode ROI Scanner",
+      "short_name": "Barcode ROI",
+      "description": "Drag small box to scan barcode only inside - 3x faster + Bill",
+      "url": "/Wanalab-Omni-Camera-/?scan=1&mode=barcode&v=19",
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "God Eye Camera v1.9",
       "short_name": "God Eye",
-      "description": "Open God Eye Universal Camera OS",
-      "url": "/Wanalab-Omni-Camera-/?source=pwa",
-      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Barcode Scanner",
-      "short_name": "Barcode",
-      "description": "Barcode + Auto Price DB Offline",
-      "url": "/Wanalab-Omni-Camera-/?scan=1",
-      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "OCR - Text Scanner",
-      "short_name": "OCR",
-      "description": "Extract Text from Image - English + Urdu",
-      "url": "/Wanalab-Omni-Camera-/?mode=ocr",
-      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Microscope 1000x",
-      "short_name": "Microscope",
-      "description": "UVC/WiFi Microscope 1000x",
-      "url": "/Wanalab-Omni-Camera-/?mode=microscope",
+      "description": "Open God Eye v1.9 FINAL - All features",
+      "url": "/Wanalab-Omni-Camera-/?source=pwa&v=19",
       "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
     }
   ],
@@ -80,20 +101,21 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "WanaLab God Eye v1.2 PRO - Doc Scanner + Universal Camera OS"
+      "label": "WanaLab God Eye v1.9 FINAL - Manual Crop + ROI + Tracking + Thermal + DOCX+IMG + Tap Bill"
     }
   ],
   "file_handlers": [
     {
-      "action": "/Wanalab-Omni-Camera-/?file=1",
+      "action": "/Wanalab-Omni-Camera-/?file=1&v=19",
       "accept": {
         "image/*": [".jpg", ".jpeg", ".png"],
-        "application/pdf": [".pdf"]
+        "application/pdf": [".pdf"],
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"]
       }
     }
   ],
   "share_target": {
-    "action": "/Wanalab-Omni-Camera-/?share=1",
+    "action": "/Wanalab-Omni-Camera-/?share=1&v=19",
     "method": "GET",
     "params": {
       "title": "title",
@@ -102,7 +124,7 @@
       "files": [
         {
           "name": "file",
-          "accept": ["image/*", "application/pdf"]
+          "accept": ["image/*", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
         }
       ]
     }
