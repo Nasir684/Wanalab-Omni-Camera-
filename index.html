@@ -50,13 +50,13 @@
 <div id="controls">
 <button onclick="toggleVoice()" style="background:#f00;color:#fff">🎤 VOICE</button><button onclick="toggleCounting()" id="countBtn" style="background:#333;color:#fff">🔢 COUNT</button><button onclick="toggleFollow()" id="followBtn" style="background:#333;color:#fff">🎯 FOLLOW</button><button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE</button><button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button><button onclick="toggleVideo()" id="videoBtn" style="background:#f00;color:#fff">🎥 VIDEO</button><button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD</button><button onclick="showPriceDB()" style="background:#fff;color:#000">📦 DB</button><button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL</button><button onclick="toggleAI()" id="aiBtn" style="background:#222;color:#888">🤖 AI</button>
 </div>
-<div id="adBanner"><span>WanaLab God Eye v1.1 PRO FIXED - Voice Working</span></div>
+<div id="adBanner"><span>WanaLab God Eye v1.1 PRO - Voice Working Restored</span></div>
 <div id="preview"><img id="previewImg"><div style="display:flex;gap:8px;margin-top:10px;width:95%"><button onclick="savePhoto()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">💾 SAVE</button><button onclick="closePreview()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">❌ CLOSE</button></div></div>
 <div id="priceDBPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9998;padding:12px"><div style="max-width:420px;margin:10px auto;background:#001a0a;border:2px solid #ff0;border-radius:16px;padding:14px"><h3 style="color:#ff0">📦 Price DB</h3><div id="dbList" style="max-height:30vh;overflow:auto;margin:8px 0;background:#000;padding:8px;border-radius:8px"></div><div style="display:flex;gap:4px"><input id="newBarcode" placeholder="Barcode" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newName" placeholder="Name" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newPrice" placeholder="Price" type="number" style="width:70px;padding:8px;border-radius:6px;border:none"></div><button onclick="addPriceManual()" style="width:100%;margin-top:6px;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">➕ Add</button><button onclick="hidePriceDB()" style="width:100%;margin-top:8px;padding:10px;background:#333;color:#fff;border:none;border-radius:8px">Back</button></div></div>
 <div id="aboutPage"><div style="max-width:380px;width:100%;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:18px;padding:20px;text-align:center">
 <img src="wanalab-god-eye-v1-1-icon.png" style="width:90px;height:90px;border-radius:20px;border:2px solid #00ff88" onerror="this.src='wanalab-icon-v8.1.png'">
 <h2 style="color:#00ff88;margin:12px 0 6px 0">WanaLab God Eye</h2>
-<p style="color:#aaa;font-size:11px;margin-bottom:12px">v1.1 PRO - Voice Fixed</p>
+<p style="color:#aaa;font-size:11px;margin-bottom:12px">v1.1 PRO - Voice Working Restored</p>
 <div style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:12px;text-align:left;font-size:10px;color:#0f8;line-height:18px">
 ✅ Voice: "capture" "video" "stop" "count" "follow"<br>
 ✅ TTS: Speaks all actions<br>
@@ -67,55 +67,27 @@
 🌃 Night God HDR | 📹 RTSP IP Cam
 </div>
 <div id="aboutInstallArea" style="margin-top:10px"></div>
-<p style="font-size:8px;color:#666;margin:12px 0">© 2026 WanaLab - By Nasir Khan - God Eye v1.1 PRO Fixed</p>
+<p style="font-size:8px;color:#666;margin:12px 0">© 2026 WanaLab - By Nasir Khan</p>
 <button onclick="hideAbout()" style="width:100%;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:bold;font-size:14px;cursor:pointer">✅ BACK TO GOD EYE</button>
 </div></div>
 <script>
-let deferredPrompt=null;
-let isInstalled=false;
+let deferredPrompt=null;let isInstalled=false;
 function checkInstalled(){
   let aboutArea=document.getElementById('aboutInstallArea');
   let isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || localStorage.getItem('wanaInstalled')==='true';
   if(isStandalone){
-    isInstalled=true;
-    document.getElementById('installBtn').style.display='none';
-    document.getElementById('voiceBadge').style.top='34px';
-    if(aboutArea) aboutArea.innerHTML='<div style="background:#0f8;color:#000;padding:10px;border-radius:10px;margin:10px 0;font-weight:bold;font-size:11px">✅ God Eye Installed</div><button onclick="navigator.share?navigator.share({title:\'God Eye\',url:location.href}):alert(\'Share: \'+location.href)" style="width:100%;padding:10px;background:#333;color:#fff;border:none;border-radius:10px">📤 Share God Eye</button>';
+    isInstalled=true;document.getElementById('installBtn').style.display='none';document.getElementById('voiceBadge').style.top='34px';
+    if(aboutArea) aboutArea.innerHTML='<div style="background:#0f8;color:#000;padding:10px;border-radius:10px;margin:10px 0;font-weight:bold;font-size:11px">✅ God Eye Installed</div>';
     return true;
   } else {
     isInstalled=false;
-    if(aboutArea) aboutArea.innerHTML='<button onclick="installApp()" style="width:100%;margin:10px 0;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:bold;font-size:13px;box-shadow:0 0 15px #00ff88">📲 INSTALL GOD EYE PRO</button><div style="font-size:8px;color:#888;margin-top:6px;text-align:center">Chrome menu (⋮) → Install app / Add to Home screen<br>If installed, long press icon for shortcuts</div>';
+    if(aboutArea) aboutArea.innerHTML='<button onclick="installApp()" style="width:100%;margin:10px 0;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:bold;font-size:13px;box-shadow:0 0 15px #00ff88">📲 INSTALL GOD EYE PRO</button><div style="font-size:8px;color:#888;margin-top:6px;text-align:center">Chrome menu (⋮) → Install app</div>';
     return false;
   }
 }
-window.addEventListener('beforeinstallprompt', (e)=>{
-  e.preventDefault();
-  deferredPrompt=e;
-  document.getElementById('installBtn').style.display='block';
-  document.getElementById('voiceBadge').style.top='68px';
-  checkInstalled();
-});
-async function installApp(){
-  if(deferredPrompt){
-    deferredPrompt.prompt();
-    let choice=await deferredPrompt.userChoice;
-    if(choice.outcome==='accepted'){
-      localStorage.setItem('wanaInstalled','true');
-      document.getElementById('installBtn').style.display='none';
-      document.getElementById('voiceBadge').style.top='34px';
-    }
-    deferredPrompt=null;
-    checkInstalled();
-  } else {
-    alert('To install:\n1. Chrome menu (⋮) top right\n2. Tap Install app / Add to Home screen\n\nLink: https://nasir684.github.io/Wanalab-Omni-Camera-/');
-  }
-}
-window.addEventListener('appinstalled', ()=>{
-  localStorage.setItem('wanaInstalled','true');
-  document.getElementById('installBtn').style.display='none';
-  document.getElementById('voiceBadge').style.top='34px';
-  checkInstalled();
-});
+window.addEventListener('beforeinstallprompt', (e)=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtn').style.display='block';document.getElementById('voiceBadge').style.top='68px';checkInstalled();});
+async function installApp(){if(deferredPrompt){deferredPrompt.prompt();let choice=await deferredPrompt.userChoice;if(choice.outcome==='accepted'){localStorage.setItem('wanaInstalled','true');document.getElementById('installBtn').style.display='none'}deferredPrompt=null;checkInstalled();}else{alert('Chrome menu (⋮) → Install app');}}
+window.addEventListener('appinstalled', ()=>{localStorage.setItem('wanaInstalled','true');document.getElementById('installBtn').style.display='none';checkInstalled();});
 let stream=null, track=null, coco=null, detecting=false, lastSeen='', billItems=[], totalBill=0, lastBarcode='', priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'), capturedDataUrl='', barcodeMode=false, barcodeInterval=null, codeReader=null, isTorch=false, aiEnabled=false, isListening=false, recognition=null, currentLangMode=localStorage.getItem('wanaLang')||'auto';
 let isCounting=false, particleCount=0, isRecording=false, mediaRecorder=null, recordedChunks=[], followMode=false, trackedObject=null, speechEnabled=true;
 const video=document.getElementById('godVideo'); const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
@@ -133,52 +105,100 @@ async function init(){
     await video.play();
     aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
     document.getElementById('stat').innerText='God Eye Ready';
-    document.getElementById('see').innerText='Say: Capture, Video, Stop';
+    document.getElementById('see').innerText='Say: Capture, Video, Stop, Count, Follow';
     updateLangUI(); initVoice();
   }catch(e){ document.getElementById('stat').innerText='Allow camera'; setTimeout(init,1000); }
 }
+
+// *** VOICE FIXED - RESTORED FROM WORKING v8 ***
 function initVoice(){
   let SR=window.SpeechRecognition||window.webkitSpeechRecognition; 
   if(!SR){ document.getElementById('voiceBadge').innerText='❌ Need Chrome'; return; }
   recognition=new SR(); 
   recognition.continuous=true; 
-  recognition.interimResults=false; // FIXED: false so it waits for full phrase
+  recognition.interimResults=true; // MUST BE TRUE - this was working in old versions
   recognition.lang='en-US';
+  recognition.maxAlternatives=1;
+  
   recognition.onresult=(ev)=>{
-    let t=ev.results[ev.results.length-1][0].transcript.trim();
-    document.getElementById('transcript').style.display='block'; 
-    document.getElementById('transcript').innerText='🎤 '+t;
-    handleVoice(t);
-    setTimeout(()=>{ document.getElementById('transcript').style.display='none'; }, 3000);
+    let finalTranscript='';
+    let interimTranscript='';
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      let t=ev.results[i][0].transcript;
+      if(ev.results[i].isFinal){
+        finalTranscript+=t+' ';
+      } else {
+        interimTranscript+=t;
+      }
+    }
+    let display = finalTranscript || interimTranscript;
+    if(display){
+      document.getElementById('transcript').style.display='block'; 
+      document.getElementById('transcript').innerText='🎤 '+display;
+    }
+    if(finalTranscript.trim()!==''){
+      handleVoice(finalTranscript.trim());
+      setTimeout(()=>{document.getElementById('transcript').style.display='none';},2500);
+    }
   };
-  recognition.onend=()=>{ if(isListening) try{recognition.start();}catch{} };
-  recognition.onerror=(e)=>{ console.log('Voice err',e); if(isListening) setTimeout(()=>{try{recognition.start();}catch{}},500); };
+  
+  recognition.onend=()=>{ 
+    console.log('Voice ended, restarting if listening');
+    if(isListening){
+      try{recognition.start();}catch(err){console.log('Restart fail',err)}
+    }
+  };
+  
+  recognition.onerror=(e)=>{ 
+    console.log('Voice error:',e.error);
+    if(isListening && e.error!=='no-speech' && e.error!=='audio-capture'){
+      setTimeout(()=>{try{recognition.start();}catch{}},700);
+    }
+  };
+  
+  recognition.onstart=()=>{document.getElementById('stat').innerText='🔴 Listening';};
 }
+
 function toggleVoice(){
-  if(!recognition){ alert('Use Chrome Android'); return; }
-  if(isListening){ isListening=false; try{recognition.stop();}catch{} document.getElementById('voiceBadge').classList.remove('on'); document.getElementById('voiceBadge').innerText='🎤 TAP TO START'; }
-  else { isListening=true; try{recognition.start();}catch{} document.getElementById('voiceBadge').classList.add('on'); document.getElementById('voiceBadge').innerText='🔴 LISTENING'; speak('Listening, say capture or video'); }
+  if(!recognition){ alert('Use Chrome Android - Open in Chrome'); return; }
+  if(isListening){ 
+    isListening=false; 
+    try{recognition.stop();}catch{}
+    document.getElementById('voiceBadge').classList.remove('on'); 
+    document.getElementById('voiceBadge').innerText='🎤 TAP TO START';
+    document.getElementById('stat').innerText='Voice OFF';
+  } else { 
+    isListening=true; 
+    try{recognition.start();}catch(e){console.log('Start err',e)}
+    document.getElementById('voiceBadge').classList.add('on'); 
+    document.getElementById('voiceBadge').innerText='🔴 LISTENING'; 
+    speak('Listening, say capture or video');
+  }
 }
+
 function speak(text){
   if(!speechEnabled) return;
   try{
     window.speechSynthesis.cancel();
     let utter=new SpeechSynthesisUtterance(text);
-    utter.lang=currentLangMode==='ur'?'ur-PK':currentLangMode==='ps'?'ps-AF':'en-US';
+    if(currentLangMode==='ur') utter.lang='ur-PK';
+    else if(currentLangMode==='ps') utter.lang='ps-AF';
+    else utter.lang='en-US';
     utter.rate=1; utter.volume=1;
     window.speechSynthesis.speak(utter);
   }catch{}
 }
+
 function handleVoice(cmd){ 
   let l=cmd.toLowerCase().trim(); 
-  console.log('CMD:',l);
-  // FIX: Stop command first - handles counting + video
-  if(l.includes('stop')||l.includes('بس')||l.includes('بند')){
+  console.log('VOICE CMD FINAL:',l);
+  // STOP FIRST
+  if(l.includes('stop')||l.includes('بس')||l.includes('بند')||l.includes('ruk')){
     if(isRecording){ stopVideoRecording(); return; }
     if(isCounting){ toggleCounting(); return; }
     if(followMode){ toggleFollow(); return; }
   }
-  if(l.includes('capture')||l.includes('photo')||l.includes('cheese')||l.includes('shot')||l.includes('تصویر')||l.includes('پکچر')){
+  if(l.includes('capture')||l.includes('photo')||l.includes('cheese')||l.includes('shot')||l.includes('click')||l.includes('تصویر')||l.includes('پکچر')){
     capturePhoto();
   } else if(l.includes('video')||l.includes('record')||l.includes('ویڈیو')){
     toggleVideo();
@@ -192,6 +212,7 @@ function handleVoice(cmd){
   else if(l.includes('about')){ showAbout(); }
   else if(l.includes('ai')){ toggleAI(); }
 }
+
 async function toggleAI(){
   if(aiEnabled){ aiEnabled=false; coco=null; aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); document.getElementById('aiBtn').style.background='#222'; document.getElementById('aiBtn').style.color='#888'; document.getElementById('aiBtn').innerText='🤖 AI'; speak('AI off'); return; }
   document.getElementById('aiBtn').innerText='⏳...';
