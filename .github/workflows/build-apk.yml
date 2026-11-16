@@ -1,0 +1,18 @@
+name: Build God Eye APK v1.2 CamScan
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: { node-version: 18 }
+      - run: npm install -g @bubblewrap/cli
+      - run: bubblewrap init --manifest https://nasir684.github.io/Wanalab-Omni-Camera-/manifest.json
+      - run: bubblewrap build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: GodEye-v1.2-APK
+          path: app/build/outputs/bundle/release/*.apk
