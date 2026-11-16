@@ -2,214 +2,63 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WanaLab God Eye v1.2 - Export Hub + CamScan</title>
-<style>
-body{background:#000;color:#0ff;font-family:system-ui,monospace;padding:16px;margin:0}
-h1{text-align:center;font-size:20px;color:#00ff88;margin:8px 0}
-p.subtitle{text-align:center;font-size:11px;opacity:0.8;margin-bottom:12px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-button{padding:16px 8px;font-size:13px;font-weight:800;background:#001122;color:#0ff;border:2px solid #0ff;border-radius:12px;cursor:pointer;transition:0.2s}
-button:hover{background:#0ff;color:#000;box-shadow:0 0 15px #0ff}
-button.pro{border-color:#00ff88;color:#00ff88}button.pro:hover{background:#00ff88;color:#000}
-button.doc{border-color:#00aaff;color:#00aaff;background:#001a33}button.doc:hover{background:#00aaff;color:#fff}
-textarea{width:100%;height:120px;background:#001122;color:#0ff;border:1px solid #00ff88;padding:10px;margin-top:12px;border-radius:10px;font-size:12px;box-sizing:border-box}
-#previewArea{margin-top:12px;display:none}#previewArea img{max-width:100%;border:2px solid #00ff88;border-radius:10px;margin-top:8px}
-.footer{margin-top:24px;text-align:center;font-size:10px;opacity:0.6;line-height:16px}
-a{color:#00ff88;text-decoration:none}
-.badge{display:inline-block;padding:4px 10px;border-radius:12px;font-size:9px;font-weight:800;margin:2px}
-.badge-offline{background:#00ff88;color:#000}.badge-online{background:#ffaa00;color:#000}
-</style>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WanaLab God Eye v1.2.1 Export Hub FIXED</title>
+<style>body{background:#000;color:#0ff;font-family:system-ui;padding:16px;margin:0}h1{text-align:center;font-size:20px;color:#00ff88}p.subtitle{text-align:center;font-size:11px;opacity:.8} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}button{padding:14px 8px;font-size:12px;font-weight:800;background:#001122;color:#0ff;border:2px solid #0ff;border-radius:12px;cursor:pointer}button.doc{border-color:#00aaff;background:#001a33}button.pro{border-color:#00ff88;color:#00ff88}textarea{width:100%;height:110px;background:#001122;color:#0ff;border:1px solid #00ff88;padding:10px;border-radius:10px;font-size:12px;box-sizing:border-box;margin-top:12px}#previewArea{margin-top:12px} .thumbWrap{position:relative;display:inline-block}.delBtn{position:absolute;top:-6px;right:-6px;background:#ff4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer}</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-<h1>🌐 WanaLab God Eye v1.2 Export Hub</h1>
-<p class="subtitle">Founder Nasir Khan | Nasir@wanalab.org | Global v1.2 PRO + CamScan Engine<br>
-<span class="badge badge-offline">OFFLINE</span> Doc Scan + Filters + PDF JPG
-<span class="badge badge-online">ONLINE FIRST</span> OCR + MP3 + DOCX
-</p>
-
-<textarea id="inputText" placeholder="Paste observation / OCR text / measurement here...
-Example:
-Doc Scan: Invoice #123
-OCR Text: Total Rs. 5000
-Location: Wana, D.I. Khan
-Mode: Doc Scan Magic Filter"></textarea>
-
+<h1>🌐 God Eye v1.2.1 Export Hub</h1>
+<p class="subtitle">Nasir Khan | v1.2.1 FIXED - Filtered Pages Sync<br>Offline: JPG/PDF | Online First: OCR</p>
+<textarea id="inputText" placeholder="OCR text will auto appear here..."></textarea>
 <div class="grid">
-<button class="doc" onclick="doExport('doc-jpg')">📄 EXPORT DOC JPG<br><small>CamScan Filtered</small></button>
-<button class="doc" onclick="doExport('doc-pdf')">📕 EXPORT DOC PDF<br><small>Multi-page CamScan</small></button>
-<button onclick="doExport('txt')">📄 EXPORT TXT<br><small>Offline</small></button>
-<button onclick="doExport('json')">🔧 EXPORT JSON<br><small>Offline</small></button>
-<button class="pro" onclick="doExport('ocr-txt')">🔤 EXPORT OCR TEXT<br><small>Online First</small></button>
-<button class="pro" onclick="doExport('pdf')">📕 EXPORT FULL PDF<br><small>With Images</small></button>
-<button onclick="doExport('mp3')">🎙️ EXPORT MP3<br><small>Voice Read</small></button>
-<button onclick="doExport('share')">📤 SHARE<br><small>System Share</small></button>
+<button class="doc" onclick="doExport('doc-jpg')">📄 EXPORT JPG</button>
+<button class="doc" onclick="doExport('doc-pdf')">📕 EXPORT PDF A4</button>
+<button onclick="doExport('txt')">📄 TXT</button>
+<button onclick="doExport('json')">🔧 JSON</button>
+<button class="pro" onclick="doExport('ocr-txt')">🔤 OCR TXT</button>
+<button class="pro" onclick="doExport('pdf')">📕 FULL PDF</button>
+<button onclick="doExport('mp3')">🎙️ READ</button>
+<button onclick="doExport('share')">📤 SHARE</button>
 </div>
-
 <div id="previewArea">
-<h3 style="color:#00ff88;font-size:12px">📸 Last Scanned Pages (<span id="pageCount">0</span>)</h3>
-<div id="thumbList" style="display:flex;gap:6px;overflow:auto;padding:6px 0"></div>
+<h3 style="color:#00ff88;font-size:12px">📸 Pages (<span id="pageCount">0</span>) - Tap to preview, X to delete</h3>
+<div id="thumbList" style="display:flex;gap:8px;overflow:auto;padding:8px 0;flex-wrap:wrap"></div>
 </div>
-
 <div style="margin-top:16px;display:flex;gap:8px">
-<button onclick="clearPages()" style="flex:1;background:#220000;border-color:#ff4444;color:#ff4444">🗑️ CLEAR ALL PAGES</button>
-<button onclick="window.location='index.html'" style="flex:1;background:#00ff88;border-color:#00ff88;color:#000">⬅️ BACK TO CAMERA</button>
+<button onclick="clearPages()" style="flex:1;background:#220000;border-color:#ff4444;color:#ff4444">🗑️ CLEAR ALL</button>
+<button onclick="location.href='index.html'" style="flex:1;background:#00ff88;border-color:#00ff88;color:#000">⬅️ CAMERA</button>
 </div>
-
-<div class="footer">
-<p>WanaLab God Eye v1.2 PRO + CamScan © 2026 - By Nasir Khan</p>
-<p>Modes: doc-scan | ocr | auto | micro 1000x | thermal | night HDR | macro | ip-cam</p>
-<p>Engine: OpenCV.js + Tesseract.js + jsPDF - Offline First, PWA Ready</p>
-<p>Protocols: <span id="pcount">CamScan Engine + 6 Custom Devices</span></p>
-<p><a href="https://nasir684.github.io/Wanalab-Omni-Camera-/" target="_blank">Live: nasir684.github.io/Wanalab-Omni-Camera-/</a> | Email: Nasir@wanalab.org</p>
-<p>Works Offline in Wana, D.I. Khan, Pakistan & Global</p>
-</div>
-
+<div id="fullPrev" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:12px" onclick="this.style.display='none'"><img id="fullImg" style="max-width:96%;max-height:80vh;border-radius:12px;border:2px solid #00ff88"><button style="margin-top:12px;padding:10px 20px;background:#222;color:#fff;border:none;border-radius:10px" onclick="document.getElementById('fullPrev').style.display='none'">CLOSE</button></div>
 <script>
-// === EXPORT HUB v1.2 - CamScan Integrated ===
-window.exportHub = {
-  pages: JSON.parse(localStorage.getItem('wanaScannedPages') || '[]'),
-  
-  init() {
-    this.renderThumbs();
-  },
-  
-  renderThumbs() {
-    const count = this.pages.length;
-    document.getElementById('pageCount').innerText = count;
-    const list = document.getElementById('thumbList');
-    if(count > 0) {
-      document.getElementById('previewArea').style.display = 'block';
-      list.innerHTML = this.pages.map((p,i) => 
-        `<img src="${p}" style="width:70px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #00ff88" title="Page ${i+1}">`
-      ).join('');
-    }
-  },
-  
-  exportTXT(text) {
-    const blob = new Blob([text], {type:'text/plain'});
-    this.download(blob, `GodEye-v1.2-${Date.now()}.txt`);
-  },
-  
-  exportJSON(obj) {
-    const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
-    this.download(blob, `GodEye-v1.2-${Date.now()}.json`);
-  },
-  
-  exportPDF(text) {
-    const {jsPDF} = window.jspdf;
-    let doc = new jsPDF();
-    // Add text
-    doc.setFontSize(10);
-    const lines = doc.splitTextToSize(text, 180);
-    doc.text(lines, 10, 10);
-    // Add scanned pages if any
-    let y = 10 + lines.length*6 + 10;
-    this.pages.forEach((img, i) => {
-      if(i > 0 && y > 200) { doc.addPage(); y = 10; }
-      try { doc.addImage(img, 'JPEG', 10, y, 60, 80); y += 85; } catch(e){}
-    });
-    doc.save(`GodEye-Full-${Date.now()}.pdf`);
-  },
-  
-  exportDocPDF() {
-    if(this.pages.length === 0) { alert('No scanned pages! Go to camera and scan docs first - DOC SCAN button'); return; }
-    const {jsPDF} = window.jspdf;
-    let doc = new jsPDF();
-    this.pages.forEach((img, i) => {
-      if(i > 0) doc.addPage();
-      doc.addImage(img, 'JPEG', 0, 0, 210, 297); // A4 full page like CamScanner
-    });
-    doc.save(`GodEye-DocScan-CamScan-${Date.now()}.pdf`);
-  },
-  
-  exportDocJPG() {
-    if(this.pages.length === 0) { alert('No pages! Scan first'); return; }
-    // Export last page as JPG
-    const a = document.createElement('a');
-    a.href = this.pages[this.pages.length -1];
-    a.download = `GodEye-Doc-${Date.now()}.jpg`;
-    a.click();
-  },
-  
-  exportOCR(text) {
-    if(!navigator.onLine) {
-      alert('OCR Export needs internet first time to load language pack. Offline: Save as TXT for now.');
-      this.exportTXT(text);
-      return;
-    }
-    this.exportTXT("=== OCR TEXT ===\n" + text + "\n\n=== God Eye v1.2 CamScan ===");
-  },
-  
-  exportMP3(text) {
-    if(!text) { alert('Paste text first'); return; }
-    if(!('speechSynthesis' in window)) { alert('TTS not supported'); return; }
-    const utter = new SpeechSynthesisUtterance(text.slice(0, 500));
-    utter.lang = 'en-US';
-    speechSynthesis.speak(utter);
-    alert('Playing audio preview - For MP3 file download, use TXT→Audio app offline. Pro v1.3 will export MP3 directly.');
-  },
-  
-  async share(text) {
-    if(navigator.share) {
-      try { await navigator.share({title:'WanaLab God Eye v1.2', text:text}); } catch(e){}
-    } else {
-      this.exportTXT(text);
-    }
-  },
-  
-  download(blob, name) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name; a.click();
-    URL.revokeObjectURL(url);
-  }
+window.exportHub={
+ pages:JSON.parse(localStorage.getItem('wanaScannedPages')||'[]'),
+ init(){
+  document.getElementById('inputText').value=localStorage.getItem('lastOCR')||'';
+  this.render();
+ },
+ render(){
+  let c=this.pages.length;
+  document.getElementById('pageCount').innerText=c;
+  let list=document.getElementById('thumbList');
+  list.innerHTML=this.pages.map((p,i)=>`<div class="thumbWrap"><img src="${p}" style="width:75px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #00ff88" onclick="showFull('${i}')"><button class="delBtn" onclick="deleteOne(${i})">X</button></div>`).join('');
+  document.getElementById('previewArea').style.display=c?'block':'none';
+ },
+ exportTXT(t){let b=new Blob([t],{type:'text/plain'});this.down(b,`GodEye-${Date.now()}.txt`);},
+ exportJSON(o){let b=new Blob([JSON.stringify(o,null,2)],{type:'application/json'});this.down(b,`GodEye-${Date.now()}.json`);},
+ exportDocPDF(){if(!this.pages.length){alert('No pages');return;}const{jsPDF}=window.jspdf;let d=new jsPDF();this.pages.forEach((img,i)=>{if(i>0)d.addPage();d.addImage(img,'JPEG',0,0,210,297);});d.save(`GodEye-CamScan-${Date.now()}.pdf`);},
+ exportDocJPG(){if(!this.pages.length){alert('No pages');return;}let a=document.createElement('a');a.href=this.pages[this.pages.length-1];a.download=`GodEye-${Date.now()}.jpg`;a.click();},
+ exportPDF(t){const{jsPDF}=window.jspdf;let d=new jsPDF();d.setFontSize(10);let lines=d.splitTextToSize(t,180);d.text(lines,10,10);let y=10+lines.length*6+10;this.pages.forEach((img,i)=>{if(y>200){d.addPage();y=10;}try{d.addImage(img,'JPEG',10,y,60,80);y+=85;}catch{}});d.save(`GodEye-Full-${Date.now()}.pdf`);},
+ exportOCR(t){if(!navigator.onLine){alert('Offline: saving TXT');}this.exportTXT("=== OCR ===\n"+t);},
+ exportMP3(t){speechSynthesis.speak(new SpeechSynthesisUtterance(t.slice(0,500)));},
+ share(t){if(navigator.share)navigator.share({title:'God Eye',text:t});else this.exportTXT(t);},
+ down(b,n){let u=URL.createObjectURL(b);let a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
 };
-
-function doExport(type){
-  const text = document.getElementById('inputText').value || 
-    `WanaLab God Eye v1.2 Global Export\nFounder: Nasir Khan\nEmail: Nasir@wanalab.org\nDate: ${new Date().toISOString()}\nMode: ${localStorage.getItem('lastMode') || 'doc-scan'}\nPages: ${window.exportHub.pages.length}\n---\nObservation / OCR Data Here`;
-  
-  switch(type){
-    case 'txt': window.exportHub.exportTXT(text); break;
-    case 'json': window.exportHub.exportJSON({text:text, founder:"Nasir Khan", version:"v1.2 CamScan", pages: window.exportHub.pages.length, date: new Date().toISOString()}); break;
-    case 'pdf': window.exportHub.exportPDF(text); break;
-    case 'doc-pdf': window.exportHub.exportDocPDF(); break;
-    case 'doc-jpg': window.exportHub.exportDocJPG(); break;
-    case 'ocr-txt': window.exportHub.exportOCR(text); break;
-    case 'mp3': window.exportHub.exportMP3(text); break;
-    case 'share': window.exportHub.share(text); break;
-  }
-}
-
-function clearPages() {
-  if(confirm('Clear all scanned pages?')) {
-    localStorage.removeItem('wanaScannedPages');
-    window.exportHub.pages = [];
-    window.exportHub.renderThumbs();
-    document.getElementById('previewArea').style.display = 'none';
-  }
-}
-
-document.addEventListener('DOMContentLoaded', ()=>{
-  window.exportHub.init();
-  // Load pages from main camera if shared via localStorage
-  const mainPages = localStorage.getItem('wanaScannedPages');
-  if(mainPages) {
-    window.exportHub.pages = JSON.parse(mainPages);
-    window.exportHub.renderThumbs();
-  }
-});
-
-// === Sync with main camera ===
-// When main camera saves page, it saves to localStorage wanaScannedPages
-window.addEventListener('storage', (e) => {
-  if(e.key === 'wanaScannedPages') {
-    window.exportHub.pages = JSON.parse(e.newValue || '[]');
-    window.exportHub.renderThumbs();
-  }
-});
+function doExport(type){let t=document.getElementById('inputText').value||`God Eye v1.2.1\nDate:${new Date().toISOString()}\nPages:${window.exportHub.pages.length}\n---\n`;switch(type){case'txt':exportHub.exportTXT(t);break;case'json':exportHub.exportJSON({text:t,pages:exportHub.pages.length,date:new Date().toISOString()});break;case'pdf':exportHub.exportPDF(t);break;case'doc-pdf':exportHub.exportDocPDF();break;case'doc-jpg':exportHub.exportDocJPG();break;case'ocr-txt':exportHub.exportOCR(t);break;case'mp3':exportHub.exportMP3(t);break;case'share':exportHub.share(t);break;}}
+function clearPages(){if(confirm('Clear all?')){localStorage.removeItem('wanaScannedPages');exportHub.pages=[];exportHub.render();}}
+function deleteOne(i){exportHub.pages.splice(i,1);localStorage.setItem('wanaScannedPages',JSON.stringify(exportHub.pages));exportHub.render();}
+function showFull(i){document.getElementById('fullImg').src=exportHub.pages[i];document.getElementById('fullPrev').style.display='flex';}
+document.addEventListener('DOMContentLoaded',()=>exportHub.init());
 </script>
 </body>
 </html>
