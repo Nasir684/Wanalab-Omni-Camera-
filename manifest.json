@@ -1,8 +1,8 @@
 {
   "id": "/Wanalab-Omni-Camera-/",
-  "name": "WanaLab - Omni-Camera v9.2 Pro",
-  "short_name": "WanaLab Omni",
-  "description": "WanaLab Omni-Camera by Nasir Khan - Capture, Barcode Pro, Price DB Offline, Bill PDF, Voice Control",
+  "name": "WanaLab God Eye v1.1 PRO - Universal Camera OS",
+  "short_name": "God Eye Pro",
+  "description": "WanaLab God Eye v1.1 PRO - World's first offline-first universal camera OS: Microscope 1000x, Thermal FLIR, Night God 10-Frame HDR, RTSP/ONVIF IP Camera, Macro/Micro/Telephoto, AI Detection (TFJS) - PWA for Wana, Pakistan & Global",
   "start_url": "/Wanalab-Omni-Camera-/?source=pwa",
   "scope": "/Wanalab-Omni-Camera-/",
   "display": "standalone",
@@ -10,7 +10,7 @@
   "orientation": "any",
   "background_color": "#000000",
   "theme_color": "#00ff88",
-  "categories": ["productivity", "utilities", "business"],
+  "categories": ["productivity", "utilities", "business", "photo"],
   "lang": "en-PK",
   "dir": "ltr",
   "launch_handler": {
@@ -18,39 +18,68 @@
   },
   "icons": [
     {
-      "src": "wanalab-icon-v8.1.png",
+      "src": "wanalab-god-eye-v1-1-icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "wanalab-icon-v8.1.png",
+      "src": "wanalab-god-eye-v1-1-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "wanalab-god-eye-v1-1-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
-      "name": "Omni Camera Pro",
-      "short_name": "Camera",
-      "description": "Open Camera",
+      "name": "God Eye Camera OS",
+      "short_name": "God Eye",
+      "description": "Open God Eye Universal Camera OS",
       "url": "/Wanalab-Omni-Camera-/?source=pwa",
-      "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Microscope 1000x",
+      "short_name": "Microscope",
+      "description": "UVC/WiFi Microscope 1000x",
+      "url": "/Wanalab-Omni-Camera-/?mode=microscope",
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Thermal FLIR",
+      "short_name": "Thermal",
+      "description": "Thermal FLIR Camera",
+      "url": "/Wanalab-Omni-Camera-/?mode=thermal",
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "IP Camera RTSP/ONVIF",
+      "short_name": "IP Cam",
+      "description": "RTSP/ONVIF IP Camera",
+      "url": "/Wanalab-Omni-Camera-/?mode=ipcam",
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
     },
     {
       "name": "Barcode Scanner",
       "short_name": "Barcode",
-      "description": "Scan Barcode + Auto Price DB",
+      "description": "Barcode + Auto Price DB Offline",
       "url": "/Wanalab-Omni-Camera-/?scan=1",
-      "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
-    },
+      "icons": [{ "src": "wanalab-god-eye-v1-1-icon.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
     {
-      "name": "Price Database",
-      "short_name": "Price DB",
-      "description": "Offline Price DB",
-      "url": "/Wanalab-Omni-Camera-/?db=1",
-      "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
+      "src": "wanalab-god-eye-v1-1-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "WanaLab God Eye v1.1 PRO - Universal Camera OS"
     }
   ]
 }
