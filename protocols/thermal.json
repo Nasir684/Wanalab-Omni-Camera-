@@ -1,46 +1,53 @@
-[
-  {
-    "id": "flir-one-gen3",
-    "name": "FLIR ONE Gen3 Type-C Thermal",
-    "type": "UVC",
-    "mode": "thermal",
-    "vendorIds": [1003, 9483],
-    "description": "FLIR ONE Gen3 thermal + RGB fusion - Works via UVC + FLIR SDK",
-    "resolution": "160x120 thermal + 1440x1080 RGB",
-    "temp_range": "-20 to 400C",
-    "connection": "USB-C",
-    "status": "working",
-    "pro": true
+{
+  "_comment": "WanaLab God Eye v1.9 FINAL v99 - Thermal + Night + HDR - Nasir Khan",
+  "id": "thermal-v1",
+  "version": "1.9.99-nasir684",
+  "name": "Thermal + Night HDR - FLIR Style",
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99",
+  "modes": ["thermal", "night", "hdr", "thermal-roi"],
+  "thermal": {
+    "enabled": true,
+    "defaultMap": "JET",
+    "maps": [
+      { "id": "JET", "name": "JET - Rainbow", "opencv": "COLORMAP_JET", "color": "rainbow" },
+      { "id": "HOT", "name": "WhiteHot - FLIR White", "opencv": "COLORMAP_HOT", "color": "whitehot" },
+      { "id": "IRON", "name": "Iron - Red Hot", "opencv": "COLORMAP_INFERNO", "color": "iron" },
+      { "id": "BONE", "name": "BlackHot", "opencv": "COLORMAP_BONE", "color": "blackhot" },
+      { "id": "COOL", "name": "Cool Blue", "opencv": "COLORMAP_COOL", "color": "cool" },
+      { "id": "OCEAN", "name": "Ocean Thermal", "opencv": "COLORMAP_OCEAN", "color": "ocean" }
+    ],
+    "opacity": { "min": 0, "max": 100, "default": 0, "step": 5 },
+    "blending": "screen",
+    "canvas": "thermalCanvas",
+    "roiSupported": true
   },
-  {
-    "id": "seek-thermal-compact",
-    "name": "Seek Thermal Compact Type-C",
-    "type": "UVC",
-    "mode": "thermal",
-    "vendorIds": [1003],
-    "description": "Seek Thermal Compact - UVC thermal",
-    "resolution": "206x156",
-    "status": "working",
-    "pro": true
+  "night": {
+    "enabled": true,
+    "min": 0,
+    "max": 100,
+    "default": 0,
+    "filters": {
+      "brightnessBoost": 50,
+      "contrastBoost": 30,
+      "denoise": true
+    }
   },
-  {
-    "id": "topdon-tc001",
-    "name": "Topdon TC001 Thermal Type-C",
-    "type": "UVC",
-    "mode": "thermal",
-    "vendorIds": [1003, 3034],
-    "description": "Topdon TC001 256x192 thermal - Popular budget thermal",
-    "resolution": "256x192",
-    "status": "working",
-    "pro": true
+  "hdr": {
+    "enabled": true,
+    "min": 0,
+    "max": 100,
+    "default": 0,
+    "filters": {
+      "contrast": 25,
+      "saturation": 15,
+      "exposure": 0
+    }
   },
-  {
-    "id": "thermal-mock-rgb",
-    "name": "Thermal Mock Mode (No Hardware)",
-    "type": "SOFTWARE",
-    "mode": "thermal",
-    "description": "Software thermal filter for phones without thermal hardware - uses RGB to estimate",
-    "status": "working",
-    "pro": false
-  }
-]
+  "sliders": {
+    "exp": { "label": "☀️ EXP", "min": -100, "max": 100, "default": 0 },
+    "night": { "label": "🌙 NIGHT", "min": 0, "max": 100, "default": 0 },
+    "thermal": { "label": "🔥 THERMAL", "min": 0, "max": 100, "default": 0 },
+    "hdr": { "label": "📸 HDR", "min": 0, "max": 100, "default": 0 }
+  },
+  "export": ["JPG", "THERMAL_JPG", "IMG_PDF"]
+}
