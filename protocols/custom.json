@@ -12,8 +12,8 @@
     "fps": 30,
     "protocol": "uvc",
     "addedBy": "user",
-    "version": "1.1-pro",
-    "os": "God Eye v1.1 PRO"
+    "version": "1.2-pro-camscan",
+    "os": "God Eye v1.2 PRO"
   },
   {
     "id": "custom-wifi-camera",
@@ -31,8 +31,8 @@
     "password": "",
     "resolution": "1280x720",
     "addedBy": "user",
-    "version": "1.1-pro",
-    "os": "God Eye v1.1 PRO"
+    "version": "1.2-pro-camscan",
+    "os": "God Eye v1.2 PRO"
   },
   {
     "id": "custom-ip-camera",
@@ -49,8 +49,8 @@
     "username": "admin",
     "password": "",
     "addedBy": "user",
-    "version": "1.1-pro",
-    "os": "God Eye v1.1 PRO"
+    "version": "1.2-pro-camscan",
+    "os": "God Eye v1.2 PRO"
   },
   {
     "id": "custom-thermal-flir",
@@ -65,7 +65,43 @@
     "resolution": "160x120",
     "palette": "ironbow",
     "addedBy": "user",
-    "version": "1.1-pro",
-    "os": "God Eye v1.1 PRO"
+    "version": "1.2-pro-camscan",
+    "os": "God Eye v1.2 PRO"
+  },
+  {
+    "id": "custom-doc-scanner",
+    "name": "Custom Doc Scanner - CamScan Engine",
+    "type": "DOCSCAN",
+    "mode": "auto",
+    "description": "NEW v1.2 - CamScanner Engine: Auto Edge Detection + Magic Filter + Perspective Warp + OCR + PDF - Works offline after first load",
+    "status": "active",
+    "protocol": "opencv-camscan",
+    "engine": "opencv.js + tesseract.js + jspdf",
+    "features": ["auto-edge", "warp", "magic-filter", "bw", "gray", "ocr-eng-urd", "multipage-pdf"],
+    "resolution": "1920x1080",
+    "filters": ["original", "magic", "bw", "gray", "light", "hd+"],
+    "ocrLanguages": ["eng", "urd", "ara"],
+    "offline": true,
+    "needsOnlineFirst": ["ocr-model"],
+    "addedBy": "system",
+    "version": "1.2-pro-camscan",
+    "os": "God Eye v1.2 PRO"
+  },
+  {
+    "id": "custom-ocr-scanner",
+    "name": "Custom OCR Text Scanner",
+    "type": "OCR",
+    "mode": "auto",
+    "description": "NEW v1.2 - Extract text from documents - English + Urdu + Arabic - Online first time to download language pack, then offline",
+    "status": "active",
+    "protocol": "tesseract-js",
+    "engine": "tesseract.js v5",
+    "features": ["text-extract", "copy-text", "share-text", "search-text"],
+    "languages": ["eng", "urd", "ps", "ara"],
+    "offline": "partial",
+    "needsOnlineFirst": true,
+    "addedBy": "system",
+    "version": "1.2-pro-camscan",
+    "os": "God Eye v1.2 PRO"
   }
 ]
