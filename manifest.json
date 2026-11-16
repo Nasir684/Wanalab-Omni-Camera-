@@ -1,17 +1,21 @@
 {
+  "id": "/Wanalab-Omni-Camera-/",
   "name": "WanaLab - Omni-Camera v9.2 Pro",
   "short_name": "WanaLab Omni",
-  "description": "WanaLab Omni-Camera v9.2 Play Store Pro by Nasir Khan - Face Blur Privacy, Smart Price DB 1000+ Offline IndexedDB, OCR Urdu Pashto English Auto Detect, Barcode QR, Bill PDF, WhatsApp, AdMob Ready, Pro Unlock - WanaLab",
+  "description": "WanaLab Omni-Camera by Nasir Khan - Capture, Barcode Pro, Price DB Offline, Bill PDF, Voice Control",
   "start_url": "/Wanalab-Omni-Camera-/?source=pwa",
   "scope": "/Wanalab-Omni-Camera-/",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen"],
+  "display_override": ["standalone", "window-controls-overlay"],
   "orientation": "any",
   "background_color": "#000000",
   "theme_color": "#00ff88",
-  "categories": ["productivity", "utilities", "business", "shopping"],
+  "categories": ["productivity", "utilities", "business"],
   "lang": "en-PK",
   "dir": "ltr",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "icons": [
     {
       "src": "wanalab-icon-v8.1.png",
@@ -29,8 +33,8 @@
   "shortcuts": [
     {
       "name": "Omni Camera Pro",
-      "short_name": "Camera Pro",
-      "description": "Open Omni Camera v9.2 Pro",
+      "short_name": "Camera",
+      "description": "Open Camera",
       "url": "/Wanalab-Omni-Camera-/?source=pwa",
       "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
     },
@@ -42,27 +46,11 @@
       "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
     },
     {
-      "name": "Face Blur Privacy",
-      "short_name": "Face Blur",
-      "description": "Face Blur Privacy Mode",
-      "url": "/Wanalab-Omni-Camera-/?faceblur=1",
-      "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
-    },
-    {
       "name": "Price Database",
       "short_name": "Price DB",
-      "description": "1000+ Products Offline DB",
+      "description": "Offline Price DB",
       "url": "/Wanalab-Omni-Camera-/?db=1",
       "icons": [{ "src": "wanalab-icon-v8.1.png", "sizes": "96x96" }]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "wanalab-icon-v8.1.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "WanaLab Omni-Camera v9.2 Pro"
     }
   ]
 }
