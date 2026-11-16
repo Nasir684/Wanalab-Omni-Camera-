@@ -17,13 +17,13 @@
 #scanLine{position:absolute;top:0;left:0;width:100%;height:3px;background:#ff0;animation:scan 1.5s infinite}
 @keyframes scan{0%{top:0}50%{top:97%}100%{top:0}}
 #top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.85);color:#0f8;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;font-size:8px;border-bottom:1px solid #0f8}
-#installBtn{position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:8px 16px;border-radius:20px;font-weight:bold;font-size:11px;display:none;box-shadow:0 0 15px #00ff88;animation:pop 0.5s;cursor:pointer;border:none}
+#installBtn{position:fixed;top:32px;left:50%;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:8px 18px;border-radius:20px;font-weight:bold;font-size:11px;display:none;box-shadow:0 0 15px #00ff88;animation:pop 0.5s;cursor:pointer;border:none}
 @keyframes pop{0%{transform:translateX(-50%) scale(0)}100%{transform:translateX(-50%) scale(1)}}
-#voiceBadge{position:fixed;top:32px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:10px;cursor:pointer}
+#voiceBadge{position:fixed;top:34px;left:50%;transform:translateX(-50%);z-index:11;background:#f00;color:#fff;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:10px;cursor:pointer;transition:top 0.3s}
 #voiceBadge.on{background:#0f8;color:#000}
-#langSel{position:fixed;top:58px;right:6px;z-index:12;background:#000;border:1px solid #0f8;border-radius:20px;padding:2px 4px;display:flex;gap:2px}
+#langSel{position:fixed;top:60px;right:6px;z-index:12;background:#000;border:1px solid #0f8;border-radius:20px;padding:2px 4px;display:flex;gap:2px}
 #langSel button{border:none;padding:3px 6px;border-radius:10px;font-size:7px;font-weight:bold;cursor:pointer}
-#transcript{position:fixed;top:82px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.9);color:#ff0;padding:6px 10px;border-radius:8px;font-size:9px;display:none;border:1px solid #ff0;text-align:center}
+#transcript{position:fixed;top:84px;left:8px;right:8px;z-index:10;background:rgba(0,0,0,0.9);color:#ff0;padding:6px 10px;border-radius:8px;font-size:9px;display:none;border:1px solid #ff0;text-align:center}
 #shutter{position:fixed;bottom:98px;left:50%;transform:translateX(-50%);z-index:12;width:72px;height:72px;border-radius:50%;background:#fff;border:4px solid #00ff88;box-shadow:0 0 12px #00ff88;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer}
 #shutter:active{transform:translateX(-50%) scale(0.88)}
 #info{position:fixed;bottom:170px;left:4px;right:4px;z-index:10;background:rgba(0,0,0,0.85);color:#fff;padding:5px 6px;border-radius:8px;font-size:8px;border:1px solid #0f8;max-height:16vh;overflow:auto}
@@ -39,26 +39,18 @@
 <video id="godVideo" autoplay playsinline muted></video><canvas id="aiCanvas"></canvas>
 <div id="scanBox"><div id="scanLine"></div></div>
 <div id="top"><span>♾️ v9.2.11 Pro</span><span id="stat">Ready</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:bold">ℹ️ ABOUT</span></div>
-
-<!-- INSTALL BUTTON - Shows only if not installed -->
 <button id="installBtn" onclick="installApp()">📲 INSTALL APP</button>
-
 <div id="voiceBadge" onclick="toggleVoice()">🎤 TAP TO START</div>
 <div id="langSel"><button onclick="setLang('en')" id="btnEn" style="background:#0f8;color:#000">EN</button><button onclick="setLang('ur')" id="btnUr" style="background:#333;color:#fff">اردو</button><button onclick="setLang('ps')" id="btnPs" style="background:#333;color:#fff">پښتو</button><button onclick="setLang('auto')" id="btnAuto" style="background:#a0f;color:#fff">AUTO</button></div>
 <div id="transcript"></div>
-
 <button id="shutter" onclick="capturePhoto()">📸</button>
 <div id="info"><div id="see" style="color:#0f8;font-weight:bold">Ready...</div><div id="barcodeRes" style="color:#ff0;font-size:10px;font-weight:bold"></div><div id="billBox"></div></div>
-
 <div id="controls">
 <button onclick="toggleVoice()" style="background:#f00;color:#fff">🎤 VOICE</button><button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE</button><button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button><button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD</button><button onclick="showPriceDB()" style="background:#fff;color:#000">📦 DB</button><button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL</button><button onclick="toggleAI()" id="aiBtn" style="background:#222;color:#888">🤖 AI</button>
 </div>
 <div id="adBanner"><span>WanaLab v9.2.11 - By Nasir Khan</span></div>
-
 <div id="preview"><img id="previewImg"><div style="display:flex;gap:8px;margin-top:10px;width:95%"><button onclick="savePhoto()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">💾 SAVE</button><button onclick="closePreview()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">❌ CLOSE</button></div></div>
-
 <div id="priceDBPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9998;padding:12px"><div style="max-width:420px;margin:10px auto;background:#001a0a;border:2px solid #ff0;border-radius:16px;padding:14px"><h3 style="color:#ff0">📦 Price DB</h3><div id="dbList" style="max-height:30vh;overflow:auto;margin:8px 0;background:#000;padding:8px;border-radius:8px"></div><div style="display:flex;gap:4px"><input id="newBarcode" placeholder="Barcode" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newName" placeholder="Name" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newPrice" placeholder="Price" type="number" style="width:70px;padding:8px;border-radius:6px;border:none"></div><button onclick="addPriceManual()" style="width:100%;margin-top:6px;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">➕ Add</button><button onclick="hidePriceDB()" style="width:100%;margin-top:8px;padding:10px;background:#333;color:#fff;border:none;border-radius:8px">Back</button></div></div>
-
 <div id="aboutPage"><div style="max-width:380px;width:100%;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:18px;padding:20px;text-align:center">
 <img src="wanalab-icon-v8.1.png" style="width:90px;height:90px;border-radius:20px;border:2px solid #00ff88" onerror="this.style.display='none'">
 <h2 style="color:#00ff88;margin:12px 0 6px 0">WanaLab Omni-Camera</h2>
@@ -80,33 +72,27 @@
 <script>
 let deferredPrompt=null;
 let isInstalled=false;
-
-// Check if already installed
 function checkInstalled(){
   if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || localStorage.getItem('wanaInstalled')==='true'){
     isInstalled=true;
     document.getElementById('installBtn').style.display='none';
+    document.getElementById('voiceBadge').style.top='34px';
     let area=document.getElementById('aboutInstallArea');
     if(area) area.innerHTML='<div style="background:#0f8;color:#000;padding:8px;border-radius:8px;margin:10px 0;font-weight:bold;font-size:10px">✅ App Installed - Thank you!</div>';
     return true;
   }
   return false;
 }
-
-// Listen for install prompt
 window.addEventListener('beforeinstallprompt', (e)=>{
   e.preventDefault();
   deferredPrompt=e;
   if(!checkInstalled()){
     document.getElementById('installBtn').style.display='block';
-    // Hide voice badge temporarily to show install button clearly
-    let vb=document.getElementById('voiceBadge');
-    if(vb) vb.style.top='70px';
+    document.getElementById('voiceBadge').style.top='68px';
     let aboutArea=document.getElementById('aboutInstallArea');
     if(aboutArea) aboutArea.innerHTML='<button onclick="installApp()" style="width:100%;margin:10px 0;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">📲 INSTALL APP</button>';
   }
 });
-
 async function installApp(){
   if(deferredPrompt){
     deferredPrompt.prompt();
@@ -114,31 +100,26 @@ async function installApp(){
     if(choice.outcome==='accepted'){
       localStorage.setItem('wanaInstalled','true');
       document.getElementById('installBtn').style.display='none';
-      document.getElementById('voiceBadge').style.top='32px';
+      document.getElementById('voiceBadge').style.top='34px';
     }
     deferredPrompt=null;
   } else {
-    // Fallback manual instructions
-    alert('To install:\nChrome menu (⋮) → Add to Home screen / Install app\n\nAfter install, this button will never show again!');
+    alert('To install:\nChrome menu (⋮) → Add to Home screen / Install app');
   }
 }
-
 window.addEventListener('appinstalled', ()=>{
   localStorage.setItem('wanaInstalled','true');
   document.getElementById('installBtn').style.display='none';
-  document.getElementById('voiceBadge').style.top='32px';
+  document.getElementById('voiceBadge').style.top='34px';
   checkInstalled();
 });
-
-let stream=null, track=null, coco=null, detecting=false, lastSeen='', stockList=[], billItems=[], totalBill=0, lastBarcode='', priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'), capturedDataUrl='', barcodeMode=false, barcodeInterval=null, codeReader=null, isTorch=false, aiEnabled=false, isListening=false, recognition=null, currentLangMode=localStorage.getItem('wanaLang')||'auto';
+let stream=null, track=null, coco=null, detecting=false, lastSeen='', billItems=[], totalBill=0, lastBarcode='', priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'), capturedDataUrl='', barcodeMode=false, barcodeInterval=null, codeReader=null, isTorch=false, aiEnabled=false, isListening=false, recognition=null, currentLangMode=localStorage.getItem('wanaLang')||'auto';
 const video=document.getElementById('godVideo'); const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
-
 function showAbout(){ let el=document.getElementById('aboutPage'); el.classList.add('show'); el.style.display='flex'; checkInstalled(); }
 function hideAbout(){ let el=document.getElementById('aboutPage'); el.classList.remove('show'); el.style.display='none'; }
 function showPriceDB(){renderDB();document.getElementById('priceDBPage').style.display='block';}function hidePriceDB(){document.getElementById('priceDBPage').style.display='none';}
 function setLang(l){ currentLangMode=l; localStorage.setItem('wanaLang',l); updateLangUI(); }
 function updateLangUI(){ document.querySelectorAll('#langSel button').forEach(b=>b.style.background='#333'); let id={en:'btnEn',ur:'btnUr',ps:'btnPs',auto:'btnAuto'}[currentLangMode]; if(id){ document.getElementById(id).style.background='#0f8'; document.getElementById(id).style.color='#000'; } }
-
 async function init(){
   checkInstalled();
   try{
@@ -152,7 +133,6 @@ async function init(){
     updateLangUI(); initVoice();
   }catch(e){ document.getElementById('stat').innerText='Allow camera'; setTimeout(init,1000); }
 }
-
 function initVoice(){
   let SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
   recognition=new SR(); recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-US';
@@ -168,7 +148,6 @@ function toggleVoice(){
   else { isListening=true; try{recognition.start();}catch{} document.getElementById('voiceBadge').classList.add('on'); document.getElementById('voiceBadge').innerText='🔴 LISTENING'; }
 }
 function handleVoice(cmd){ let l=cmd.toLowerCase(); if(l.includes('capture')||l.includes('photo')) capturePhoto(); else if(l.includes('barcode')) toggleBarcodeMode(); else if(l.includes('about')) showAbout(); }
-
 async function toggleAI(){
   if(aiEnabled){ aiEnabled=false; coco=null; aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); document.getElementById('aiBtn').style.background='#222'; document.getElementById('aiBtn').style.color='#888'; return; }
   document.getElementById('aiBtn').innerText='⏳...';
@@ -176,7 +155,7 @@ async function toggleAI(){
   if(!window.cocoSsd){ let s2=document.createElement('script'); s2.src='https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js'; await new Promise(r=>{s2.onload=r; document.head.appendChild(s2);}); }
   try{ coco=await cocoSsd.load({base:'lite_mobilenet_v2'}); aiEnabled=true; document.getElementById('aiBtn').style.background='#0f8'; document.getElementById('aiBtn').style.color='#000'; document.getElementById('aiBtn').innerText='🤖 AI ON'; loop(); }catch{ document.getElementById('aiBtn').innerText='🤖 AI'; }
 }
-function loop(){ if(!aiEnabled || detecting || !coco){ if(aiEnabled) requestAnimationFrame(loop); return;} detecting=true; coco.detect(video,6,0.55).then(preds=>{ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); let lines=[]; stockList=[]; for(let p of preds){ let [x,y,w,h]=p.bbox; stockList.push(p.class); let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight; aiCtx.strokeStyle='#00ff88'; aiCtx.lineWidth=2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy); lines.push(p.class);} if(lines.length>0){ lastSeen=[...new Set(lines)].join(', '); document.getElementById('see').innerText=lastSeen; } detecting=false; requestAnimationFrame(loop);}).catch(()=>{detecting=false; requestAnimationFrame(loop);}); }
+function loop(){ if(!aiEnabled || detecting || !coco){ if(aiEnabled) requestAnimationFrame(loop); return;} detecting=true; coco.detect(video,6,0.55).then(preds=>{ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); let lines=[]; for(let p of preds){ let [x,y,w,h]=p.bbox; let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight; aiCtx.strokeStyle='#00ff88'; aiCtx.lineWidth=2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy); lines.push(p.class);} if(lines.length>0){ lastSeen=[...new Set(lines)].join(', '); document.getElementById('see').innerText=lastSeen; } detecting=false; requestAnimationFrame(loop);}).catch(()=>{detecting=false; requestAnimationFrame(loop);}); }
 async function toggleTorch(){ try{ if(!track) return; let caps=track.getCapabilities(); if(!caps.torch) return; isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{} }
 function toggleBarcodeMode(){ barcodeMode=!barcodeMode; document.getElementById('scanBox').style.display=barcodeMode?'block':'none'; document.getElementById('barcodeBtn').style.background=barcodeMode?'#0f8':'#ff0'; if(barcodeMode){ document.getElementById('barcodeRes').innerHTML='🔍 Scanning...'; startScan(); } else { stopScan(); } }
 function startScan(){ if(!codeReader){ try{codeReader=new ZXing.BrowserMultiFormatReader();}catch{}} if(codeReader){ try{codeReader.decodeFromVideoDevice(null,'godVideo',(r)=>{ if(r&&r.text) handleBarcode(r.text); });}catch{}} barcodeInterval=setInterval(async()=>{ if(!barcodeMode) return; if('BarcodeDetector' in window){ try{ let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; c.getContext('2d').drawImage(video,0,0); let det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','qr_code']}); let bmp=await createImageBitmap(c); let codes=await det.detect(bmp); if(codes[0]) handleBarcode(codes[0].rawValue); }catch{} } },500); }
@@ -190,7 +169,13 @@ function renderDB(){let h=''; let k=Object.keys(priceDB); if(k.length==0) h='Emp
 function addToBill(bc=null,pr=null,name=null){let it=name||bc||lastSeen||'Product'; let p=pr||250; billItems.push({name:it,price:p}); totalBill+=p; document.getElementById('billBox').innerHTML=`Total Rs.${totalBill}`;}
 function exportBill(){if(billItems.length==0) return; const {jsPDF}=window.jspdf; let doc=new jsPDF(); doc.text('WanaLab v9.2.11 Total Rs.'+totalBill,10,12); doc.save(`Bill-${Date.now()}.pdf`);}
 
-window.addEventListener('load', ()=>{ checkInstalled(); init(); });
+window.addEventListener('load', ()=>{ 
+  checkInstalled(); 
+  init(); 
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/Wanalab-Omni-Camera-/sw.js').then(()=>console.log('SW v9.2.11 ready'));
+  }
+});
 </script>
 </body>
 </html>
