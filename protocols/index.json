@@ -1,0 +1,40 @@
+{
+  "version": "1.9.99-nasir684",
+  "author": "Nasir Khan - WanaLab Dera Ismail Khan",
+  "updated": "2026-05-14",
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99",
+  "protocols": [
+    {
+      "id": "dji-tracking-v1",
+      "name": "DJI ActiveTrack Style",
+      "description": "Tap to lock object, auto follow with OpenCV template matching - corner brackets",
+      "file": "./dji-tracking.json?v=19",
+      "modes": ["tracking"],
+      "thermal": false
+    },
+    {
+      "id": "thermal-jet-v1",
+      "name": "FLIR Thermal JET",
+      "description": "JET colormap, Iron, WhiteHot, BlackHot - FLIR style sliders",
+      "file": "./thermal-jet.json?v=19",
+      "modes": ["thermal", "night", "hdr"],
+      "thermal": true
+    },
+    {
+      "id": "doc-scanner-v1",
+      "name": "Doc Scanner Pro + Manual Crop",
+      "description": "4-corner manual crop + Magic/BW/Thermal/Night + Searchable PDF/DOCX+IMG",
+      "file": "./doc-scanner.json?v=19",
+      "modes": ["docscan", "count", "ocr"],
+      "thermal": false
+    },
+    {
+      "id": "tap-bill-v1",
+      "name": "Tap Bill + PriceDB",
+      "description": "Tap products to add Rs tag - Bill PDF export - PriceDB offline",
+      "file": "./tap-bill.json?v=19",
+      "modes": ["bill", "barcode"],
+      "thermal": false
+    }
+  ]
+}
