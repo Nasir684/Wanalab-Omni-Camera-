@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v9.2.11 Install - By Nasir Khan</title>
+<title>WanaLab God Eye v1.1 PRO - Universal Camera OS - By Nasir Khan</title>
+<meta name="description" content="WanaLab God Eye v1.1 PRO - World's first offline-first universal camera OS: Microscope 1000x, Thermal FLIR, Night God 10-Frame HDR, RTSP/ONVIF IP Camera, Macro/Micro/Telephoto, AI Detection - PWA for Wana, Pakistan & Global">
 <meta name="theme-color" content="#00ff88">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="wanalab-icon-v8.1.png">
+<link rel="icon" type="image/png" href="wanalab-god-eye-v1-1-icon.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
 <style>
@@ -38,37 +39,39 @@
 <body>
 <video id="godVideo" autoplay playsinline muted></video><canvas id="aiCanvas"></canvas>
 <div id="scanBox"><div id="scanLine"></div></div>
-<div id="top"><span>♾️ v9.2.11 Pro</span><span id="stat">Ready</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:bold">ℹ️ ABOUT</span></div>
-<button id="installBtn" onclick="installApp()">📲 INSTALL APP</button>
+<div id="top"><span>👁️ God Eye v1.1 PRO</span><span id="stat">Ready</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:bold">ℹ️ ABOUT</span></div>
+<button id="installBtn" onclick="installApp()">📲 INSTALL GOD EYE</button>
 <div id="voiceBadge" onclick="toggleVoice()">🎤 TAP TO START</div>
 <div id="langSel"><button onclick="setLang('en')" id="btnEn" style="background:#0f8;color:#000">EN</button><button onclick="setLang('ur')" id="btnUr" style="background:#333;color:#fff">اردو</button><button onclick="setLang('ps')" id="btnPs" style="background:#333;color:#fff">پښتو</button><button onclick="setLang('auto')" id="btnAuto" style="background:#a0f;color:#fff">AUTO</button></div>
 <div id="transcript"></div>
 <button id="shutter" onclick="capturePhoto()">📸</button>
-<div id="info"><div id="see" style="color:#0f8;font-weight:bold">Ready...</div><div id="barcodeRes" style="color:#ff0;font-size:10px;font-weight:bold"></div><div id="billBox"></div></div>
+<div id="info"><div id="see" style="color:#0f8;font-weight:bold">God Eye v1.1 PRO Ready...</div><div id="barcodeRes" style="color:#ff0;font-size:10px;font-weight:bold"></div><div id="billBox"></div></div>
 <div id="controls">
 <button onclick="toggleVoice()" style="background:#f00;color:#fff">🎤 VOICE</button><button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE</button><button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button><button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD</button><button onclick="showPriceDB()" style="background:#fff;color:#000">📦 DB</button><button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL</button><button onclick="toggleAI()" id="aiBtn" style="background:#222;color:#888">🤖 AI</button>
 </div>
-<div id="adBanner"><span>WanaLab v9.2.11 - By Nasir Khan</span></div>
+<div id="adBanner"><span>WanaLab God Eye v1.1 PRO - Universal Camera OS - By Nasir Khan</span></div>
 <div id="preview"><img id="previewImg"><div style="display:flex;gap:8px;margin-top:10px;width:95%"><button onclick="savePhoto()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">💾 SAVE</button><button onclick="closePreview()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">❌ CLOSE</button></div></div>
 <div id="priceDBPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9998;padding:12px"><div style="max-width:420px;margin:10px auto;background:#001a0a;border:2px solid #ff0;border-radius:16px;padding:14px"><h3 style="color:#ff0">📦 Price DB</h3><div id="dbList" style="max-height:30vh;overflow:auto;margin:8px 0;background:#000;padding:8px;border-radius:8px"></div><div style="display:flex;gap:4px"><input id="newBarcode" placeholder="Barcode" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newName" placeholder="Name" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newPrice" placeholder="Price" type="number" style="width:70px;padding:8px;border-radius:6px;border:none"></div><button onclick="addPriceManual()" style="width:100%;margin-top:6px;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">➕ Add</button><button onclick="hidePriceDB()" style="width:100%;margin-top:8px;padding:10px;background:#333;color:#fff;border:none;border-radius:8px">Back</button></div></div>
 <div id="aboutPage"><div style="max-width:380px;width:100%;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:18px;padding:20px;text-align:center">
-<img src="wanalab-icon-v8.1.png" style="width:90px;height:90px;border-radius:20px;border:2px solid #00ff88" onerror="this.style.display='none'">
-<h2 style="color:#00ff88;margin:12px 0 6px 0">WanaLab Omni-Camera</h2>
-<p style="color:#aaa;font-size:11px;margin-bottom:12px">v9.2.11 Pro</p>
-<div style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:12px;text-align:left;font-size:10px;color:#0f8;line-height:16px">
-🇵🇰 By Nasir Khan<br><br>
-✅ Capture Photo<br>
-✅ Barcode Reader<br>
-✅ Price DB Offline<br>
-✅ Installable PWA<br>
-✅ Voice Control<br>
-✅ Torch Control
+<img src="wanalab-god-eye-v1-1-icon.png" style="width:90px;height:90px;border-radius:20px;border:2px solid #00ff88" onerror="this.src='wanalab-icon-v8.1.png'">
+<h2 style="color:#00ff88;margin:12px 0 6px 0">WanaLab God Eye</h2>
+<p style="color:#aaa;font-size:11px;margin-bottom:12px">v1.1 PRO - Universal Camera OS</p>
+<div style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:12px;text-align:left;font-size:10px;color:#0f8;line-height:18px">
+🌍 World's first offline-first universal camera OS<br><br>
+🔬 Microscope 1000x (UVC/WiFi)<br>
+🌡️ Thermal FLIR<br>
+🌃 Night God 10-Frame HDR<br>
+📹 RTSP/ONVIF IP Camera<br>
+🔭 Macro/Micro/Telephoto<br>
+🤖 AI Detection (TFJS)<br>
+📦 Price DB + Barcode<br>
+🎤 Voice + Torch Control<br>
+📍 Built for Wana, Pakistan & Global
 </div>
 <div id="aboutInstallArea"></div>
-<p style="font-size:8px;color:#666;margin:12px 0">© 2026 WanaLab</p>
-<button onclick="hideAbout()" style="width:100%;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:bold;font-size:14px;cursor:pointer">✅ BACK TO CAMERA</button>
+<p style="font-size:8px;color:#666;margin:12px 0">© 2026 WanaLab - By Nasir Khan - God Eye v1.1 PRO</p>
+<button onclick="hideAbout()" style="width:100%;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:bold;font-size:14px;cursor:pointer">✅ BACK TO GOD EYE</button>
 </div></div>
-
 <script>
 let deferredPrompt=null;
 let isInstalled=false;
@@ -78,7 +81,7 @@ function checkInstalled(){
     document.getElementById('installBtn').style.display='none';
     document.getElementById('voiceBadge').style.top='34px';
     let area=document.getElementById('aboutInstallArea');
-    if(area) area.innerHTML='<div style="background:#0f8;color:#000;padding:8px;border-radius:8px;margin:10px 0;font-weight:bold;font-size:10px">✅ App Installed - Thank you!</div>';
+    if(area) area.innerHTML='<div style="background:#0f8;color:#000;padding:8px;border-radius:8px;margin:10px 0;font-weight:bold;font-size:10px">✅ God Eye Installed - Thank you!</div>';
     return true;
   }
   return false;
@@ -90,7 +93,7 @@ window.addEventListener('beforeinstallprompt', (e)=>{
     document.getElementById('installBtn').style.display='block';
     document.getElementById('voiceBadge').style.top='68px';
     let aboutArea=document.getElementById('aboutInstallArea');
-    if(aboutArea) aboutArea.innerHTML='<button onclick="installApp()" style="width:100%;margin:10px 0;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">📲 INSTALL APP</button>';
+    if(aboutArea) aboutArea.innerHTML='<button onclick="installApp()" style="width:100%;margin:10px 0;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">📲 INSTALL GOD EYE</button>';
   }
 });
 async function installApp(){
@@ -104,7 +107,7 @@ async function installApp(){
     }
     deferredPrompt=null;
   } else {
-    alert('To install:\nChrome menu (⋮) → Add to Home screen / Install app');
+    alert('To install God Eye:\nChrome menu (⋮) → Add to Home screen / Install app');
   }
 }
 window.addEventListener('appinstalled', ()=>{
@@ -128,8 +131,8 @@ async function init(){
     video.srcObject=stream; track=stream.getVideoTracks()[0];
     await video.play();
     aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
-    document.getElementById('stat').innerText='Ready';
-    document.getElementById('see').innerText='Ready - Tap 📸 to capture';
+    document.getElementById('stat').innerText='God Eye Ready';
+    document.getElementById('see').innerText='God Eye v1.1 PRO Ready - Tap 📸';
     updateLangUI(); initVoice();
   }catch(e){ document.getElementById('stat').innerText='Allow camera'; setTimeout(init,1000); }
 }
@@ -163,17 +166,16 @@ function stopScan(){ if(barcodeInterval) clearInterval(barcodeInterval); if(code
 function handleBarcode(code){ if(!code || code===lastBarcode) return; lastBarcode=code; if(navigator.vibrate) navigator.vibrate(80); document.getElementById('newBarcode').value=code; let item=priceDB[code]; if(item){ document.getElementById('barcodeRes').innerHTML=`✅ ${code} → <b>${item.name}</b> Rs.${item.price}`; addToBill(code,item.price,item.name); setTimeout(()=>{if(barcodeMode) toggleBarcodeMode();},1200); } else { document.getElementById('barcodeRes').innerHTML=`📷 NEW ${code} <button onclick="showPriceDB()" style="background:#0f8;color:#000;border:none;padding:2px 6px;border-radius:6px">➕ ADD</button>`; } }
 function capturePhoto(){ let canvas=document.createElement('canvas'); canvas.width=video.videoWidth; canvas.height=video.videoHeight; let ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0); ctx.drawImage(aiCanvas,0,0); capturedDataUrl=canvas.toDataURL('image/jpeg',0.82); document.getElementById('previewImg').src=capturedDataUrl; document.getElementById('preview').style.display='flex'; if(navigator.vibrate) navigator.vibrate(30); }
 function closePreview(){document.getElementById('preview').style.display='none';}
-function savePhoto(){let a=document.createElement('a'); a.href=capturedDataUrl; a.download=`WanaLab-${Date.now()}.jpg`; a.click(); closePreview();}
+function savePhoto(){let a=document.createElement('a'); a.href=capturedDataUrl; a.download=`WanaLab-GodEye-${Date.now()}.jpg`; a.click(); closePreview();}
 function addPriceManual(){let bc=document.getElementById('newBarcode').value.trim(); let nm=document.getElementById('newName').value.trim()||'Product'; let pr=parseInt(document.getElementById('newPrice').value)||0; if(!bc||!pr) return; priceDB[bc]={name:nm,price:pr}; localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB)); renderDB();}
 function renderDB(){let h=''; let k=Object.keys(priceDB); if(k.length==0) h='Empty'; else k.forEach(x=>{h+=`<div style="display:flex;justify-content:space-between;padding:4px;background:#111;margin:2px 0;border-radius:6px;font-size:7px"><span>${x} ${priceDB[x].name}</span><span style="color:#0f8">Rs.${priceDB[x].price}</span></div>`;}); document.getElementById('dbList').innerHTML=h;}
 function addToBill(bc=null,pr=null,name=null){let it=name||bc||lastSeen||'Product'; let p=pr||250; billItems.push({name:it,price:p}); totalBill+=p; document.getElementById('billBox').innerHTML=`Total Rs.${totalBill}`;}
-function exportBill(){if(billItems.length==0) return; const {jsPDF}=window.jspdf; let doc=new jsPDF(); doc.text('WanaLab v9.2.11 Total Rs.'+totalBill,10,12); doc.save(`Bill-${Date.now()}.pdf`);}
-
+function exportBill(){if(billItems.length==0) return; const {jsPDF}=window.jspdf; let doc=new jsPDF(); doc.text('WanaLab God Eye v1.1 PRO Total Rs.'+totalBill,10,12); doc.save(`GodEye-Bill-${Date.now()}.pdf`);}
 window.addEventListener('load', ()=>{ 
   checkInstalled(); 
   init(); 
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/Wanalab-Omni-Camera-/sw.js').then(()=>console.log('SW v9.2.11 ready'));
+    navigator.serviceWorker.register('/Wanalab-Omni-Camera-/sw.js').then(()=>console.log('God Eye v1.1 PRO SW ready'));
   }
 });
 </script>
