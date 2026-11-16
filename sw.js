@@ -1,5 +1,5 @@
-// WanaLab God Eye v1.1 PRO - Universal Camera OS - World's first offline universal camera
-const CACHE_NAME = 'wanalab-god-eye-v1-1-pro-final';
+// WanaLab God Eye v1.1 PRO Voice Fixed Final - Offline universal camera
+const CACHE_NAME = 'wanalab-god-eye-v1-1-pro-voice-fixed-final';
 const urlsToCache = [
   '/Wanalab-Omni-Camera-/',
   '/Wanalab-Omni-Camera-/index.html',
