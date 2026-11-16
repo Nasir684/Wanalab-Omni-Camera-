@@ -1,47 +1,105 @@
 [
   {
     "id": "onvif-generic",
-    "name": "ONVIF IP Camera Generic",
+    "name": "ONVIF IP Camera Generic v1.9",
     "type": "ONVIF",
     "mode": "surveillance",
-    "description": "Any ONVIF camera - auto discover",
+    "description": "Any ONVIF camera - auto discover + v1.9 Tracking + Count ROI + Tap Bill",
     "protocol": "RTSP",
     "url_template": "rtsp://{ip}:554/stream",
-    "status": "working"
+    "status": "working",
+    "features": ["tracking", "count-roi", "tap-bill", "thermal-filter", "barcode-roi"],
+    "version": "1.9-final-all-in-one",
+    "os": "God Eye v1.9 FINAL"
   },
   {
     "id": "rtsp-generic",
-    "name": "RTSP Camera Generic",
+    "name": "RTSP Camera Generic v1.9",
     "type": "RTSP",
     "mode": "surveillance",
-    "description": "RTSP:// camera",
-    "status": "working"
+    "description": "RTSP:// camera + v1.9 manual crop + thermal slider",
+    "status": "working",
+    "features": ["manual-crop", "thermal-slider", "night-hdr", "tracking"],
+    "version": "1.9-final-all-in-one",
+    "os": "God Eye v1.9 FINAL"
   },
   {
     "id": "hikvision-ip",
-    "name": "Hikvision IP Camera",
+    "name": "Hikvision IP Camera v1.9",
     "type": "ONVIF",
     "mode": "surveillance",
     "vendor": "Hikvision",
+    "description": "Hikvision + v1.9 DJI Tracking + Tap Bill + Count ROI for inventory",
     "status": "working",
-    "pro": true
+    "pro": true,
+    "features": ["tracking", "count-roi", "tap-bill", "barcode-roi", "ocr-roi", "searchable-pdf"],
+    "version": "1.9-final-all-in-one",
+    "os": "God Eye v1.9 FINAL"
   },
   {
     "id": "dahua-ip",
-    "name": "Dahua IP Camera",
+    "name": "Dahua IP Camera v1.9",
     "type": "ONVIF",
     "mode": "surveillance",
     "vendor": "Dahua",
+    "description": "Dahua + v1.9 features - Count people/boxes via ROI",
     "status": "working",
-    "pro": true
+    "pro": true,
+    "features": ["count-roi", "tracking", "tap-bill", "thermal"],
+    "version": "1.9-final-all-in-one",
+    "os": "God Eye v1.9 FINAL"
   },
   {
     "id": "esp32-cam",
-    "name": "ESP32-CAM WiFi",
+    "name": "ESP32-CAM WiFi v1.9",
     "type": "WIFI",
     "mode": "auto",
     "ip": "192.168.4.1",
-    "description": "ESP32-CAM DIY - http stream",
-    "status": "working"
+    "description": "ESP32-CAM DIY - http stream + v1.9 Manual Crop + Thermal + DOCX+IMG export",
+    "status": "working",
+    "features": ["manual-crop", "thermal-filter", "night-filter", "docx-img-export", "bill-pdf"],
+    "protocol": "mjpeg",
+    "resolution": "1280x720",
+    "version": "1.9-final-all-in-one",
+    "os": "God Eye v1.9 FINAL"
+  },
+  {
+    "id": "tapo-c200",
+    "name": "Tapo C200 / C310 v1.9",
+    "type": "ONVIF",
+    "mode": "surveillance",
+    "vendor": "TP-Link Tapo",
+    "description": "NEW v1.9 - Tapo with Tap Bill + Tracking for shop",
+    "status": "working",
+    "features": ["tracking", "tap-bill", "count-roi", "barcode-roi"],
+    "version": "1.9-final-all-in-one",
+    "os": "God Eye v1.9 FINAL"
+  },
+  {
+    "id": "uvc-microscope-1000x",
+    "name": "USB Microscope 1000x v1.9",
+    "type": "UVC",
+    "mode": "auto",
+    "description": "NEW v1.9 - UVC Microscope + Manual Crop + Count tiny objects + Thermal view",
+    "status": "working",
+    "protocol": "uvc",
+    "features": ["manual-crop", "count-roi", "thermal-slider", "hdr", "docx-img"],
+    "resolution": "1920x1080",
+    "version": "1.9-final-all-in-one",
+    "os": "God Eye v1.9 FINAL"
+  },
+  {
+    "id": "thermal-flir-one",
+    "name": "FLIR ONE Thermal v1.9",
+    "type": "THERMAL",
+    "mode": "auto",
+    "description": "NEW v1.9 - Real FLIR hardware + Software thermal slider 0-100% JET palette",
+    "status": "working",
+    "protocol": "uvc-thermal",
+    "features": ["live-thermal", "thermal-slider", "night-hdr", "tracking"],
+    "resolution": "160x120",
+    "palette": "jet",
+    "version": "1.9-final-all-in-one",
+    "os": "God Eye v1.9 FINAL"
   }
 ]
