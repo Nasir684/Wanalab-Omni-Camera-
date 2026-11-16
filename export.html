@@ -3,31 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WanaLab God Eye v1.2.1 Export Hub FIXED</title>
-<style>body{background:#000;color:#0ff;font-family:system-ui;padding:16px;margin:0}h1{text-align:center;font-size:20px;color:#00ff88}p.subtitle{text-align:center;font-size:11px;opacity:.8} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}button{padding:14px 8px;font-size:12px;font-weight:800;background:#001122;color:#0ff;border:2px solid #0ff;border-radius:12px;cursor:pointer}button.doc{border-color:#00aaff;background:#001a33}button.pro{border-color:#00ff88;color:#00ff88}textarea{width:100%;height:110px;background:#001122;color:#0ff;border:1px solid #00ff88;padding:10px;border-radius:10px;font-size:12px;box-sizing:border-box;margin-top:12px}#previewArea{margin-top:12px} .thumbWrap{position:relative;display:inline-block}.delBtn{position:absolute;top:-6px;right:-6px;background:#ff4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer}</style>
+<title>WanaLab God Eye v1.9 Export Hub FINAL</title>
+<style>body{background:#000;color:#0ff;font-family:system-ui;padding:16px;margin:0}h1{text-align:center;font-size:20px;color:#00ff88}p.subtitle{text-align:center;font-size:11px;opacity:.8} .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px}button{padding:12px 6px;font-size:10px;font-weight:800;background:#001122;color:#0ff;border:2px solid #0ff;border-radius:10px;cursor:pointer}button.doc{border-color:#00aaff;background:#001a33}button.pro{border-color:#00ff88;color:#00ff88;background:#001a0a}button.thermal{border-color:#ff4400;color:#ff8800;background:#220000}button.track{border-color:#00aaff;color:#00aaff}textarea{width:100%;height:110px;background:#001122;color:#0ff;border:1px solid #00ff88;padding:10px;border-radius:10px;font-size:12px;box-sizing:border-box;margin-top:12px}#previewArea{margin-top:12px} .thumbWrap{position:relative;display:inline-block}.delBtn{position:absolute;top:-6px;right:-6px;background:#ff4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer}</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
 </head>
 <body>
-<h1>🌐 God Eye v1.2.1 Export Hub</h1>
-<p class="subtitle">Nasir Khan | v1.2.1 FIXED - Filtered Pages Sync<br>Offline: JPG/PDF | Online First: OCR</p>
+<h1>🌐 God Eye v1.9 Export Hub FINAL</h1>
+<p class="subtitle">Nasir Khan | v1.9 FINAL - Manual Crop + ROI + Tracking + Thermal + DOCX+IMG</p>
 <textarea id="inputText" placeholder="OCR text will auto appear here..."></textarea>
 <div class="grid">
-<button class="doc" onclick="doExport('doc-jpg')">📄 EXPORT JPG</button>
-<button class="doc" onclick="doExport('doc-pdf')">📕 EXPORT PDF A4</button>
-<button onclick="doExport('txt')">📄 TXT</button>
+<button class="doc" onclick="doExport('doc-jpg')">📄 JPG LAST</button>
+<button class="doc" onclick="doExport('doc-pdf')">📕 IMG PDF</button>
+<button class="pro" onclick="doExport('searchable-pdf')">🔍 SEARCHABLE PDF</button>
+<button onclick="doExport('txt')">📝 TXT</button>
+<button class="doc" onclick="doExport('docx-img')">📘 DOCX + IMG</button>
 <button onclick="doExport('json')">🔧 JSON</button>
 <button class="pro" onclick="doExport('ocr-txt')">🔤 OCR TXT</button>
-<button class="pro" onclick="doExport('pdf')">📕 FULL PDF</button>
+<button class="pro" onclick="doExport('pdf')">📕 TEXT+IMG PDF</button>
 <button onclick="doExport('mp3')">🎙️ READ</button>
 <button onclick="doExport('share')">📤 SHARE</button>
+<button class="thermal" onclick="doExport('bill')">🧾 BILL PDF</button>
+<button class="track" onclick="doExport('all-zip')">📦 ALL TXT</button>
 </div>
 <div id="previewArea">
-<h3 style="color:#00ff88;font-size:12px">📸 Pages (<span id="pageCount">0</span>) - Tap to preview, X to delete</h3>
+<h3 style="color:#00ff88;font-size:12px">📸 Pages (<span id="pageCount">0</span>) - v1.9 synced</h3>
 <div id="thumbList" style="display:flex;gap:8px;overflow:auto;padding:8px 0;flex-wrap:wrap"></div>
+<div id="infoBox" style="margin-top:10px;background:#001a0a;border:1px solid #00ff88;border-radius:10px;padding:8px;font-size:10px;color:#0f8"></div>
 </div>
 <div style="margin-top:16px;display:flex;gap:8px">
 <button onclick="clearPages()" style="flex:1;background:#220000;border-color:#ff4444;color:#ff4444">🗑️ CLEAR ALL</button>
-<button onclick="location.href='index.html'" style="flex:1;background:#00ff88;border-color:#00ff88;color:#000">⬅️ CAMERA</button>
+<button onclick="location.href='index.html'" style="flex:1;background:#00ff88;border-color:#00ff88;color:#000">⬅️ CAMERA v1.9</button>
 </div>
 <div id="fullPrev" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:12px" onclick="this.style.display='none'"><img id="fullImg" style="max-width:96%;max-height:80vh;border-radius:12px;border:2px solid #00ff88"><button style="margin-top:12px;padding:10px 20px;background:#222;color:#fff;border:none;border-radius:10px" onclick="document.getElementById('fullPrev').style.display='none'">CLOSE</button></div>
 <script>
@@ -36,26 +43,46 @@ window.exportHub={
  init(){
   document.getElementById('inputText').value=localStorage.getItem('lastOCR')||'';
   this.render();
+  document.getElementById('infoBox').innerHTML = `📊 Pages: ${this.pages.length} | Total Bill: Rs.${localStorage.getItem('wanaTotalBill')||'0'} | OCR: ${(localStorage.getItem('lastOCR')||'').length} chars | v1.9 FINAL`;
  },
  render(){
   let c=this.pages.length;
   document.getElementById('pageCount').innerText=c;
   let list=document.getElementById('thumbList');
-  list.innerHTML=this.pages.map((p,i)=>`<div class="thumbWrap"><img src="${p}" style="width:75px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #00ff88" onclick="showFull('${i}')"><button class="delBtn" onclick="deleteOne(${i})">X</button></div>`).join('');
-  document.getElementById('previewArea').style.display=c?'block':'none';
+  if(!c){list.innerHTML='<div style="color:#666">No pages - Scan in index.html first</div>'; return;}
+  list.innerHTML=this.pages.map((p,i)=>`<div class="thumbWrap"><img src="${p}" style="width:75px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #00ff88" onclick="showFull('${i}')"><button class="delBtn" onclick="deleteOne(${i})">X</button><div style="font-size:7px;text-align:center;color:#0f8">Page ${i+1}</div></div>`).join('');
  },
- exportTXT(t){let b=new Blob([t],{type:'text/plain'});this.down(b,`GodEye-${Date.now()}.txt`);},
- exportJSON(o){let b=new Blob([JSON.stringify(o,null,2)],{type:'application/json'});this.down(b,`GodEye-${Date.now()}.json`);},
- exportDocPDF(){if(!this.pages.length){alert('No pages');return;}const{jsPDF}=window.jspdf;let d=new jsPDF();this.pages.forEach((img,i)=>{if(i>0)d.addPage();d.addImage(img,'JPEG',0,0,210,297);});d.save(`GodEye-CamScan-${Date.now()}.pdf`);},
- exportDocJPG(){if(!this.pages.length){alert('No pages');return;}let a=document.createElement('a');a.href=this.pages[this.pages.length-1];a.download=`GodEye-${Date.now()}.jpg`;a.click();},
- exportPDF(t){const{jsPDF}=window.jspdf;let d=new jsPDF();d.setFontSize(10);let lines=d.splitTextToSize(t,180);d.text(lines,10,10);let y=10+lines.length*6+10;this.pages.forEach((img,i)=>{if(y>200){d.addPage();y=10;}try{d.addImage(img,'JPEG',10,y,60,80);y+=85;}catch{}});d.save(`GodEye-Full-${Date.now()}.pdf`);},
- exportOCR(t){if(!navigator.onLine){alert('Offline: saving TXT');}this.exportTXT("=== OCR ===\n"+t);},
+ exportTXT(t){let b=new Blob([t],{type:'text/plain'});this.down(b,`GodEye-v19-${Date.now()}.txt`);},
+ exportJSON(o){let b=new Blob([JSON.stringify(o,null,2)],{type:'application/json'});this.down(b,`GodEye-v19-${Date.now()}.json`);},
+ exportDocPDF(){if(!this.pages.length){alert('No pages');return;}const{jsPDF}=window.jspdf;let d=new jsPDF();this.pages.forEach((img,i)=>{if(i>0)d.addPage();d.addImage(img,'JPEG',0,0,210,297);});d.save(`GodEye-v19-IMG-PDF-${Date.now()}.pdf`);},
+ exportDocJPG(){if(!this.pages.length){alert('No pages');return;}let a=document.createElement('a');a.href=this.pages[this.pages.length-1];a.download=`GodEye-v19-${Date.now()}.jpg`;a.click();},
+ exportSearchablePDF: async function(){if(!this.pages.length){alert('No pages');return;}const{jsPDF}=window.jspdf;let d=new jsPDF();for(let i=0;i<this.pages.length;i++){if(i>0)d.addPage();d.addImage(this.pages[i],'JPEG',0,0,210,297);try{const w=await Tesseract.createWorker('eng');const r=await w.recognize(this.pages[i]);await w.terminate();d.setFontSize(1);d.setTextColor(255,255,255);d.text(d.splitTextToSize(r.data.text,190),5,5);}catch{}}d.save(`GodEye-v19-Searchable-${Date.now()}.pdf`);},
+ exportDOCXwithImages: async function(){if(!this.pages.length){alert('No pages');return;}let children=[new docx.Paragraph({children:[new docx.TextRun({text:`WanaLab God Eye v1.9 FINAL - ${new Date().toLocaleString()}`,bold:true})]})];for(let i=0;i<this.pages.length;i++){children.push(new docx.Paragraph({text:`Page ${i+1}`,heading:docx.HeadingLevel.HEADING_1}));try{const w=await Tesseract.createWorker('eng');const r=await w.recognize(this.pages[i]);await w.terminate();r.data.text.split('\n').forEach(l=>{if(l.trim())children.push(new docx.Paragraph({children:[new docx.TextRun(l)]}));});}catch{}try{let base64=this.pages[i].split(',')[1];let bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));children.push(new docx.Paragraph({children:[new docx.ImageRun({data:bytes,[STRIPPED] doc=new docx.Document({sections:[{children}]});const blob=await docx.Packer.toBlob(doc);let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`GodEye-v19-DOCX-IMG-${Date.now()}.docx`;a.click();},
+ exportPDF(t){const{jsPDF}=window.jspdf;let d=new jsPDF();d.setFontSize(10);let lines=d.splitTextToSize(t,180);d.text(lines,10,10);let y=10+lines.length*6+10;this.pages.forEach((img,i)=>{if(y>200){d.addPage();y=10;}try{d.addImage(img,'JPEG',10,y,60,80);y+=85;}catch{}});d.save(`GodEye-v19-Full-${Date.now()}.pdf`);},
+ exportOCR(t){this.exportTXT("=== God Eye v1.9 OCR ===\n"+t);},
  exportMP3(t){speechSynthesis.speak(new SpeechSynthesisUtterance(t.slice(0,500)));},
- share(t){if(navigator.share)navigator.share({title:'God Eye',text:t});else this.exportTXT(t);},
+ share(t){if(navigator.share)navigator.share({title:'God Eye v1.9',text:t});else this.exportTXT(t);},
+ exportBill(){let items=JSON.parse(localStorage.getItem('wanaBillItems')||'[]');let total=localStorage.getItem('wanaTotalBill')||'0';if(!items.length){alert('No bill - Use TAP BILL');return;}const{jsPDF}=window.jspdf;let d=new jsPDF();d.text(`WanaLab Bill v1.9 - Rs.${total}`,10,12);let y=22;items.forEach((it,i)=>{d.text(`${i+1}. ${it.name} - Rs.${it.price}`,10,y);y+=8;});d.save(`Bill-v19-${Date.now()}.pdf`);},
  down(b,n){let u=URL.createObjectURL(b);let a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
 };
-function doExport(type){let t=document.getElementById('inputText').value||`God Eye v1.2.1\nDate:${new Date().toISOString()}\nPages:${window.exportHub.pages.length}\n---\n`;switch(type){case'txt':exportHub.exportTXT(t);break;case'json':exportHub.exportJSON({text:t,pages:exportHub.pages.length,date:new Date().toISOString()});break;case'pdf':exportHub.exportPDF(t);break;case'doc-pdf':exportHub.exportDocPDF();break;case'doc-jpg':exportHub.exportDocJPG();break;case'ocr-txt':exportHub.exportOCR(t);break;case'mp3':exportHub.exportMP3(t);break;case'share':exportHub.share(t);break;}}
-function clearPages(){if(confirm('Clear all?')){localStorage.removeItem('wanaScannedPages');exportHub.pages=[];exportHub.render();}}
+function doExport(type){
+ let t=document.getElementById('inputText').value||`God Eye v1.9 FINAL\nPages:${window.exportHub.pages.length}\n`;
+ switch(type){
+  case'txt':exportHub.exportTXT(t);break;
+  case'json':exportHub.exportJSON({text:t,pages:exportHub.pages.length,date:new Date().toISOString(),version:'v1.9 FINAL'});break;
+  case'pdf':exportHub.exportPDF(t);break;
+  case'doc-pdf':exportHub.exportDocPDF();break;
+  case'doc-jpg':exportHub.exportDocJPG();break;
+  case'searchable-pdf':exportHub.exportSearchablePDF();break;
+  case'docx-img':exportHub.exportDOCXwithImages();break;
+  case'ocr-txt':exportHub.exportOCR(t);break;
+  case'mp3':exportHub.exportMP3(t);break;
+  case'share':exportHub.share(t);break;
+  case'bill':exportHub.exportBill();break;
+  case'all-zip':exportHub.exportTXT(t);break;
+ }
+}
+function clearPages(){if(confirm('Clear all?')){localStorage.removeItem('wanaScannedPages');localStorage.removeItem('lastOCR');exportHub.pages=[];exportHub.render();document.getElementById('inputText').value='';}}
 function deleteOne(i){exportHub.pages.splice(i,1);localStorage.setItem('wanaScannedPages',JSON.stringify(exportHub.pages));exportHub.render();}
 function showFull(i){document.getElementById('fullImg').src=exportHub.pages[i];document.getElementById('fullPrev').style.display='flex';}
 document.addEventListener('DOMContentLoaded',()=>exportHub.init());
