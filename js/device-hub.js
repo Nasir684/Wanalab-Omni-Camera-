@@ -1,150 +1,155 @@
-// WanaLab God Eye v1.9 FINAL - Device Hub - UVC + WiFi RTSP + BT + Thermal + Tracking + ROI + Tap Bill - Nasir Khan
-window.deviceHub = {
-  devices: JSON.parse(localStorage.getItem('wanaDevices')||'[]'),
-  lastRTSP: localStorage.getItem('wanaLastRTSP')||'',
-
-  save(){
-    localStorage.setItem('wanaDevices', JSON.stringify(this.devices));
-    if(this.lastRTSP) localStorage.setItem('wanaLastRTSP', this.lastRTSP);
-  },
-
-  async connectUSB(){
-    try{
-      if(!navigator.usb){ alert('USB needs Chrome Android + HTTPS. Use generic camera button in v1.9 - it supports UVC Microscope 1000x + FLIR via camera.'); return; }
-      const device = await navigator.usb.requestDevice({filters:[{}]});
-      await device.open();
-      if(device.configuration===null) await device.selectConfiguration(1);
-      const info = {
-        id: `usb-${device.vendorId}-${Date.now()}`,
-        type:'USB-UVC', 
-        name: device.productName || `UVC ${device.vendorId}`,
-        vendorId: device.vendorId,
-        productId: device.productId,
-        resolution: '1920x1080',
-        features: ['manual-crop','tracking','count-roi','thermal-filter','tap-bill','docx-img'],
-        status: 'connected',
-        version: '1.9-final'
-      };
-      this.devices.push(info);
-      this.save();
-      const universeEl = document.getElementById('universe');
-      if(universeEl) universeEl.innerText = `USB CONNECTED: ${info.name} | v1.9 Features: Tracking + Count ROI + Tap Bill + Thermal Slider`;
-      alert(`✅ USB Connected: ${info.name}\nVendorID: ${device.vendorId}\n\nv1.9 NEW:\n- Tap to Track\n- Drag ROI to Count\n- Tap Bill to add price\n- Thermal slider`);
-      try{
-        const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1920}}});
-        const cam = document.getElementById('godVideo') || document.getElementById('camera');
-        if(cam && stream) cam.srcObject = stream;
-      }catch{}
-    }catch(e){ alert('USB Error: '+e.message+'\nTip: In v1.9 you can use normal camera + Manual Crop + Thermal filter - no USB needed for microscope'); }
-  },
-
-  async connectWiFi(){
-    const ip = prompt('Enter WiFi Camera IP / RTSP URL:\nExamples:\n192.168.1.1 (WiFi microscope)\n192.168.4.1 (ESP32-CAM)\nrtsp://192.168.1.100:554/stream (Hikvision/Dahua/Tapo)\nhttp://192.168.1.100/capture', this.lastRTSP || '192.168.1.1');
-    if(!ip) return;
-    this.lastRTSP = ip;
-    let url = ip;
-    if(!url.startsWith('rtsp://') && !url.startsWith('http')){
-      url = `rtsp://${ip}:554/stream`;
-      if(ip.includes('192.168.1.1')) url = 'http://192.168.1.1:8080/?action=stream';
-      if(ip.includes('192.168.4.1')) url = 'http://192.168.4.1:81/stream';
-    }
-    const info = {
-      id: `wifi-${Date.now()}`,
-      type: url.startsWith('rtsp') ? 'RTSP-ONVIF' : 'WIFI-MJPEG',
-      name: url.includes('192.168.4.1') ? 'ESP32-CAM v1.9' : url.includes('192.168.1.1') ? 'WiFi Microscope v1.9' : 'IP Camera v1.9',
-      url: url,
-      ip: ip,
-      features: ['tracking','count-roi','tap-bill','manual-crop','thermal','barcode-roi','searchable-pdf','docx-img'],
-      status: 'added',
-      version: '1.9-final'
-    };
-    this.devices.push(info);
-    this.save();
-    const universeEl = document.getElementById('universe');
-    if(universeEl) universeEl.innerText = `WIFI CAM v1.9: ${url} | Tracking + Tap Bill + Count ROI ready`;
-    alert(`✅ WiFi/IP Camera Added v1.9:\n${url}\n\nv1.9 NEW for IP cams:\n- DJI Tracking (tap object)\n- COUNT ROI (drag box count)\n- TAP BILL (tap product add price)\n- Thermal slider for night\n- DOCX+IMG export\n\nNote: Browser RTSP needs HTTP proxy. Use HTTP MJPEG for direct view.`);
-    try{
-      if(url.startsWith('http')){
-        const cam = document.getElementById('godVideo') || document.getElementById('camera');
-        if(cam) cam.style.display='none';
-        let img = document.getElementById('wifi-img');
-        if(!img){ img=document.createElement('img'); img.id='wifi-img'; img.style.cssText='width:100vw;height:100vh;object-fit:cover;position:fixed;inset:0;z-index:1'; document.body.prepend(img); }
-        img.src = url;
-        img.style.display='block';
-      }
-    }catch(e){}
-  },
-
-  async scanBluetooth(){
-    try{
-      if(!navigator.bluetooth){ alert('Bluetooth needs Chrome Android + HTTPS. In v1.9, BT devices can trigger Tap Bill via remote.'); return; }
-      const device = await navigator.bluetooth.requestDevice({acceptAllDevices:true, optionalServices:['battery_service','device_information']});
-      const info = {
-        id: `bt-${Date.now()}`,
-        type:'BT-REMOTE',
-        name: device.name || 'BT Device',
-        features: ['tap-bill-trigger','shutter-remote','tracking-trigger'],
-        status: 'connected',
-        version: '1.9-final'
-      };
-      this.devices.push(info);
-      this.save();
-      const universeEl = document.getElementById('universe');
-      if(universeEl) universeEl.innerText = `BT v1.9: ${device.name} connected - Can trigger shutter / bill`;
-      alert(`✅ BT Connected v1.9: ${device.name}\n\nUse as remote:\n- Click to capture photo\n- Long press to add to bill\n- v1.9 supports BT remote shutter`);
-    }catch(e){ alert('BT Error: '+e.message); }
-  },
-
-  connectThermal(){
-    const type = prompt('Select Thermal:\n1 = Software Thermal (any camera + JET filter)\n2 = FLIR ONE / Seek (UVC Thermal)\n3 = InfiRay (USB)\n\nEnter 1,2,3:', '1');
-    if(!type) return;
-    let name = 'Software Thermal JET v1.9';
-    if(type==='2') name = 'FLIR ONE Thermal v1.9';
-    if(type==='3') name = 'InfiRay Thermal v1.9';
-    this.devices.push({
-      id: `thermal-${Date.now()}`,
-      type: 'THERMAL',
-      name: name,
-      features: ['live-thermal-0-100','night-mode','hdr-slider','tracking'],
-      palette: 'jet',
-      status: 'active',
-      version: '1.9-final'
-    });
-    this.save();
-    alert(`✅ ${name} added\n\nUse SLIDERS button in v1.9 camera:\n- Thermal slider 0-100%\n- Night slider 0-100%\n- Thermal filter in preview\nWorks instantly, no hardware needed for software mode`);
-    if(typeof toggleSliders==='function') toggleSliders();
-  },
-
-  list(){
-    const all = window.protocolUniverse ? window.protocolUniverse.getAll() : this.devices;
-    const v19 = [
-      '✅ NEW v1.9 FINAL Features:',
-      '- Manual 4-corner crop drag',
-      '- COUNT ROI (drag box to count)',
-      '- OCR ROI (drag box to read text)',
-      '- BARCODE ROI (drag small box fast scan)',
-      '- TAP BILL (tap product to add Rs.)',
-      '- DJI Tracking (tap object to lock)',
-      '- Thermal slider 0-100% JET',
-      '- Night HDR slider 0-100%',
-      '- Searchable PDF (OCR layer)',
-      '- DOCX + Images per page',
-      '',
-      `Connected Devices: ${this.devices.length}`,
-      ...this.devices.map(d=>`• ${d.name} (${d.type}) - ${d.features?d.features.join(','):''}`),
-      '',
-      `Protocols: ${all.length} loaded`
-    ].join('\n');
-    alert(v19);
-    const universeEl = document.getElementById('universe');
-    if(universeEl) universeEl.innerText = `v1.9 Devices: ${this.devices.length} | Protocols: ${all.length} | All features ready`;
-  },
-
-  clearAll(){
-    if(confirm('Clear all added devices? (v1.9)')){
-      this.devices = [];
-      localStorage.removeItem('wanaDevices');
-      alert('Cleared - v1.9 devices reset');
-    }
-  }
+// WanaLab God Eye v1.9 FINAL v99 - Device Hub - Nasir Khan 2026-05-14
+// Live: https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99
+window.WanaDevices = {};
+window.WanaDeviceHub = {
+  version: '1.9.99-nasir684',
+  currentDeviceId: localStorage.getItem('wanaCurrentDevice') || 'wanalab-omni-cam',
+  devices: [],
+  loaded: false
 };
+
+const DEVICE_LIST = {
+  version: '1.9.99-nasir684',
+  live_url: 'https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99',
+  devices: [
+    {
+      id: 'wanalab-omni-cam',
+      name: 'WanaLab Omni Camera (Phone)',
+      type: 'phone-camera',
+      protocol: 'doc-scanner-v1',
+      connection: 'native',
+      features: ['doc-scan','manual-crop','count-roi','ocr-roi','barcode-roi','tap-bill','thermal','tracking','searchable-pdf','docx-img','bill-pdf'],
+      icon: '👁️',
+      status: 'active',
+      default: true,
+      resolution: { width: 1920, height: 1080, fps: 30 }
+    },
+    {
+      id: 'dji-mini-4-pro',
+      name: 'DJI Mini 4 Pro',
+      type: 'drone',
+      protocol: 'dji-tracking-v1',
+      connection: 'wifi',
+      features: ['tracking','thermal','hdr','4k-video','follow-me'],
+      icon: '🚁',
+      status: 'supported'
+    },
+    {
+      id: 'flir-one-pro',
+      name: 'FLIR ONE Pro Thermal',
+      type: 'thermal-camera',
+      protocol: 'thermal-v1',
+      connection: 'usb-c',
+      features: ['thermal','thermal-roi','temp-measure','night'],
+      maps: ['JET','IRON','HOT','BONE','COOL','OCEAN'],
+      icon: '🔥',
+      status: 'supported'
+    },
+    {
+      id: 'usb-doc-cam',
+      name: 'USB Document Camera',
+      type: 'doc-camera',
+      protocol: 'doc-scanner-v1',
+      connection: 'usb',
+      features: ['doc-scan','ocr','count-roi','doc-crop'],
+      icon: '📄',
+      status: 'supported'
+    },
+    {
+      id: 'ip-camera',
+      name: 'IP Camera / CCTV RTSP',
+      type: 'ip-camera',
+      protocol: 'dji-tracking-v1',
+      connection: 'rtsp',
+      features: ['tracking','count-roi','thermal','motion-detect'],
+      icon: '📹',
+      status: 'experimental'
+    }
+  ]
+};
+
+async function loadDeviceHub(){
+  try{
+    // Try fetch devices.json if exists, else use built-in list
+    let data = DEVICE_LIST;
+    try{
+      const res = await fetch('./devices.json?v=19&force=99', {cache:'no-store'});
+      if(res.ok) data = await res.json();
+    }catch{}
+
+    window.WanaDevices = data;
+    window.WanaDeviceHub.devices = data.devices;
+    window.WanaDeviceHub.loaded = true;
+
+    // Save cache
+    localStorage.setItem('wanaDevices', JSON.stringify(data));
+    
+    console.log('✅ Device Hub loaded v99', data.devices.length, 'devices - Current:', window.WanaDeviceHub.currentDeviceId);
+    
+    const stat = document.getElementById('stat');
+    if(stat) stat.innerText = `Ready v99 - ${data.devices.length} devices - ${getCurrentDevice().name}`;
+
+    renderDeviceSelector();
+    return data;
+  }catch(e){
+    console.warn('Device Hub offline', e);
+    window.WanaDeviceHub.devices = DEVICE_LIST.devices;
+    window.WanaDevices = DEVICE_LIST;
+    window.WanaDeviceHub.loaded = true;
+    return DEVICE_LIST;
+  }
+}
+
+function getCurrentDevice(){
+  const id = window.WanaDeviceHub.currentDeviceId;
+  return window.WanaDeviceHub.devices.find(d=>d.id===id) || window.WanaDeviceHub.devices[0];
+}
+
+function switchDevice(deviceId){
+  const dev = window.WanaDeviceHub.devices.find(d=>d.id===deviceId);
+  if(!dev) return;
+  window.WanaDeviceHub.currentDeviceId = deviceId;
+  localStorage.setItem('wanaCurrentDevice', deviceId);
+  console.log('🔄 Switched to', dev.name);
+  document.getElementById('stat').innerText = `Switched: ${dev.name} - ${dev.features.length} features`;
+  // Apply device-specific settings
+  if(dev.id==='flir-one-pro'){
+    if(window.toggleThermal) window.toggleThermal(60);
+  }
+  if(dev.id==='dji-mini-4-pro'){
+    if(window.toggleTracking) window.toggleTracking();
+  }
+  hideDeviceHub();
+}
+
+function renderDeviceSelector(){
+  let existing = document.getElementById('deviceHubPage');
+  if(existing) existing.remove();
+  
+  let html = `<div id="deviceHubPage" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:9997;padding:14px;overflow-y:auto"><div style="max-width:440px;margin:20px auto;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:20px;padding:16px"><h2 style="color:#00ff88;text-align:center">📱 Device Hub v99</h2><p style="color:#aaa;font-size:10px;text-align:center;margin:6px 0">https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99</p><div style="margin:12px 0">`;
+  
+  window.WanaDeviceHub.devices.forEach(d=>{
+    const active = d.id===window.WanaDeviceHub.currentDeviceId;
+    html+=`<div onclick="switchDevice('${d.id}')" style="background:${active?'#00ff88':'#111'};color:${active?'#000':'#fff'};border:1px solid ${active?'#00ff88':'#333'};border-radius:12px;padding:10px;margin:6px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">${d.icon} ${d.name}</div><div style="font-size:8px;opacity:0.8">${d.type} • ${d.features.slice(0,3).join(', ')} • ${d.status}</div></div><div style="font-size:10px;font-weight:800">${active?'✅ ACTIVE':'➡️'}</div></div>`;
+  });
+  
+  html+=`</div><button onclick="hideDeviceHub()" style="width:100%;padding:12px;background:#333;color:#fff;border:none;border-radius:10px;font-weight:800">❌ CLOSE</button><a href="https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99" style="display:block;text-align:center;margin-top:10px;color:#00ff88;font-size:10px">🧪 TEST LINK v99</a></div></div>`;
+  
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function showDeviceHub(){ 
+  if(!window.WanaDeviceHub.loaded) loadDeviceHub().then(()=>{document.getElementById('deviceHubPage').style.display='block';});
+  else document.getElementById('deviceHubPage').style.display='block';
+}
+function hideDeviceHub(){ document.getElementById('deviceHubPage').style.display='none'; }
+
+// Expose globally
+window.loadDeviceHub = loadDeviceHub;
+window.getCurrentDevice = getCurrentDevice;
+window.switchDevice = switchDevice;
+window.showDeviceHub = showDeviceHub;
+window.hideDeviceHub = hideDeviceHub;
+
+// Auto load
+document.addEventListener('DOMContentLoaded', loadDeviceHub);
