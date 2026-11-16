@@ -3,196 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab v9.2.8 SUPER FAST - By Nasir</title>
+<title>WanaLab Omni-Camera v9.2.9 Pro - By Nasir Khan</title>
 <meta name="theme-color" content="#00ff88">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="wanalab-icon-v8.1.png">
-<!-- NO TFJS ON START - Load only when needed for super fast -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow:hidden;font-family:Arial;height:100vh;color:#fff}
-#godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000;transform:translateZ(0)} /* GPU加速 */
+#godVideo{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
 #aiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
 #scanBox{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:320px;height:160px;border:3px solid #ff0;border-radius:12px;z-index:3;display:none}
 #scanLine{position:absolute;top:0;left:0;width:100%;height:3px;background:#ff0;animation:scan 1.5s infinite}
 @keyframes scan{0%{top:0}50%{top:97%}100%{top:0}}
-#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.85);color:#0f8;padding:5px 8px;display:flex;justify-content:space-between;font-size:9px;border-bottom:1px solid #0f8;backdrop-filter:blur(2px)}
-#shutter{position:fixed;bottom:102px;left:50%;transform:translateX(-50%);z-index:12;width:72px;height:72px;border-radius:50%;background:#fff;border:4px solid #00ff88;box-shadow:0 0 12px #00ff88;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:transform 0.1s}
+#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,0.85);color:#0f8;padding:6px 8px;display:flex;justify-content:space-between;font-size:8px;border-bottom:1px solid #0f8}
+#shutter{position:fixed;bottom:98px;left:50%;transform:translateX(-50%);z-index:12;width:72px;height:72px;border-radius:50%;background:#fff;border:4px solid #00ff88;box-shadow:0 0 12px #00ff88;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer}
 #shutter:active{transform:translateX(-50%) scale(0.88)}
-#info{position:fixed;bottom:172px;left:4px;right:4px;z-index:10;background:rgba(0,0,0,0.8);color:#fff;padding:5px 6px;border-radius:8px;font-size:8px;border:1px solid #0f8;max-height:16vh;overflow:auto}
-#controls{position:fixed;bottom:30px;left:2px;right:2px;display:flex;gap:2px;z-index:10;flex-wrap:wrap}#controls button{flex:1 1 20%;padding:6px 1px;border:none;border-radius:7px;font-weight:bold;font-size:6px}
-#adBanner{position:fixed;bottom:0;left:0;right:0;z-index:9;background:#0a0a0a;padding:3px;text-align:center;font-size:7px;color:#0f8;height:28px;display:flex;align-items:center;justify-content:center}
+#info{position:fixed;bottom:170px;left:4px;right:4px;z-index:10;background:rgba(0,0,0,0.85);color:#fff;padding:5px 6px;border-radius:8px;font-size:8px;border:1px solid #0f8;max-height:16vh;overflow:auto}
+#controls{position:fixed;bottom:30px;left:2px;right:2px;display:flex;gap:2px;z-index:10;flex-wrap:wrap}#controls button{flex:1 1 18%;padding:7px 1px;border:none;border-radius:7px;font-weight:bold;font-size:6px}
+#adBanner{position:fixed;bottom:0;left:0;right:0;z-index:9;background:#0a0a0a;padding:3px;text-align:center;font-size:7px;color:#888;height:28px;display:flex;align-items:center;justify-content:center}
 #preview{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:10px}
 #preview img{max-width:95%;max-height:70vh;border-radius:12px;border:2px solid #00ff88}
-#aboutPage{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9999;overflow:auto;padding:12px;color:#fff}
+#aboutPage{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:99999;display:none;overflow-y:auto;padding:20px 15px;align-items:center;justify-content:center}
+#aboutPage.show{display:flex}
 </style>
 </head>
 <body>
 <video id="godVideo" autoplay playsinline muted></video><canvas id="aiCanvas"></canvas>
 <div id="scanBox"><div id="scanLine"></div></div>
-<div id="top"><span>⚡ v9.2.8 SUPER FAST</span><span id="stat">⚡ Instant...</span><span onclick="location.reload()" style="background:#ff0;color:#000;padding:2px 6px;border-radius:8px">🔄</span></div>
+<div id="top"><span onclick="showAbout()" style="cursor:pointer">♾️ v9.2.9 Pro</span><span id="stat">Ready</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:2px 8px;border-radius:10px;cursor:pointer">ℹ️ ABOUT</span></div>
 <button id="shutter" onclick="capturePhoto()">📸</button>
-<div id="info"><div id="see" style="color:#0f8;font-weight:bold">⚡ Starting instant...</div><div id="barcodeRes" style="color:#ff0;font-size:10px;font-weight:bold"></div><div id="billBox"></div></div>
+<div id="info"><div id="see" style="color:#0f8;font-weight:bold">Ready...</div><div id="barcodeRes" style="color:#ff0;font-size:10px;font-weight:bold"></div><div id="billBox"></div></div>
 <div id="controls">
-<button onclick="capturePhoto()" style="background:#fff;color:#000;border:2px solid #0f8">📸 CAPTURE</button><button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE<br>FAST</button><button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button><button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD</button><button onclick="showPriceDB()" style="background:#fff;color:#000">📦 DB</button><button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL</button><button onclick="toggleAI()" id="aiBtn" style="background:#222;color:#888">🤖 AI OFF</button><button onclick="showAbout()" style="background:#333;color:#fff">ℹ️</button>
+<button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE</button><button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button><button onclick="addToBill()" style="background:#00ff88;color:#000">💰 ADD BILL</button><button onclick="showPriceDB()" style="background:#fff;color:#000">📦 DB</button><button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL</button><button onclick="toggleAI()" id="aiBtn" style="background:#222;color:#888">🤖 AI</button>
 </div>
-<div id="adBanner"><span id="fps">⚡ SUPER FAST MODE - 60FPS - No Lag - Tap AI if needed</span></div>
+<div id="adBanner"><span>WanaLab v9.2.9 Pro - By Nasir Khan</span></div>
 
 <div id="preview"><img id="previewImg"><div style="display:flex;gap:8px;margin-top:10px;width:95%"><button onclick="savePhoto()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">💾 SAVE</button><button onclick="closePreview()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">❌ CLOSE</button></div></div>
 
 <div id="priceDBPage" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9998;padding:12px"><div style="max-width:420px;margin:10px auto;background:#001a0a;border:2px solid #ff0;border-radius:16px;padding:14px"><h3 style="color:#ff0">📦 Price DB</h3><div id="dbList" style="max-height:30vh;overflow:auto;margin:8px 0;background:#000;padding:8px;border-radius:8px"></div><div style="display:flex;gap:4px"><input id="newBarcode" placeholder="Barcode" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newName" placeholder="Name" style="flex:1;padding:8px;border-radius:6px;border:none"><input id="newPrice" placeholder="Price" type="number" style="width:70px;padding:8px;border-radius:6px;border:none"></div><button onclick="addPriceManual()" style="width:100%;margin-top:6px;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">➕ Add</button><button onclick="hidePriceDB()" style="width:100%;margin-top:8px;padding:10px;background:#333;color:#fff;border:none;border-radius:8px">Back</button></div></div>
 
-<div id="aboutPage"><div style="max-width:400px;margin:20px auto;background:#001a0a;border:2px solid #00ff88;border-radius:16px;padding:16px;text-align:center"><h2 style="color:#00ff88">⚡ v9.2.8 SUPER FAST</h2><p style="font-size:9px;color:#0f8">No TensorFlow on start<br>Instant camera 60FPS<br>AI loads only when you tap 🤖<br>Zero lag!</p><button onclick="hideAbout()" style="width:100%;margin-top:14px;padding:14px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">BACK</button></div></div>
+<div id="aboutPage"><div style="max-width:380px;width:100%;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:18px;padding:20px;text-align:center">
+<img src="wanalab-icon-v8.1.png" style="width:90px;height:90px;border-radius:20px;border:2px solid #00ff88" onerror="this.style.display='none'">
+<h2 style="color:#00ff88;margin:12px 0 6px 0">WanaLab Omni-Camera</h2>
+<p style="color:#aaa;font-size:11px;margin-bottom:12px">v9.2.9 Pro</p>
+<div style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:12px;text-align:left;font-size:10px;color:#0f8;line-height:16px">
+🇵🇰 By Nasir Khan - WanaLab<br><br>
+✅ Capture Photo<br>
+✅ Barcode Reader Pro<br>
+✅ Price Database Offline<br>
+✅ Bill PDF & WhatsApp<br>
+✅ Torch & Focus Control<br>
+✅ AI Detection (Optional)
+</div>
+<p style="font-size:8px;color:#666;margin:12px 0">© 2026 WanaLab - Professional Business Tool</p>
+<button onclick="hideAbout()" style="width:100%;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:bold;font-size:14px;cursor:pointer">✅ BACK TO CAMERA</button>
+</div></div>
 
 <script>
 let stream=null, track=null, coco=null, detecting=false, lastSeen='', stockList=[], billItems=[], totalBill=0, lastBarcode='', priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'), capturedDataUrl='', barcodeMode=false, barcodeInterval=null, codeReader=null, isTorch=false, aiEnabled=false;
 const video=document.getElementById('godVideo'); const aiCanvas=document.getElementById('aiCanvas'), aiCtx=aiCanvas.getContext('2d');
 
-function showAbout(){document.getElementById('aboutPage').style.display='block';}function hideAbout(){document.getElementById('aboutPage').style.display='none';}
+function showAbout(){ let el=document.getElementById('aboutPage'); el.classList.add('show'); el.style.display='flex'; }
+function hideAbout(){ let el=document.getElementById('aboutPage'); el.classList.remove('show'); el.style.display='none'; }
 function showPriceDB(){renderDB();document.getElementById('priceDBPage').style.display='block';}function hidePriceDB(){document.getElementById('priceDBPage').style.display='none';}
 
-// SUPER FAST INIT - NO AI, NO HEAVY LIBS
 async function init(){
   try{
-    document.getElementById('stat').innerText='⚡ Instant...';
-    // ULTRA FAST: low res first, then upgrade
-    let constraints={video:{facingMode:'environment', width:{ideal:640}, height:{ideal:480}, frameRate:{ideal:30}}, audio:false};
+    let constraints={video:{facingMode:'environment', width:{ideal:720}, height:{ideal:480}}, audio:false};
     stream=await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject=stream; track=stream.getVideoTracks()[0];
-    // Play instantly, no await for AI
-    video.play().then(()=>{
-      aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
-      document.getElementById('stat').innerText='⚡ 60FPS FAST';
-      document.getElementById('see').innerText='⚡ SUPER FAST READY - Tap 📸 capture, 📷 barcode, 🤖 for AI';
-      document.getElementById('fps').innerText='⚡ 60FPS ULTRA FAST - Zero lag - Tap 🤖 AI OFF to enable AI';
-    });
-  }catch(e){
-    document.getElementById('stat').innerText='Allow camera';
-    // Auto retry super fast
-    setTimeout(init, 800);
-  }
+    await video.play();
+    aiCanvas.width=video.videoWidth; aiCanvas.height=video.videoHeight;
+    document.getElementById('stat').innerText='Ready';
+    document.getElementById('see').innerText='Ready - Tap 📸 to capture';
+  }catch(e){ document.getElementById('stat').innerText='Allow camera'; setTimeout(init,1000); }
 }
 
 async function toggleAI(){
-  if(aiEnabled){
-    aiEnabled=false; coco=null; aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-    document.getElementById('aiBtn').innerText='🤖 AI OFF'; document.getElementById('aiBtn').style.background='#222'; document.getElementById('aiBtn').style.color='#888';
-    document.getElementById('fps').innerText='⚡ FAST MODE - AI OFF - 60FPS';
-    return;
-  }
-  document.getElementById('aiBtn').innerText='⏳ Loading AI...';
-  // Lazy load TF only when user taps AI - SUPER FAST STARTUP
-  if(!window.tf){
-    let s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js';
-    await new Promise(r=>{s.onload=r; document.head.appendChild(s);});
-  }
-  if(!window.cocoSsd){
-    let s2=document.createElement('script'); s2.src='https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js';
-    await new Promise(r=>{s2.onload=r; document.head.appendChild(s2);});
-  }
-  try{
-    coco=await cocoSsd.load({base:'lite_mobilenet_v2'});
-    aiEnabled=true;
-    document.getElementById('aiBtn').innerText='🤖 AI ON'; document.getElementById('aiBtn').style.background='#0f8'; document.getElementById('aiBtn').style.color='#000';
-    document.getElementById('fps').innerText='🤖 AI ON - Detecting...';
-    loop();
-  }catch{
-    document.getElementById('aiBtn').innerText='❌ AI FAIL';
-  }
+  if(aiEnabled){ aiEnabled=false; coco=null; aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); document.getElementById('aiBtn').style.background='#222'; document.getElementById('aiBtn').style.color='#888'; return; }
+  document.getElementById('aiBtn').innerText='⏳...';
+  if(!window.tf){ let s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js'; await new Promise(r=>{s.onload=r; document.head.appendChild(s);}); }
+  if(!window.cocoSsd){ let s2=document.createElement('script'); s2.src='https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.1.0/dist/coco-ssd.min.js'; await new Promise(r=>{s2.onload=r; document.head.appendChild(s2);}); }
+  try{ coco=await cocoSsd.load({base:'lite_mobilenet_v2'}); aiEnabled=true; document.getElementById('aiBtn').style.background='#0f8'; document.getElementById('aiBtn').style.color='#000'; document.getElementById('aiBtn').innerText='🤖 AI ON'; loop(); }catch{ document.getElementById('aiBtn').innerText='🤖 AI'; }
 }
-
-function loop(){
-  if(!aiEnabled || detecting || !coco){ if(aiEnabled) requestAnimationFrame(loop); return;}
-  detecting=true;
-  coco.detect(video,6,0.55).then(preds=>{
-    aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height);
-    let lines=[]; stockList=[];
-    for(let p of preds){
-      let [x,y,w,h]=p.bbox; stockList.push(p.class);
-      let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight;
-      aiCtx.strokeStyle='#00ff88'; aiCtx.lineWidth=2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy);
-      lines.push(p.class);
-    }
-    if(lines.length>0){ lastSeen=[...new Set(lines)].join(', '); document.getElementById('see').innerText=lastSeen; }
-    detecting=false; requestAnimationFrame(loop);
-  }).catch(()=>{detecting=false; requestAnimationFrame(loop);});
-}
-
-async function toggleTorch(){
-  try{
-    if(!track) return;
-    let caps=track.getCapabilities();
-    if(!caps.torch) return;
-    isTorch=!isTorch;
-    await track.applyConstraints({advanced:[{torch:isTorch}]});
-  }catch{}
-}
-
-function toggleBarcodeMode(){
-  barcodeMode=!barcodeMode;
-  document.getElementById('scanBox').style.display=barcodeMode?'block':'none';
-  document.getElementById('barcodeBtn').style.background=barcodeMode?'#0f8':'#ff0';
-  if(barcodeMode){
-    document.getElementById('barcodeRes').innerHTML='🔍 Scanning... Align barcode in yellow box';
-    startScan();
-  } else { stopScan(); }
-}
-
-function startScan(){
-  if(!codeReader){ try{codeReader=new ZXing.BrowserMultiFormatReader();}catch{}}
-  if(codeReader){
-    try{codeReader.decodeFromVideoDevice(null,'godVideo',(r,err)=>{ if(r&&r.text) handleBarcode(r.text); });}catch{}
-  }
-  // Fast native detector fallback every 500ms
-  barcodeInterval=setInterval(async()=>{
-    if(!barcodeMode) return;
-    if('BarcodeDetector' in window){
-      try{
-        let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight;
-        c.getContext('2d').drawImage(video,0,0);
-        let det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','qr_code']});
-        let bmp=await createImageBitmap(c);
-        let codes=await det.detect(bmp);
-        if(codes[0]) handleBarcode(codes[0].rawValue);
-      }catch{}
-    }
-  },500);
-}
+function loop(){ if(!aiEnabled || detecting || !coco){ if(aiEnabled) requestAnimationFrame(loop); return;} detecting=true; coco.detect(video,6,0.55).then(preds=>{ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); let lines=[]; stockList=[]; for(let p of preds){ let [x,y,w,h]=p.bbox; stockList.push(p.class); let sx=aiCanvas.width/video.videoWidth, sy=aiCanvas.height/video.videoHeight; aiCtx.strokeStyle='#00ff88'; aiCtx.lineWidth=2; aiCtx.strokeRect(x*sx,y*sy,w*sx,h*sy); lines.push(p.class);} if(lines.length>0){ lastSeen=[...new Set(lines)].join(', '); document.getElementById('see').innerText=lastSeen; } detecting=false; requestAnimationFrame(loop);}).catch(()=>{detecting=false; requestAnimationFrame(loop);}); }
+async function toggleTorch(){ try{ if(!track) return; let caps=track.getCapabilities(); if(!caps.torch) return; isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]}); }catch{} }
+function toggleBarcodeMode(){ barcodeMode=!barcodeMode; document.getElementById('scanBox').style.display=barcodeMode?'block':'none'; document.getElementById('barcodeBtn').style.background=barcodeMode?'#0f8':'#ff0'; if(barcodeMode){ document.getElementById('barcodeRes').innerHTML='🔍 Scanning...'; startScan(); } else { stopScan(); } }
+function startScan(){ if(!codeReader){ try{codeReader=new ZXing.BrowserMultiFormatReader();}catch{}} if(codeReader){ try{codeReader.decodeFromVideoDevice(null,'godVideo',(r)=>{ if(r&&r.text) handleBarcode(r.text); });}catch{}} barcodeInterval=setInterval(async()=>{ if(!barcodeMode) return; if('BarcodeDetector' in window){ try{ let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; c.getContext('2d').drawImage(video,0,0); let det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','qr_code']}); let bmp=await createImageBitmap(c); let codes=await det.detect(bmp); if(codes[0]) handleBarcode(codes[0].rawValue); }catch{} } },500); }
 function stopScan(){ if(barcodeInterval) clearInterval(barcodeInterval); if(codeReader) try{codeReader.reset();}catch{} }
-
-function handleBarcode(code){
-  if(!code || code===lastBarcode) return;
-  lastBarcode=code;
-  if(navigator.vibrate) navigator.vibrate(80);
-  document.getElementById('newBarcode').value=code;
-  let item=priceDB[code];
-  if(item){
-    document.getElementById('barcodeRes').innerHTML=`✅ ${code} → <b>${item.name}</b> Rs.${item.price}`;
-    addToBill(code,item.price,item.name);
-    setTimeout(()=>{if(barcodeMode) toggleBarcodeMode();},1200);
-  } else {
-    document.getElementById('barcodeRes').innerHTML=`📷 NEW ${code} <button onclick="showPriceDB()" style="background:#0f8;color:#000;border:none;padding:2px 6px;border-radius:6px">➕ ADD</button>`;
-  }
-}
-
-function capturePhoto(){
-  let canvas=document.createElement('canvas'); canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-  let ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0); ctx.drawImage(aiCanvas,0,0);
-  capturedDataUrl=canvas.toDataURL('image/jpeg',0.82);
-  document.getElementById('previewImg').src=capturedDataUrl;
-  document.getElementById('preview').style.display='flex';
-  if(navigator.vibrate) navigator.vibrate(30);
-}
+function handleBarcode(code){ if(!code || code===lastBarcode) return; lastBarcode=code; if(navigator.vibrate) navigator.vibrate(80); document.getElementById('newBarcode').value=code; let item=priceDB[code]; if(item){ document.getElementById('barcodeRes').innerHTML=`✅ ${code} → <b>${item.name}</b> Rs.${item.price}`; addToBill(code,item.price,item.name); setTimeout(()=>{if(barcodeMode) toggleBarcodeMode();},1200); } else { document.getElementById('barcodeRes').innerHTML=`📷 NEW ${code} <button onclick="showPriceDB()" style="background:#0f8;color:#000;border:none;padding:2px 6px;border-radius:6px">➕ ADD</button>`; } }
+function capturePhoto(){ let canvas=document.createElement('canvas'); canvas.width=video.videoWidth; canvas.height=video.videoHeight; let ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0); ctx.drawImage(aiCanvas,0,0); capturedDataUrl=canvas.toDataURL('image/jpeg',0.82); document.getElementById('previewImg').src=capturedDataUrl; document.getElementById('preview').style.display='flex'; if(navigator.vibrate) navigator.vibrate(30); }
 function closePreview(){document.getElementById('preview').style.display='none';}
 function savePhoto(){let a=document.createElement('a'); a.href=capturedDataUrl; a.download=`WanaLab-${Date.now()}.jpg`; a.click(); closePreview();}
 function addPriceManual(){let bc=document.getElementById('newBarcode').value.trim(); let nm=document.getElementById('newName').value.trim()||'Product'; let pr=parseInt(document.getElementById('newPrice').value)||0; if(!bc||!pr) return; priceDB[bc]={name:nm,price:pr}; localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB)); renderDB();}
 function renderDB(){let h=''; let k=Object.keys(priceDB); if(k.length==0) h='Empty'; else k.forEach(x=>{h+=`<div style="display:flex;justify-content:space-between;padding:4px;background:#111;margin:2px 0;border-radius:6px;font-size:7px"><span>${x} ${priceDB[x].name}</span><span style="color:#0f8">Rs.${priceDB[x].price}</span></div>`;}); document.getElementById('dbList').innerHTML=h;}
 function addToBill(bc=null,pr=null,name=null){let it=name||bc||lastSeen||'Product'; let p=pr||250; billItems.push({name:it,price:p}); totalBill+=p; document.getElementById('billBox').innerHTML=`Total Rs.${totalBill}`;}
-function exportBill(){if(billItems.length==0) return; const {jsPDF}=window.jspdf; let doc=new jsPDF(); doc.text('WanaLab v9.2.8 FAST Total Rs.'+totalBill,10,12); doc.save(`Bill-${Date.now()}.pdf`);}
+function exportBill(){if(billItems.length==0) return; const {jsPDF}=window.jspdf; let doc=new jsPDF(); doc.text('WanaLab v9.2.9 Total Rs.'+totalBill,10,12); doc.save(`Bill-${Date.now()}.pdf`);}
 
 window.addEventListener('load', init);
-video.addEventListener('click', init);
 </script>
 </body>
 </html>
