@@ -1,3 +1,11 @@
+// Commit: God Eye v1.1 PRO Voice Fixed Final - Play Store Ready
+// Cache: wanalab-god-eye-v1-1-pro-voice-fixed-final
+// Fixes: CDN excluded from cache (prevents hang), offline fallback to index.html, old caches auto-deleted
+// Voice Fix: Works with restored v8 engine + TTS pause fix
+// Author: Nasir Khan - WanaLab - Wana, Pakistan
+// Date: 2026-05-14
+// Repo: https://github.com/nasir684/Wanalab-Omni-Camera-
+
 // WanaLab God Eye v1.1 PRO Voice Fixed Final - Offline universal camera
 const CACHE_NAME = 'wanalab-god-eye-v1-1-pro-voice-fixed-final';
 const urlsToCache = [
@@ -37,14 +45,12 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Don't cache external CDN - prevents hang (your original fix)
   if(event.request.url.includes('cdn.jsdelivr.net') || 
      event.request.url.includes('unpkg.com') || 
      event.request.url.includes('cdnjs.cloudflare.com')) return;
   
   event.respondWith(
     fetch(event.request).catch(()=>caches.match(event.request).then(res => {
-      // Fallback to index.html for navigation requests offline
       if(event.request.mode === 'navigate'){
         return res || caches.match('/Wanalab-Omni-Camera-/index.html');
       }
