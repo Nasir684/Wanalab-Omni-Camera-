@@ -1,9 +1,10 @@
-// WanaLab v9.2.11.1 - No Cache Hang + Protocols Offline
-const CACHE_NAME = 'wanalab-v9-2-11-1-protocols';
+// WanaLab God Eye v1.1 PRO - Universal Camera OS - World's first offline universal camera
+const CACHE_NAME = 'wanalab-god-eye-v1-1-pro-final';
 const urlsToCache = [
   '/Wanalab-Omni-Camera-/',
   '/Wanalab-Omni-Camera-/index.html',
   '/Wanalab-Omni-Camera-/manifest.json',
+  '/Wanalab-Omni-Camera-/wanalab-god-eye-v1-1-icon.png',
   '/Wanalab-Omni-Camera-/wanalab-icon-v8.1.png',
   '/Wanalab-Omni-Camera-/protocols/clip-lenses.json',
   '/Wanalab-Omni-Camera-/protocols/custom.json',
@@ -36,10 +37,18 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Don't cache external CDN - prevents hang (your original fix)
   if(event.request.url.includes('cdn.jsdelivr.net') || 
      event.request.url.includes('unpkg.com') || 
      event.request.url.includes('cdnjs.cloudflare.com')) return;
+  
   event.respondWith(
-    fetch(event.request).catch(()=>caches.match(event.request))
+    fetch(event.request).catch(()=>caches.match(event.request).then(res => {
+      // Fallback to index.html for navigation requests offline
+      if(event.request.mode === 'navigate'){
+        return res || caches.match('/Wanalab-Omni-Camera-/index.html');
+      }
+      return res;
+    }))
   );
 });
