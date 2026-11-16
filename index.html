@@ -1,325 +1,289 @@
-<script>
-// v99.2 EMERGENCY KILL CACHE
-(async()=>{
-  if('caches' in window){
-    const keys=await caches.keys();
-    for(let k of keys){ if(k.includes('wana')) await caches.delete(k); }
-  }
-  localStorage.setItem('wanaVersion','1.9-final-992-nasir684');
-  if(navigator.serviceWorker){
-    const regs=await navigator.serviceWorker.getRegistrations();
-    for(let r of regs) await r.unregister();
-  }
-})();
-</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>WanaLab God Eye v1.9 FINAL v99.1 - Count Voice Fixed - Nasir Khan</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WanaLab God Eye v99.2 - Cam Voice Count FIXED</title>
 <meta name="theme-color" content="#00ff88">
-<link rel="manifest" href="./manifest.json?v=19">
-<link rel="icon" href="./wanalab-god-eye-v1-1-icon.png?v=19">
+<link rel="manifest" href="./manifest.json?v=19&force=992">
 <script>
-// v1.9 FORCE UPDATE v99.1 - kills old cache
-if('caches' in window){
-  caches.keys().then(keys=>{
-    keys.forEach(k=>{
-      if(k.includes('wana') && !k.includes('v19-final-99-nasir684')) caches.delete(k);
-    });
-  });
-}
-if(localStorage.getItem('wanaVersion')!=='1.9-final-99-nasir684'){
-  localStorage.setItem('wanaVersion','1.9-final-99-nasir684');
-  if(navigator.serviceWorker){
-    navigator.serviceWorker.getRegistrations().then(r=>r.forEach(reg=>reg.unregister()));
+// v99.2 EMERGENCY CACHE KILLER
+(async()=>{
+  if('caches' in window){
+    const k=await caches.keys();
+    for(let c of k){ if(c.includes('wana')) await caches.delete(c); }
   }
-}
+  localStorage.setItem('wanaVersion','v99.2-992');
+  if(navigator.serviceWorker){
+    const r=await navigator.serviceWorker.getRegistrations();
+    for(let x of r) await x.unregister();
+  }
+  console.log('v99.2 cache killed');
+})();
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
+<script src="https://docs.opencv.org/4.8.0/opencv.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
-<script async src="https://docs.opencv.org/4.8.0/opencv.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow:hidden;font-family:system-ui;height:100vh;color:#fff}
-#godVideo{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
-#aiCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
-#thermalCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;display:none;mix-blend-mode:screen}
-#docCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;display:none}
-#trackCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;display:none;touch-action:none}
-#scanBox{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:320px;height:160px;border:3px solid #ff0;border-radius:12px;z-index:3;display:none}
-#scanLine{position:absolute;top:0;left:0;width:100%;height:3px;background:#ff0;animation:scan 1.5s infinite}
-@keyframes scan{0%{top:0}50%{top:97%}100%{top:0}}
-#top{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);color:#0f8;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:10px;border-bottom:1px solid #0f8}
-#installBtn{position:fixed;top:40px;left:50%;transform:translateX(-50%);z-index:15;background:#00ff88;color:#000;padding:10px 20px;border-radius:24px;font-weight:800;font-size:12px;display:none;box-shadow:0 0 20px #00ff88;border:none;cursor:pointer}
-#voiceBadge{position:fixed;top:38px;left:50%;transform:translateX(-50%);z-index:11;background:#ff1a1a;color:#fff;padding:7px 16px;border-radius:20px;font-weight:800;font-size:11px;cursor:pointer}
-#voiceBadge.on{background:#00ff88;color:#000}
-#langSel{position:fixed;top:66px;right:6px;z-index:12;background:rgba(0,0,0,.8);border:1px solid #0f8;border-radius:20px;padding:3px;display:flex;gap:2px}
-#langSel button{border:none;padding:4px 8px;border-radius:12px;font-size:8px;font-weight:800;cursor:pointer}
-#transcript{position:fixed;top:96px;left:10px;right:10px;z-index:10;background:rgba(0,0,0,.9);color:#ff0;padding:8px 12px;border-radius:10px;font-size:10px;display:none;border:1px solid #ff0;text-align:center;font-weight:700}
-#sliders{position:fixed;top:96px;left:6px;right:6px;z-index:12;background:rgba(0,0,0,0.92);border:1px solid #00ff88;border-radius:12px;padding:8px;display:none;flex-direction:column;gap:8px}
-#sliders.show{display:flex}
-.sliderRow{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:800}
-.sliderRow label{width:70px;color:#0f8}.sliderRow input{flex:1}
-#shutter{position:fixed;bottom:118px;left:50%;transform:translateX(-50%);z-index:12;width:76px;height:76px;border-radius:50%;background:#fff;border:4px solid #00ff88;box-shadow:0 0 15px #00ff88;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer}
-#info{position:fixed;bottom:192px;left:6px;right:6px;z-index:10;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);padding:6px 8px;border-radius:10px;font-size:9px;border:1px solid rgba(0,255,136,.4);max-height:16vh;overflow:auto}
-#controls{position:fixed;bottom:36px;left:4px;right:4px;display:flex;gap:3px;z-index:10;flex-wrap:wrap}#controls button{flex:1 1 22%;padding:8px 2px;border:none;border-radius:8px;font-weight:800;font-size:7px;cursor:pointer}
-#adBanner{position:fixed;bottom:0;left:0;right:0;z-index:9;background:#080808;padding:4px;text-align:center;font-size:8px;color:#666;height:30px;display:flex;align-items:center;justify-content:center}
-#preview{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:12px;overflow:auto}
-#preview img,#preview canvas{max-width:96%;max-height:50vh;border-radius:14px;border:2px solid #00ff88}
-#filterBar{display:flex;gap:6px;margin:10px 0;width:96%;overflow:auto}#filterBar button{flex:1;padding:10px 6px;border-radius:8px;border:none;font-weight:800;font-size:10px;cursor:pointer}
-#cropCanvas{max-width:96%;max-height:50vh;border-radius:14px;border:2px solid #00ff88;touch-action:none;display:none}
-#cropControls{display:none;gap:6px;margin:8px 0;width:96%}
-#roiCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:6;touch-action:none;display:none;background:rgba(0,0,0,0.15)}
-#billCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:7;pointer-events:none;display:none}
-#aboutPage{position:fixed;inset:0;background:#000;z-index:99999;display:none;overflow-y:auto;padding:20px 14px}#aboutPage.show{display:flex;align-items:center;justify-content:center}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#00ff88;font-family:monospace;overflow:hidden;touch-action:none}
+#video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:auto}
+#ui{position:absolute;top:0;left:0;width:100%;z-index:10;padding:6px}
+.row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+.btn{background:#111;border:1px solid #00ff88;color:#00ff88;padding:6px 8px;border-radius:6px;font-size:11px;cursor:pointer}
+.btn.active{background:#00ff88;color:#000;font-weight:bold}
+#stat{font-size:10px;background:#000a;padding:4px;border-radius:4px;margin-bottom:4px}
+#see{font-size:11px;background:#000c;padding:4px;border-radius:4px;min-height:20px}
+#bottom{position:absolute;bottom:0;left:0;width:100%;z-index:10;padding:6px;background:linear-gradient(transparent,#000)}
+.badge{font-size:9px;padding:2px 5px;border-radius:10px;border:1px solid #00ff88}
 </style>
 </head>
 <body>
-<video id="godVideo" autoplay playsinline muted></video><canvas id="aiCanvas"></canvas><canvas id="thermalCanvas"></canvas><canvas id="docCanvas"></canvas><canvas id="trackCanvas"></canvas>
-<div id="scanBox"><div id="scanLine"></div></div>
-<div id="top"><span>👁️ God Eye v99.1 FIXED</span><span id="stat">Ready v99.1</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:4px 12px;border-radius:12px;font-weight:800;cursor:pointer">ℹ️ ABOUT</span></div>
-<button id="installBtn" onclick="installApp()">📲 INSTALL GOD EYE</button>
-<div id="voiceBadge" onclick="toggleVoice()">🎤 TAP TO START VOICE</div>
-<div id="langSel"><button onclick="setLang('en')" id="btnEn" style="background:#0f8;color:#000">EN</button><button onclick="setLang('ur')" id="btnUr" style="background:#333;color:#fff">اردو</button><button onclick="setLang('ps')" id="btnPs" style="background:#333;color:#fff">پښتو</button><button onclick="setLang('auto')" id="btnAuto" style="background:#a0f;color:#fff">AUTO</button></div>
-<div id="transcript"></div>
-<div id="sliders">
-<div class="sliderRow"><label>☀️ EXP</label><input type="range" id="expSlider" min="-100" max="100" value="0" oninput="applyLiveFilters()"><span id="expVal">0</span></div>
-<div class="sliderRow"><label>🌙 NIGHT</label><input type="range" id="nightSlider" min="0" max="100" value="0" oninput="toggleNightMode(this.value)"><span id="nightVal">OFF</span></div>
-<div class="sliderRow"><label>🔥 THERMAL</label><input type="range" id="thermalSlider" min="0" max="100" value="0" oninput="toggleThermal(this.value)"><span id="thermalVal">OFF</span></div>
-<div class="sliderRow"><label>📸 HDR</label><input type="range" id="hdrSlider" min="0" max="100" value="0" oninput="toggleHDR(this.value)"><span id="hdrVal">OFF</span></div>
-<button onclick="resetSliders()" style="padding:6px;background:#333;color:#fff;border:none;border-radius:8px;font-size:10px;font-weight:800">↺ RESET</button>
+<video id="video" autoplay playsinline muted></video>
+<canvas id="aiCanvas"></canvas>
+<canvas id="docCanvas"></canvas>
+<canvas id="thermalCanvas"></canvas>
+<canvas id="trackCanvas"></canvas>
+
+<div id="ui">
+<div id="stat">Loading v99.2...</div>
+<div class="row">
+<button class="btn" onclick="switchDevice()">📱 DEVICES (5)</button>
+<button class="btn" id="voiceBtn" onclick="toggleVoice()">🎤 TAP TO START VOICE</button>
+<span id="voiceBadge" class="badge">🔇 Voice OFF</span>
+<span id="langBadge" class="badge">EN</span>
 </div>
-<button id="shutter" onclick="handleShutter()">📸</button>
-<div id="info"><div id="see" style="color:#0f8;font-weight:800">🎤 v99.1 FIXED: Count ROI + Voice (EN/UR/PS) + Devices - <a href="https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99" style="color:#0f8">TEST LINK</a></div><div id="countDisplay" style="color:#ff8800;font-weight:800"></div><div id="trackInfo" style="color:#00aaff;font-weight:800"></div><div id="barcodeRes" style="color:#ff0;font-weight:800"></div><div id="billBox"></div><div id="ocrBox" style="color:#fff;margin-top:4px;max-height:60px;overflow:auto"></div><div id="thermalInfo" style="color:#ff4400;font-weight:800"></div></div>
-<div id="controls">
-<button onclick="toggleSliders()" style="background:#00ff88;color:#000">🎛️ SLIDERS</button>
-<button onclick="toggleDocScan()" id="docBtn" style="background:#00aaff;color:#fff">📄 DOC SCAN</button>
-<button onclick="toggleTracking()" id="trackBtn" style="background:#333;color:#fff">🎯 TRACK</button>
-<button onclick="toggleCounting()" id="countBtn" style="background:#333;color:#fff">🔢 COUNT ROI</button>
-<button onclick="toggleBarcodeMode()" id="barcodeBtn" style="background:#ff0;color:#000">📷 BARCODE ROI</button>
-<button onclick="toggleBillTapMode()" id="billBtn" style="background:#333;color:#fff">🧾 TAP BILL</button>
-<button onclick="toggleTorch()" style="background:#333;color:#fff">🔦 TORCH</button>
-<button onclick="toggleVideo()" id="videoBtn" style="background:#ff1a1a;color:#fff">🎥 VIDEO</button>
-<button onclick="doOCR()" id="ocrBtn" style="background:#a0f;color:#fff">🔤 OCR ROI</button>
-<button onclick="exportBill()" style="background:#a0f;color:#fff">🧾 BILL PDF</button>
-<button onclick="clearBillMarkers()" style="background:#220000;color:#ff4444">🗑️ CLEAR</button>
-<button onclick="toggleVoice()" style="background:#ff1a1a;color:#fff">🎤 VOICE</button>
-<button onclick="showDeviceHub()" style="background:#00ff88;color:#000">📱 DEVICES (5)</button>
+<div class="row">
+<button class="btn" onclick="setMode('doc')">📄 DOC SCAN</button>
+<button class="btn" id="countBtn" onclick="setMode('count')">🔢 COUNT ROI</button>
+<button class="btn" onclick="setMode('ocr')">🔤 OCR ROI</button>
+<button class="btn" onclick="setMode('barcode')">📷 BARCODE ROI</button>
+<button class="btn" onclick="setMode('track')">🎯 TRACK</button>
+<button class="btn" onclick="setMode('bill')">🧾 TAP BILL</button>
+<button class="btn" onclick="toggleTorch()">🔦 TORCH</button>
+<button class="btn" onclick="clearAll()">🧹 CLEAR</button>
 </div>
-<div id="adBanner">WanaLab God Eye v99.1 FIXED © Nasir Khan - Count+Voice Fixed - <a href="https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99" style="color:#666">nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99</a></div>
-<div id="preview"><img id="previewImg"><canvas id="filterCanvas" style="display:none"></canvas><canvas id="cropCanvas"></canvas>
-<div id="cropControls">
-<button onclick="resetCrop()" style="flex:1;padding:10px;background:#333;color:#fff;border:none;border-radius:8px;font-size:10px;font-weight:800">↺ RESET CROP</button>
-<button onclick="applyManualCrop()" style="flex:1;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-size:10px;font-weight:800">✂️ APPLY CROP</button>
-<button onclick="toggleCropMode()" style="flex:1;padding:10px;background:#00aaff;color:#fff;border:none;border-radius:8px;font-size:10px;font-weight:800" id="cropToggleBtn">📐 CROP ON</button>
+<div class="row">
+<button class="btn" onclick="openSliders()">🎛️ SLIDERS</button>
+<button class="btn" onclick="capture()">📸 CAPTURE</button>
+<button class="btn" onclick="location.href='./export.html?v=19&force=992'">💾 EXPORT</button>
+<button class="btn" onclick="installPWA()">📲 INSTALL</button>
 </div>
-<div id="filterBar">
-<button onclick="applyFilterMode('original')" style="background:#fff;color:#000">ORIGINAL</button>
-<button onclick="applyFilterMode('magic')" style="background:#00aaff;color:#fff">✨ MAGIC</button>
-<button onclick="applyFilterMode('bw')" style="background:#000;color:#fff;border:1px solid #fff">B&W</button>
-<button onclick="applyFilterMode('thermal')" style="background:linear-gradient(90deg,blue,red);color:#fff">🔥 THERMAL</button>
-<button onclick="applyFilterMode('night')" style="background:#001133;color:#0ff">🌙 NIGHT</button>
+<div id="see">Ready v99.2 — Draw box for COUNT — Say COUNT</div>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:96%;margin-top:8px">
-<button onclick="savePhoto()" style="padding:12px;background:#333;color:#fff;border:none;border-radius:10px;font-weight:800;font-size:10px">📸 JPG</button>
-<button onclick="saveAsPDF()" style="padding:12px;background:#00aaff;color:#fff;border:none;border-radius:10px;font-weight:800;font-size:10px">📄 IMG PDF</button>
-<button onclick="saveSearchablePDF()" style="padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:800;font-size:10px">🔍 TEXT PDF</button>
-<button onclick="exportTXT_Searchable()" style="padding:12px;background:#fff;color:#000;border:none;border-radius:10px;font-weight:800;font-size:10px">📝 TXT</button>
-<button onclick="exportDOC_Searchable()" style="padding:12px;background:#2b579a;color:#fff;border:none;border-radius:10px;font-weight:800;font-size:10px">📘 DOC</button>
-<button onclick="exportDOCX_WithImages()" style="padding:12px;background:#2b579a;color:#fff;border:1px solid #00ff88;border-radius:10px;font-weight:800;font-size:10px">📘 DOCX IMG</button>
+
+<div id="bottom">
+<div class="row">
+<span id="countInfo" class="badge">Count: 0</span>
+<span id="billInfo" class="badge">Bill: Rs. 0 | Items: 0</span>
+<span id="deviceInfo" class="badge">Device: Omni Cam</span>
 </div>
-<div style="display:flex;gap:10px;width:96%;margin-top:8px"><button onclick="closePreview()" style="flex:1;padding:12px;background:#222;color:#fff;border:none;border-radius:10px">❌ CLOSE</button></div>
 </div>
-<div id="priceDBPage" style="display:none;position:fixed;inset:0;background:#000;z-index:9998;padding:14px"><div style="max-width:440px;margin:10px auto;background:#001a0a;border:2px solid #ff0;border-radius:16px;padding:14px"><h3 style="color:#ff0">📦 Price DB</h3><div id="dbList" style="max-height:32vh;overflow:auto;margin:10px 0;background:#000;padding:8px;border-radius:10px"></div><div style="display:flex;gap:4px"><input id="newBarcode" placeholder="Barcode" style="flex:1;padding:10px;border-radius:8px;border:none"><input id="newName" placeholder="Name" style="flex:1;padding:10px;border-radius:8px;border:none"><input id="newPrice" placeholder="Price" type="number" style="width:80px;padding:10px;border-radius:8px;border:none"></div><button onclick="addPriceManual()" style="width:100%;margin-top:8px;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:800">➕ Add</button><button onclick="hidePriceDB()" style="width:100%;margin-top:8px;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">Back</button></div></div>
-<div id="aboutPage"><div style="max-width:400px;width:100%;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:20px;padding:22px;text-align:center"><h2 style="color:#00ff88">WanaLab God Eye v99.1 FIXED</h2><p style="color:#aaa;font-size:11px">TEST LINK: https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99</p><div style="background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);border-radius:14px;padding:14px;text-align:left;font-size:11px;color:#0f8;line-height:20px;margin-top:12px">FIXED: Count ROI Draw + OpenCV + Voice EN/UR/PS - Say Count / Ginti / Shumar / Devices / Thermal On / Bill / Photo</div><button onclick="hideAbout()" style="width:100%;margin-top:14px;padding:14px;background:#00ff88;color:#000;border:none;border-radius:12px;font-weight:800">BACK</button><a href="https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99" style="display:block;margin-top:10px;color:#0f8;font-size:11px">🧪 OPEN TEST LINK</a></div></div>
+
+<div id="sliderPanel" style="display:none;position:absolute;top:50%;left:5%;width:90%;background:#111;border:1px solid #00ff88;padding:10px;z-index:20;border-radius:8px">
+<h4>🎛️ v99.2 Sliders <span style="float:right" onclick="openSliders()">X</span></h4>
+<label>EXP <span id="expV">50</span></label><input type="range" id="exp" min="0" max="100" value="50" style="width:100%">
+<label>NIGHT <span id="nightV">0</span></label><input type="range" id="night" min="0" max="100" value="0" style="width:100%">
+<label>THERMAL <span id="thermalV">0</span></label><input type="range" id="thermal" min="0" max="100" value="0" style="width:100%">
+<label>HDR <span id="hdrV">0</span></label><input type="range" id="hdr" min="0" max="100" value="0" style="width:100%">
+</div>
+
 <script>
-let deferredPrompt=null;function checkInstalled(){let s=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone||localStorage.getItem('wanaInstalled')==='true';if(s){document.getElementById('installBtn').style.display='none';return true}else return false}
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtn').style.display='block';});
-async function installApp(){if(deferredPrompt){deferredPrompt.prompt();let c=await deferredPrompt.userChoice;if(c.outcome==='accepted')localStorage.setItem('wanaInstalled','true');deferredPrompt=null;checkInstalled()}else alert('Chrome ⋮ → Install app')}
-window.addEventListener('appinstalled',()=>{localStorage.setItem('wanaInstalled','true');document.getElementById('installBtn').style.display='none';});
-let stream=null,track=null,billItems=[],totalBill=0,lastBarcode='',priceDB=JSON.parse(localStorage.getItem('wanaPriceDB')||'{}'),capturedDataUrl='',barcodeMode=false,barcodeInterval=null,codeReader=null,isTorch=false,isListening=false,recognition=null,currentLangMode=localStorage.getItem('wanaLang')||'en',isCounting=false,isRecording=false,mediaRecorder=null,recordedChunks=[],docScanMode=false,currentFilter='original',scannedPages=JSON.parse(localStorage.getItem('wanaScannedPages')||'[]'),opencvReady=false,tracking=false,trackedBox=null,trackTemplate=null,thermalMode=false,nightMode=0,hdrMode=0;
-const video=document.getElementById('godVideo');const aiCanvas=document.getElementById('aiCanvas');const docCanvas=document.getElementById('docCanvas'),docCtx=docCanvas.getContext('2d');const thermalCanvas=document.getElementById('thermalCanvas');const trackCanvas=document.getElementById('trackCanvas'),trackCtx=trackCanvas.getContext('2d');
-function showAbout(){document.getElementById('aboutPage').classList.add('show');document.getElementById('aboutPage').style.display='flex';}function hideAbout(){document.getElementById('aboutPage').classList.remove('show');document.getElementById('aboutPage').style.display='none'}function showPriceDB(){renderDB();document.getElementById('priceDBPage').style.display='block'}function hidePriceDB(){document.getElementById('priceDBPage').style.display='none'}
-function setLang(l){
-  currentLangMode=l;
-  localStorage.setItem('wanaLang',l);
-  updateLangUI();
-  if(isListening && recognition){
-    try{recognition.stop();}catch{}
-    setTimeout(()=>{ initVoice(); try{recognition.start();}catch{} },400);
+let video=document.getElementById('video'), aiCanvas=document.getElementById('aiCanvas'), docCanvas=document.getElementById('docCanvas'), thermalCanvas=document.getElementById('thermalCanvas'), trackCanvas=document.getElementById('trackCanvas');
+let aiCtx=aiCanvas.getContext('2d'), docCtx=docCanvas.getContext('2d'), thermalCtx=thermalCanvas.getContext('2d'), trackCtx=trackCanvas.getContext('2d');
+let stream=null, track=null, mode='none', isDrawing=false, startX=0, startY=0, currentROI=null, scannedPages=[], billItems=[], billTotal=0, torchOn=false, lang='en-US', voiceOn=false, recognition=null;
+let devices=[
+ {id:'wanalab-omni-cam',name:'WanaLab Omni Cam',type:'phone'},
+ {id:'dji-mini-4-pro',name:'DJI Mini 4 Pro',type:'drone'},
+ {id:'flir-one-pro',name:'FLIR ONE Pro',type:'thermal'},
+ {id:'usb-doc-cam',name:'USB Doc Camera',type:'doc'},
+ {id:'ip-camera',name:'IP Camera RTSP',type:'ip'}
+], currentDevice=0;
+
+// INIT CAMERA v99.2 ROBUST
+async function init(){
+  document.getElementById('stat').innerText='v99.2 Starting camera...';
+  try{
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    let cons=[
+      {video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}},audio:true},
+      {video:{facingMode:'environment'},audio:true},
+      {video:true,audio:false}
+    ];
+    let ok=false;
+    for(let c of cons){
+      try{ stream=await navigator.mediaDevices.getUserMedia(c); ok=true; break; }catch(e){ console.log('cam fail',e.message); }
+    }
+    if(!ok) throw new Error('Camera blocked - Allow in Chrome 🔒 settings');
+    video.srcObject=stream;
+    track=stream.getVideoTracks()[0];
+    await video.play();
+    let w=video.videoWidth||1280, h=video.videoHeight||720;
+    [aiCanvas,docCanvas,thermalCanvas,trackCanvas].forEach(c=>{ c.width=w; c.height=h; });
+    document.getElementById('stat').innerText='✅ Ready v99.2 - Cam ON - Say COUNT / Ginti karo - Pages:'+scannedPages.length;
+    initVoice(); startThermalLoop();
+  }catch(e){
+    document.getElementById('stat').innerText='❌ '+e.message;
+    document.getElementById('see').innerHTML=`❌ CAMERA BLOCKED: ${e.message}<br>1. Open in CHROME<br>2. Must be https://<br>3. Tap 🔒 → Allow Camera+Mic<br>4. Reload ?v=19&force=99&v=992`;
+    setTimeout(init,3000);
   }
 }
-function updateLangUI(){document.querySelectorAll('#langSel button').forEach(b=>{b.style.background='#333';b.style.color='#fff'});let id={en:'btnEn',ur:'btnUr',ps:'btnPs',auto:'btnAuto'}[currentLangMode];if(id){document.getElementById(id).style.background='#0f8';document.getElementById(id).style.color='#000'}}
-async function init(){checkInstalled();try{let c={video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}},audio:{echoCancellation:true,noiseSuppression:true}};stream=await navigator.mediaDevices.getUserMedia(c);video.srcObject=stream;track=stream.getVideoTracks()[0];await video.play();aiCanvas.width=video.videoWidth;aiCanvas.height=video.videoHeight;docCanvas.width=video.videoWidth;docCanvas.height=video.videoHeight;thermalCanvas.width=video.videoWidth;thermalCanvas.height=video.videoHeight;trackCanvas.width=video.videoWidth;trackCanvas.height=video.videoHeight;document.getElementById('stat').innerText='Ready v99.1 - Pages:'+scannedPages.length;updateLangUI();initVoice();if(window.cv) opencvReady=true;startThermalLoop();}catch(e){document.getElementById('stat').innerText='Camera error';setTimeout(init,2500)}}
+
+function updateLangUI(){ document.getElementById('langBadge').innerText=lang.includes('ur')?'UR':lang.includes('ps')?'PS':'EN'; }
+
+// VOICE v99.2 FIXED
 function initVoice(){
-  let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){document.getElementById('voiceBadge').innerText='❌ Chrome Required';return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ document.getElementById('see').innerText='Voice not supported - Use Chrome'; return; }
   recognition=new SR();
-  recognition.continuous=true;
-  recognition.interimResults=true;
-  let langMap={en:'en-US',ur:'ur-PK',ps:'ps-AF',auto:'en-US'};
-  recognition.lang=langMap[currentLangMode]||'en-US';
-  recognition.onresult=ev=>{
-    let final='';let interim='';
-    for(let k=ev.resultIndex;k<ev.results.length;k++){
-      let txt=ev.results[k][0].transcript;
-      if(ev.results[k].isFinal) final+=txt+' ';
-      else interim+=txt;
-    }
-    let show=final||interim;
-    if(show){
-      let el=document.getElementById('transcript');
-      el.style.display='block';el.innerText='🎤 '+show;
-      setTimeout(()=>{el.style.display='none';},2500);
-    }
-    if(final.trim()) handleVoice(final.trim());
+  recognition.continuous=true; recognition.interimResults=false; recognition.lang=lang;
+  recognition.onresult=(e)=>{
+    let t=e.results[e.results.length-1][0].transcript.toLowerCase().trim();
+    document.getElementById('see').innerText='🎤 Heard: '+t;
+    handleVoice(t);
   };
-  recognition.onend=()=>{if(isListening)setTimeout(()=>{try{recognition.start()}catch{}},350)}
-  recognition.onstart=()=>{document.getElementById('stat').innerText='🔴 Listening '+currentLangMode.toUpperCase()}
+  recognition.onerror=(e)=>{ console.log('voice err',e.error); if(voiceOn) setTimeout(()=>{ try{ recognition.start(); }catch{} },1000); };
+  recognition.onend=()=>{ if(voiceOn) try{ recognition.start(); }catch{} };
 }
-function toggleVoice(){if(!recognition)return;if(isListening){isListening=false;try{recognition.stop()}catch{};document.getElementById('voiceBadge').classList.remove('on');document.getElementById('voiceBadge').innerText='🎤 TAP TO START';}else{isListening=true;try{recognition.start()}catch{};document.getElementById('voiceBadge').classList.add('on');document.getElementById('voiceBadge').innerText='🔴 LISTENING';}}
-function handleVoice(cmd){
-  let l=cmd.toLowerCase().trim();
-  console.log('Voice CMD:',l);
-  document.getElementById('see').innerText='🎤 CMD: '+cmd;
-  if(l.includes('doc')||l.includes('scan')||l.includes('اسکین')||l.includes('سکین')) toggleDocScan();
-  else if(l.includes('capture')||l.includes('photo')||l.includes('shutter')||l.includes('تصویر')||l.includes('عکس')) capturePhoto();
-  else if(l.includes('track')||l.includes('follow')||l.includes('تعاقب')) toggleTracking();
-  else if(l.includes('count')||l.includes('گنتی')||l.includes('شمار')||l.includes('count karo')||l.includes('ginti')) {
-    if(isCounting) toggleCounting(); else enterROIMode('count');
+function toggleVoice(){
+  if(!recognition) initVoice();
+  if(voiceOn){ recognition.stop(); voiceOn=false; document.getElementById('voiceBadge').innerText='🔇 Voice OFF'; document.getElementById('voiceBtn').classList.remove('active'); }
+  else{
+    try{ recognition.lang=lang; recognition.start(); voiceOn=true; document.getElementById('voiceBadge').innerText='🔴 LISTENING'; document.getElementById('voiceBadge').style.background='#f00'; document.getElementById('voiceBtn').classList.add('active'); document.getElementById('see').innerText='🎤 Listening... Say COUNT / GINTI / DEVICES'; }catch(e){ document.getElementById('see').innerText='❌ Mic blocked - Allow Mic in 🔒'; }
   }
-  else if(l.includes('barcode')||l.includes('qr')||l.includes('بارکوڈ')) toggleBarcodeMode();
-  else if(l.includes('thermal')||l.includes('گرمی')||l.includes('thermal on')) toggleThermal(60);
-  else if(l.includes('night')||l.includes('رات')) toggleNightMode(70);
-  else if(l.includes('bill')||l.includes('بل')) toggleBillTapMode();
-  else if(l.includes('device')||l.includes('ڈیوائس')) showDeviceHub();
-  else if(l.includes('clear')||l.includes('صاف')) clearBillMarkers();
-  else if(l.includes('torch')||l.includes('flash')||l.includes('ٹارچ')) toggleTorch();
 }
-function toggleSliders(){document.getElementById('sliders').classList.toggle('show');}
-function applyLiveFilters(){let exp=parseInt(document.getElementById('expSlider').value);document.getElementById('expVal').innerText=exp;let filter=`brightness(${100+exp}%)`;if(nightMode>0)filter+=` brightness(${100+nightMode/2}%) contrast(130%)`;if(hdrMode>0)filter+=` contrast(${100+hdrMode}%) saturate(${100+hdrMode/2}%)`;video.style.filter=filter;}
-function toggleNightMode(v){nightMode=parseInt(v);document.getElementById('nightVal').innerText=nightMode>0?nightMode+'%':'OFF';applyLiveFilters();}
-function toggleHDR(v){hdrMode=parseInt(v);document.getElementById('hdrVal').innerText=hdrMode>0?hdrMode+'%':'OFF';applyLiveFilters();}
-function toggleThermal(v){thermalMode=parseInt(v)>0;document.getElementById('thermalVal').innerText=thermalMode?v+'%':'OFF';thermalCanvas.style.display=thermalMode?'block':'none';}
-function resetSliders(){document.getElementById('expSlider').value=0;document.getElementById('nightSlider').value=0;document.getElementById('thermalSlider').value=0;document.getElementById('hdrSlider').value=0;nightMode=0;hdrMode=0;thermalMode=false;thermalCanvas.style.display='none';video.style.filter='';document.getElementById('expVal').innerText='0';document.getElementById('nightVal').innerText='OFF';document.getElementById('thermalVal').innerText='OFF';document.getElementById('hdrVal').innerText='OFF';}
-function startThermalLoop(){let loop=()=>{if(thermalMode&&opencvReady&&window.cv){try{let src=cv.imread(video);let gray=new cv.Mat(),color=new cv.Mat();cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY);cv.applyColorMap(gray,color,cv.COLORMAP_JET);cv.imshow(thermalCanvas,color);src.delete();gray.delete();color.delete();}catch{}}requestAnimationFrame(loop);};loop();}
-function toggleDocScan(){docScanMode=!docScanMode;let b=document.getElementById('docBtn');if(docScanMode){b.style.background='#00ff88';b.style.color='#000';b.innerText='✅ DOC ON';document.getElementById('docCanvas').style.display='block';}else{b.style.background='#00aaff';b.style.color='#fff';b.innerText='📄 DOC SCAN';document.getElementById('docCanvas').style.display='none';}}
-let cropPoints=[],dragPoint=-1,cropImg=new Image();const cropCanvas=document.getElementById('cropCanvas'),cropCtx=cropCanvas.getContext('2d');
-function initManualCrop(dataUrl){cropImg=new Image();cropImg.onload=()=>{cropCanvas.width=800;cropCanvas.height=Math.round(800*cropImg.height/cropImg.width);let w=cropCanvas.width,h=cropCanvas.height;cropPoints=[{x:w*0.1,y:h*0.15},{x:w*0.9,y:h*0.15},{x:w*0.9,y:h*0.85},{x:w*0.1,y:h*0.85}];document.getElementById('cropControls').style.display='flex';cropCanvas.style.display='block';document.getElementById('previewImg').style.display='none';document.getElementById('filterCanvas').style.display='none';drawCropOverlay();};cropImg.src=dataUrl;}
-function drawCropOverlay(){cropCtx.clearRect(0,0,cropCanvas.width,cropCanvas.height);cropCtx.drawImage(cropImg,0,0,cropCanvas.width,cropCanvas.height);cropCtx.fillStyle='rgba(0,0,0,0.5)';cropCtx.fillRect(0,0,cropCanvas.width,cropCanvas.height);cropCtx.save();cropCtx.beginPath();cropCtx.moveTo(cropPoints[0].x,cropPoints[0].y);for(let i=1;i<4;i++)cropCtx.lineTo(cropPoints[i].x,cropPoints[i].y);cropCtx.closePath();cropCtx.clip();cropCtx.drawImage(cropImg,0,0,cropCanvas.width,cropCanvas.height);cropCtx.restore();cropCtx.strokeStyle='#00ff88';cropCtx.lineWidth=3;cropCtx.beginPath();cropCtx.moveTo(cropPoints[0].x,cropPoints[0].y);for(let i=1;i<4;i++)cropCtx.lineTo(cropPoints[i].x,cropPoints[i].y);cropCtx.closePath();cropCtx.stroke();cropPoints.forEach(p=>{cropCtx.fillStyle='#00ff88';cropCtx.beginPath();cropCtx.arc(p.x,p.y,10,0,Math.PI*2);cropCtx.fill();});}
-function getTouchPos(e,canvas){let rect=canvas.getBoundingClientRect();let t=e.touches?e.touches[0]:e;return{x:(t.clientX-rect.left)*canvas.width/rect.width,y:(t.clientY-rect.top)*canvas.height/rect.height};}
-function hitTest(p){for(let i=0;i<4;i++){let dx=p.x-cropPoints[i].x,dy=p.y-cropPoints[i].y;if(Math.sqrt(dx*dx+dy*dy)<28)return i;}return -1;}
-cropCanvas.addEventListener('touchstart',e=>{e.preventDefault();dragPoint=hitTest(getTouchPos(e,cropCanvas));},{passive:false});
-cropCanvas.addEventListener('touchmove',e=>{e.preventDefault();if(dragPoint!==-1){cropPoints[dragPoint]=getTouchPos(e,cropCanvas);drawCropOverlay();}},{passive:false});
-cropCanvas.addEventListener('touchend',()=>{dragPoint=-1;});
-function resetCrop(){let w=cropCanvas.width,h=cropCanvas.height;cropPoints=[{x:w*0.1,y:h*0.15},{x:w*0.9,y:h*0.15},{x:w*0.9,y:h*0.85},{x:w*0.1,y:h*0.85}];drawCropOverlay();}
-function applyManualCrop(){if(!window.cv||!opencvReady){alert('OpenCV loading');return;}try{let sx=cropImg.width/cropCanvas.width,sy=cropImg.height/cropCanvas.height;let srcTri=cv.matFromArray(4,1,cv.CV_32FC2,[cropPoints[0].x*sx,cropPoints[0].y*sy,cropPoints[1].x*sx,cropPoints[1].y*sy,cropPoints[2].x*sx,cropPoints[2].y*sy,cropPoints[3].x*sx,cropPoints[3].y*sy]);let dstTri=cv.matFromArray(4,1,cv.CV_32FC2,[0,0,800,0,800,1100,0,1100]);let src=cv.imread(cropImg),dst=new cv.Mat(),M=cv.getPerspectiveTransform(srcTri,dstTri);cv.warpPerspective(src,dst,M,new cv.Size(800,1100));let c=document.createElement('canvas');cv.imshow(c,dst);capturedDataUrl=c.toDataURL('image/jpeg',0.92);document.getElementById('previewImg').src=capturedDataUrl;document.getElementById('previewImg').style.display='block';cropCanvas.style.display='none';document.getElementById('filterCanvas').style.display='none';document.getElementById('cropControls').style.display='none';scannedPages[scannedPages.length-1]=capturedDataUrl;localStorage.setItem('wanaScannedPages',JSON.stringify(scannedPages));src.delete();dst.delete();M.delete();srcTri.delete();dstTri.delete();}catch(e){alert(e.message)}}
-function capturePhoto(){let c=document.createElement('canvas');c.width=video.videoWidth;c.height=video.videoHeight;let x=c.getContext('2d');if(thermalCanvas.style.display==='block')x.drawImage(thermalCanvas,0,0);else x.drawImage(video,0,0);capturedDataUrl=c.toDataURL('image/jpeg',0.9);document.getElementById('preview').style.display='flex';document.getElementById('previewImg').src=capturedDataUrl;document.getElementById('previewImg').style.display='block';scannedPages.push(capturedDataUrl);localStorage.setItem('wanaScannedPages',JSON.stringify(scannedPages));initManualCrop(capturedDataUrl);}
-function applyFilterMode(mode){const imgEl=document.getElementById('previewImg');const canvas=document.getElementById('filterCanvas');if(mode==='original'){imgEl.src=capturedDataUrl;imgEl.style.display='block';canvas.style.display='none';cropCanvas.style.display='none';return;}imgEl.style.display='none';canvas.style.display='block';cropCanvas.style.display='none';canvas.width=800;canvas.height=1100;let tempImg=new Image();tempImg.onload=()=>{let src=cv.imread(tempImg),dst=new cv.Mat();if(mode==='bw'){cv.cvtColor(src,dst,cv.COLOR_RGBA2GRAY);cv.threshold(dst,dst,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU);cv.cvtColor(dst,src,cv.COLOR_GRAY2RGBA);}if(mode==='magic'){cv.cvtColor(src,dst,cv.COLOR_RGBA2GRAY);cv.adaptiveThreshold(dst,dst,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,15,12);cv.cvtColor(dst,src,cv.COLOR_GRAY2RGBA);}if(mode==='thermal'){cv.cvtColor(src,dst,cv.COLOR_RGBA2GRAY);cv.applyColorMap(dst,src,cv.COLORMAP_JET);}if(mode==='night'){cv.convertScaleAbs(src,src,1.8,30);}cv.imshow(canvas,src);src.delete();dst.delete();capturedDataUrl=canvas.toDataURL('image/jpeg',0.9);scannedPages[scannedPages.length-1]=capturedDataUrl;};tempImg.src=capturedDataUrl;}
-function closePreview(){document.getElementById('preview').style.display='none'}function savePhoto(){let src=document.getElementById('filterCanvas').style.display==='block'?document.getElementById('filterCanvas').toDataURL():document.getElementById('previewImg').src;let a=document.createElement('a');a.href=src;a.download=`GodEye-${Date.now()}.jpg`;a.click();closePreview();}
-function saveAsPDF(){const {jsPDF}=window.jspdf;let doc=new jsPDF();scannedPages.forEach((img,i)=>{if(i>0)doc.addPage();doc.addImage(img,'JPEG',0,0,210,297);});doc.save(`GodEye-IMG-${Date.now()}.pdf`);}
-async function saveSearchablePDF(){const {jsPDF}=window.jspdf;let doc=new jsPDF();for(let i=0;i<scannedPages.length;i++){if(i>0)doc.addPage();doc.addImage(scannedPages[i],'JPEG',0,0,210,297);try{const w=await Tesseract.createWorker('eng');const r=await w.recognize(scannedPages[i]);await w.terminate();doc.setFontSize(1);doc.setTextColor(255,255,255);doc.text(doc.splitTextToSize(r.data.text,190),5,5);}catch{}}doc.save(`GodEye-Searchable-${Date.now()}.pdf`);}
-async function exportTXT_Searchable(){let full='';for(let i=0;i<scannedPages.length;i++){const w=await Tesseract.createWorker('eng');const r=await w.recognize(scannedPages[i]);await w.terminate();full+=r.data.text+'\n\n';}let blob=new Blob([full],{type:'text/plain'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`GodEye-${Date.now()}.txt`;a.click();}
-async function exportDOCX_WithImages(){let children=[new docx.Paragraph({children:[new docx.TextRun({text:`God Eye v99.1 FIXED ${new Date().toLocaleString()}`,bold:true})]})];for(let i=0;i<scannedPages.length;i++){children.push(new docx.Paragraph({text:`Page ${i+1}`,heading:docx.HeadingLevel.HEADING_1}));try{const w=await Tesseract.createWorker('eng');const r=await w.recognize(scannedPages[i]);await w.terminate();r.data.text.split('\n').forEach(l=>{if(l.trim())children.push(new docx.Paragraph({children:[new docx.TextRun(l)]}));});}catch{}try{let base64=scannedPages[i].split(',')[1];let bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));children.push(new docx.Paragraph({children:[new docx.ImageRun({data:bytes,[STRIPPED] doc=new docx.Document({sections:[{children}]});const blob=await docx.Packer.toBlob(doc);let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`GodEye-FINAL-v99.1-${Date.now()}.docx`;a.click();}
-let roiCanvasEl=null,billCanvasEl=null;function ensureCanvases(){if(!roiCanvasEl){roiCanvasEl=document.createElement('canvas');roiCanvasEl.id='roiCanvas';document.body.appendChild(roiCanvasEl);roiCanvasEl.style.position='fixed';roiCanvasEl.style.inset='0';roiCanvasEl.style.width='100%';roiCanvasEl.style.height='100%';roiCanvasEl.style.zIndex='6';roiCanvasEl.style.touchAction='none';roiCanvasEl.style.background='rgba(0,0,0,0.15)';roiCanvasEl.style.display='none';}
-if(!billCanvasEl){billCanvasEl=document.createElement('canvas');billCanvasEl.id='billCanvas';document.body.appendChild(billCanvasEl);billCanvasEl.style.position='fixed';billCanvasEl.style.inset='0';billCanvasEl.style.width='100%';billCanvasEl.style.height='100%';billCanvasEl.style.zIndex='7';billCanvasEl.style.display='none';}}
-let roiCtx=null,roiMode=null,countROI=null,ocrROI=null,barcodeROI=null,roiStart=null;
-function enterROIMode(mode){ensureCanvases();roiCtx=roiCanvasEl.getContext('2d');roiMode=mode;roiCanvasEl.style.display='block';roiCanvasEl.width=video.videoWidth;roiCanvasEl.height=video.videoHeight;initROIEvents();}
-function getROIPos(e){let r=roiCanvasEl.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*roiCanvasEl.width/r.width,y:(t.clientY-r.top)*roiCanvasEl.height/r.height};}
-let roiEvents=false;function initROIEvents(){if(roiEvents) return;roiEvents=true;
-roiCanvasEl.addEventListener('touchstart',e=>{e.preventDefault();let p=getROIPos(e);roiStart=p;if(roiMode==='count')countROI={x:p.x,y:p.y,w:0,h:0};if(roiMode==='ocr')ocrROI={x:p.x,y:p.y,w:0,h:0};if(roiMode==='barcode')barcodeROI={x:p.x,y:p.y,w:0,h:0};},{passive:false});
-roiCanvasEl.addEventListener('touchmove',e=>{e.preventDefault();if(!roiStart)return;let p=getROIPos(e);let roi=roiMode==='count'?countROI:roiMode==='ocr'?ocrROI:barcodeROI;if(roi){roi.w=p.x-roi.x;roi.h=p.y-roi.y;}roiCtx.clearRect(0,0,roiCanvasEl.width,roiCanvasEl.height);roiCtx.fillStyle='rgba(0,0,0,0.6)';roiCtx.fillRect(0,0,roiCanvasEl.width,roiCanvasEl.height);if(roi){roiCtx.clearRect(roi.x,roi.y,roi.w,roi.h);roiCtx.strokeStyle='#00ff88';roiCtx.lineWidth=4;roiCtx.strokeRect(roi.x,roi.y,roi.w,roi.h);}},{passive:false});
-roiCanvasEl.addEventListener('touchend',()=>{
-  let roi=roiMode==='count'?countROI:roiMode==='ocr'?ocrROI:barcodeROI;
-  if(roi&&Math.abs(roi.w)>50){
-    roiCanvasEl.style.display='none';
-    if(roi.w<0){roi.x+=roi.w;roi.w=Math.abs(roi.w);}
-    if(roi.h<0){roi.y+=roi.h;roi.h=Math.abs(roi.h);}
-    if(roiMode==='count') startCountingInROI();
-    if(roiMode==='ocr') doOCRInROI();
-    if(roiMode==='barcode'){barcodeMode=true;startBarcodeInROI();}
-  }
-  roiStart=null;
-});
+function handleVoice(t){
+  if(t.includes('count')||t.includes('ginti')||t.includes('گنتی')||t.includes('شمار')||t.includes('shumar')){ setMode('count'); speak('Count mode on. Draw box'); }
+  else if(t.includes('device')||t.includes('ڈیوائس')){ switchDevice(); }
+  else if(t.includes('photo')||t.includes('capture')||t.includes('shutter')||t.includes('تصویر')){ capture(); }
+  else if(t.includes('bill')||t.includes('بل')){ setMode('bill'); }
+  else if(t.includes('thermal')||t.includes('گرمی')){ setMode('thermal'); }
+  else if(t.includes('night')||t.includes('رات')){ document.getElementById('thermal').value=0; document.getElementById('night').value=70; }
+  else if(t.includes('torch')||t.includes('ٹارچ')){ toggleTorch(); }
+  else if(t.includes('clear')||t.includes('صاف')){ clearAll(); }
+  else if(t.includes('urdu')||t.includes('اردو')){ lang='ur-PK'; updateLangUI(); if(recognition) recognition.lang=lang; speak('Urdu on'); }
+  else if(t.includes('pashto')||t.includes('پشتو')){ lang='ps-AF'; updateLangUI(); if(recognition) recognition.lang=lang; }
+  else if(t.includes('english')){ lang='en-US'; updateLangUI(); if(recognition) recognition.lang=lang; }
 }
-function toggleCounting(){
-  if(isCounting){
-    isCounting=false;
-    document.getElementById('countBtn').style.background='#333';
-    document.getElementById('countBtn').innerText='🔢 COUNT ROI';
-    document.getElementById('countDisplay').innerText='';
-    if(window._countInterval) clearInterval(window._countInterval);
-    return;
-  }
-  document.getElementById('see').innerText='📦 DRAW BOX for Count - Touch drag on screen';
-  enterROIMode('count');
+function speak(txt){ if('speechSynthesis' in window){ let u=new SpeechSynthesisUtterance(txt); u.lang=lang; speechSynthesis.speak(u); } }
+
+// MODES
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));
+  if(m==='count') document.getElementById('countBtn').classList.add('active');
+  document.getElementById('see').innerText=`Mode: ${m.toUpperCase()} - Draw box with finger`;
+  clearCanvas();
 }
-function startCountingInROI(){
-  if(!countROI){ console.warn('No countROI'); return; }
-  if(!window.cv || !opencvReady){ 
-    document.getElementById('countDisplay').innerText='⏳ OpenCV loading... wait 2 sec then draw again';
-    setTimeout(()=>{ if(opencvReady) startCountingInROI(); },1500);
-    return;
-  }
-  isCounting=true;
-  document.getElementById('countBtn').style.background='#ff8800';
-  document.getElementById('countBtn').innerText='✅ COUNT ON';
-  document.getElementById('countDisplay').innerText='Count ROI: analyzing...';
-  if(window._countInterval) clearInterval(window._countInterval);
-  window._countInterval=setInterval(()=>{
-    if(!isCounting || !countROI) { clearInterval(window._countInterval); return; }
-    try{
-      let c=document.createElement('canvas');
-      c.width=Math.max(10,Math.abs(countROI.w));
-      c.height=Math.max(10,Math.abs(countROI.h));
-      let ctx=c.getContext('2d');
-      ctx.drawImage(video, countROI.x, countROI.y, countROI.w, countROI.h, 0,0,c.width,c.height);
-      let src=cv.imread(c);
-      let gray=new cv.Mat(),thresh=new cv.Mat();
+function clearCanvas(){ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); docCtx.clearRect(0,0,docCanvas.width,docCanvas.height); trackCtx.clearRect(0,0,trackCanvas.width,trackCanvas.height); }
+function clearAll(){ clearCanvas(); currentROI=null; billItems=[]; billTotal=0; document.getElementById('billInfo').innerText='Bill: Rs. 0 | Items: 0'; document.getElementById('countInfo').innerText='Count: 0'; document.getElementById('see').innerText='Cleared v99.2'; }
+
+// DRAW ROI - TOUCH + MOUSE
+function getPos(e){
+  let rect=aiCanvas.getBoundingClientRect();
+  let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+  let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
+  x=x*(aiCanvas.width/rect.width); y=y*(aiCanvas.height/rect.height);
+  return {x,y};
+}
+aiCanvas.addEventListener('mousedown',(e)=>{ isDrawing=true; let p=getPos(e); startX=p.x; startY=p.y; });
+aiCanvas.addEventListener('mousemove',(e)=>{ if(!isDrawing) return; let p=getPos(e); drawRect(startX,startY,p.x-startX,p.y-startY); });
+aiCanvas.addEventListener('mouseup',(e)=>{ if(!isDrawing) return; isDrawing=false; let p=getPos(e); currentROI={x:Math.min(startX,p.x),y:Math.min(startY,p.y),w:Math.abs(p.x-startX),h:Math.abs(p.y-startY)}; onROI(); });
+aiCanvas.addEventListener('touchstart',(e)=>{ isDrawing=true; let p=getPos(e); startX=p.x; startY=p.y; e.preventDefault(); },{passive:false});
+aiCanvas.addEventListener('touchmove',(e)=>{ if(!isDrawing) return; let p=getPos(e); drawRect(startX,startY,p.x-startX,p.y-startY); e.preventDefault(); },{passive:false});
+aiCanvas.addEventListener('touchend',(e)=>{ if(!isDrawing) return; isDrawing=false; let p=getPos(e.changedTouches?e.changedTouches[0]:e); if(e.changedTouches) p=getPos({touches:[e.changedTouches[0]]}); else p=getPos(e); currentROI={x:Math.min(startX,p.x),y:Math.min(startY,p.y),w:Math.abs(p.x-startX),h:Math.abs(p.y-startY)}; onROI(); e.preventDefault(); },{passive:false});
+
+function drawRect(x,y,w,h){ aiCtx.clearRect(0,0,aiCanvas.width,aiCanvas.height); aiCtx.strokeStyle='#00ff88'; aiCtx.lineWidth=3; aiCtx.strokeRect(x,y,w,h); }
+
+async function onROI(){
+  if(!currentROI||currentROI.w<20) return;
+  if(mode==='count'){ await doCountROI(); }
+  else if(mode==='ocr'){ doOCRROI(); }
+  else if(mode==='barcode'){ doBarcodeROI(); }
+  else if(mode==='track'){ document.getElementById('see').innerText='🎯 Tracking locked'; }
+  else if(mode==='bill'){ let price=prompt('Enter price Rs. for this item:','100'); if(price){ billItems.push({roi:currentROI,price:parseFloat(price)}); billTotal+=parseFloat(price); document.getElementById('billInfo').innerText=`Bill: Rs. ${billTotal} | Items: ${billItems.length}`; document.getElementById('see').innerText=`Added Rs. ${price} - Total Rs. ${billTotal}`; } }
+}
+
+// COUNT v99.2 FIXED - OTSU
+async function doCountROI(){
+  try{
+    document.getElementById('see').innerText='🔢 Counting...';
+    let c=document.createElement('canvas'); c.width=currentROI.w; c.height=currentROI.h;
+    let ctx=c.getContext('2d'); ctx.drawImage(video,currentROI.x,currentROI.y,currentROI.w,currentROI.h,0,0,currentROI.w,currentROI.h);
+    if(typeof cv!=='undefined' && cv.Mat){
+      let src=cv.imread(c); let gray=new cv.Mat(); let blur=new cv.Mat(); let thresh=new cv.Mat();
       cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY);
-      cv.GaussianBlur(gray,gray,new cv.Size(5,5),0);
-      cv.threshold(gray,thresh,0,255,cv.THRESH_BINARY_INV+cv.THRESH_OTSU);
-      let contours=new cv.MatVector(),hier=new cv.Mat();
+      cv.GaussianBlur(gray,blur,new cv.Size(5,5),0);
+      cv.threshold(blur,thresh,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU);
+      let contours=new cv.MatVector(); let hier=new cv.Mat();
       cv.findContours(thresh,contours,hier,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);
       let cnt=0;
-      for(let i=0;i<contours.size();i++){
-        let area=cv.contourArea(contours.get(i));
-        if(area>120 && area< (c.width*c.height*0.8)) cnt++;
-      }
-      document.getElementById('countDisplay').innerText=`📦 Count ROI: ${cnt} objects | Area: ${countROI.w.toFixed(0)}x${countROI.h.toFixed(0)}`;
-      src.delete();gray.delete();thresh.delete();contours.delete();hier.delete();
-    }catch(e){ console.log('count err',e.message); }
-  },900);
+      for(let i=0;i<contours.size();i++){ let area=cv.contourArea(contours.get(i)); if(area>120) cnt++; }
+      document.getElementById('countInfo').innerText=`Count: ${cnt}`; document.getElementById('see').innerText=`🔢 Count ROI: ${cnt} objects - Draw again to recount`;
+      src.delete(); gray.delete(); blur.delete(); thresh.delete(); contours.delete(); hier.delete();
+    }else{
+      // Fallback simple count
+      let data=ctx.getImageData(0,0,c.width,c.height).data; let dark=0; for(let i=0;i<data.length;i+=4){ if(data[i]<100) dark++; } let est=Math.floor(dark/500);
+      document.getElementById('countInfo').innerText=`Count: ~${est}`; document.getElementById('see').innerText=`🔢 Count ~${est} (OpenCV loading...)`;
+    }
+  }catch(e){ document.getElementById('see').innerText='❌ Count error: '+e.message; console.error(e); }
 }
-async function doOCRInROI(){let c=document.createElement('canvas');c.width=ocrROI.w;c.height=ocrROI.h;c.getContext('2d').drawImage(video,ocrROI.x,ocrROI.y,ocrROI.w,ocrROI.h,0,0,ocrROI.w,ocrROI.h);document.getElementById('ocrBox').innerText='OCR...';const w=await Tesseract.createWorker('eng');const r=await w.recognize(c);await w.terminate();document.getElementById('ocrBox').innerText='OCR ROI: '+r.data.text.slice(0,300);}
-function doOCR(){enterROIMode('ocr');}
-function startBarcodeInROI(){barcodeInterval=setInterval(async()=>{if(!barcodeROI) return;let c=document.createElement('canvas');c.width=barcodeROI.w;c.height=barcodeROI.h;c.getContext('2d').drawImage(video,barcodeROI.x,barcodeROI.y,barcodeROI.w,barcodeROI.h,0,0,barcodeROI.w,barcodeROI.h);try{if('BarcodeDetector' in window){let d=new BarcodeDetector({formats:['ean_13','ean_8','code_128','qr_code','upc_a']});let b=await createImageBitmap(c);let codes=await d.detect(b);if(codes[0])document.getElementById('barcodeRes').innerText='BARCODE ROI: '+codes[0].rawValue;}}catch{}},500);}
-function toggleBarcodeMode(){ensureCanvases();if(barcodeMode){barcodeMode=false;clearInterval(barcodeInterval);document.getElementById('barcodeBtn').style.background='#ff0';}else enterROIMode('barcode');}
-function toggleTracking(){tracking=!tracking;let btn=document.getElementById('trackBtn');if(tracking){btn.style.background='#00aaff';btn.innerText='✅ TRACK ON';trackCanvas.style.display='block';trackCanvas.style.pointerEvents='auto';trackCanvas.addEventListener('click',startTrackAt);}else{btn.style.background='#333';btn.innerText='🎯 TRACK';trackCanvas.style.display='none';trackedBox=null;document.getElementById('trackInfo').innerText='';}}
-function startTrackAt(e){let rect=trackCanvas.getBoundingClientRect();let sx=trackCanvas.width/rect.width,sy=trackCanvas.height/rect.height;let x=(e.clientX-rect.left)*sx,y=(e.clientY-rect.top)*sy;trackedBox={x:x-70,y:y-70,w:140,h:140};let c=document.createElement('canvas');c.width=140;c.height=140;c.getContext('2d').drawImage(video,trackedBox.x,trackedBox.y,140,140,0,0,140,140);trackTemplate=cv.imread(c);cv.cvtColor(trackTemplate,trackTemplate,cv.COLOR_RGBA2GRAY);document.getElementById('trackInfo').innerText=`TRACK LOCKED @ ${Math.round(x)},${Math.round(y)}`;startFollowLoop();}
-function startFollowLoop(){let last={...trackedBox};let loop=()=>{if(!tracking||!trackedBox)return;try{let frame=document.createElement('canvas');frame.width=video.videoWidth;frame.height=video.videoHeight;frame.getContext('2d').drawImage(video,0,0);let src=cv.imread(frame);let gray=new cv.Mat();cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY);let sx=Math.max(0,last.x-80),sy=Math.max(0,last.y-80);let searchROI=gray.roi(new cv.Rect(sx,sy,trackedBox.w+160,trackedBox.h+160));let result=new cv.Mat();cv.matchTemplate(searchROI,trackTemplate,result,cv.TM_CCOEFF_NORMED);let mm=cv.minMaxLoc(result);trackedBox.x=sx+mm.maxLoc.x;trackedBox.y=sy+mm.maxLoc.y;last={...trackedBox};trackCtx.clearRect(0,0,trackCanvas.width,trackCanvas.height);trackCtx.strokeStyle='#00ff88';trackCtx.lineWidth=3;trackCtx.strokeRect(trackedBox.x,trackedBox.y,trackedBox.w,trackedBox.h);trackCtx.fillStyle='#00ff88';trackCtx.beginPath();trackCtx.arc(trackedBox.x+trackedBox.w/2,trackedBox.y+trackedBox.h/2,4,0,Math.PI*2);trackCtx.fill();src.delete();gray.delete();searchROI.delete();result.delete();}catch{}if(tracking)requestAnimationFrame(loop);};loop();}
-let billTapMode=false,billMarkers=[],billCanvasCtx=null;
-function toggleBillTapMode(){ensureCanvases();billTapMode=!billTapMode;let btn=document.getElementById('billBtn');if(billTapMode){btn.style.background='#00ff88';btn.style.color='#000';btn.innerText='✅ BILL ON';billCanvasEl.style.display='block';billCanvasEl.style.pointerEvents='auto';billCanvasEl.width=video.videoWidth;billCanvasEl.height=video.videoHeight;billCanvasCtx=billCanvasEl.getContext('2d');billCanvasEl.addEventListener('click',onBillTap);}else{btn.style.background='#333';btn.style.color='#fff';btn.innerText='🧾 TAP BILL';billCanvasEl.style.display='none';billCanvasEl.style.pointerEvents='none';}}
-function onBillTap(e){let rect=billCanvasEl.getBoundingClientRect();let x=(e.clientX-rect.left)*billCanvasEl.width/rect.width;let y=(e.clientY-rect.top)*billCanvasEl.height/rect.height;let price=prompt('Enter price Rs.','250');if(!price) return;let pr=parseInt(price)||250;billMarkers.push({x,y,price:pr});billItems.push({name:`Item ${billItems.length+1}`,price:pr});totalBill+=pr;document.getElementById('billBox').innerHTML=`<span style="color:#ff0;font-weight:800">🧾 Total: Rs.${totalBill} | ${billItems.length} items</span>`;billCanvasCtx.fillStyle='#00ff88';billCanvasCtx.font='bold 20px monospace';billCanvasCtx.fillText(`Rs.${pr}`,x,y);billCanvasCtx.beginPath();billCanvasCtx.arc(x,y,6,0,Math.PI*2);billCanvasCtx.fill();}
-function clearBillMarkers(){ensureCanvases();billMarkers=[];billItems=[];totalBill=0;document.getElementById('billBox').innerText='';if(billCanvasEl){let ctx=billCanvasEl.getContext('2d');ctx.clearRect(0,0,billCanvasEl.width,billCanvasEl.height);}}
-function addPriceManual(){let bc=document.getElementById('newBarcode').value.trim(),nm=document.getElementById('newName').value.trim()||'Product',pr=parseInt(document.getElementById('newPrice').value)||0;if(!bc||!pr)return;priceDB[bc]={name:nm,price:pr};localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB));renderDB();}function renderDB(){let h='',k=Object.keys(priceDB);k.forEach(x=>{h+=`<div style="display:flex;justify-content:space-between;padding:6px;background:#111;margin:3px 0;border-radius:8px"><span>${x} ${priceDB[x].name}</span><span style="color:#0f8">Rs.${priceDB[x].price}</span></div>`});let el=document.getElementById('dbList');if(el) el.innerHTML=h}
-function exportBill(){if(!billItems.length){alert('No bill items - tap products first');return;}const {jsPDF}=window.jspdf;let d=new jsPDF();d.setFontSize(14);d.text(`WanaLab God Eye - Bill v1.9 FINAL`,10,12);d.setFontSize(10);d.text(`Date: ${new Date().toLocaleString()} | Total: Rs.${totalBill}`,10,18);let y=26;billItems.forEach((it,i)=>{d.text(`${i+1}. ${it.name} - Rs.${it.price}`,10,y);y+=7; if(y>280){d.addPage(); y=10;}});d.save(`Bill-${Date.now()}.pdf`);}
-function toggleTorch(){if(track&&track.getSettings&&track.applyConstraints){isTorch=!isTorch;track.applyConstraints({advanced:[{torch:isTorch}]}).catch(()=>{});}}
-function handleShutter(){capturePhoto()}
-function toggleVideo(){}
-function exportDOC_Searchable(){exportDOCX_WithImages();}
-window.addEventListener('load',()=>{checkInstalled();init();});
-</script>
-<script src="./js/device-hub.js?v=19&force=99"></script>
-<script>
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=19&force=99').then(r=>console.log('SW v99.1 registered',r.scope)).catch(()=>{});
+
+// OCR, BARCODE, THERMAL, ETC
+async function doOCRROI(){
+  document.getElementById('see').innerText='🔤 OCR...';
+  let c=document.createElement('canvas'); c.width=currentROI.w; c.height=currentROI.h;
+  c.getContext('2d').drawImage(video,currentROI.x,currentROI.y,currentROI.w,currentROI.h,0,0,currentROI.w,currentROI.h);
+  try{ let r=await Tesseract.recognize(c,'eng'); document.getElementById('see').innerText='🔤 OCR: '+r.data.text.substring(0,100); }catch(e){ document.getElementById('see').innerText='OCR fail '+e.message; }
 }
-if(window.cv) cv['onRuntimeInitialized']=()=>{opencvReady=true;let el=document.getElementById('stat');if(el) el.innerText='Ready v99.1 - OpenCV ON - Pages:'+scannedPages.length;};
-else { setTimeout(()=>{ if(window.cv && window.cv.Mat) opencvReady=true; }, 2000); }
+async function doBarcodeROI(){
+  document.getElementById('see').innerText='📷 Barcode...';
+  if('BarcodeDetector' in window){
+    let c=document.createElement('canvas'); c.width=currentROI.w; c.height=currentROI.h;
+    c.getContext('2d').drawImage(video,currentROI.x,currentROI.y,currentROI.w,currentROI.h,0,0,currentROI.w,currentROI.h);
+    let det=new BarcodeDetector({formats:['ean_13','qr_code','code_128']});
+    let codes=await det.detect(c); document.getElementById('see').innerText=codes.length?'Barcode: '+codes[0].rawValue:'No barcode';
+  }else document.getElementById('see').innerText='Barcode not supported in this Chrome';
+}
+function startThermalLoop(){
+  function loop(){
+    let tv=document.getElementById('thermal').value;
+    if(tv>0 && typeof cv!=='undefined' && cv.Mat){
+      try{
+        let tmp=document.createElement('canvas'); tmp.width=video.videoWidth; tmp.height=video.videoHeight;
+        tmp.getContext('2d').drawImage(video,0,0);
+        let src=cv.imread(tmp); let dst=new cv.Mat();
+        cv.applyColorMap(src,dst,cv.COLORMAP_JET);
+        cv.imshow('thermalCanvas',dst); src.delete(); dst.delete();
+        thermalCanvas.style.opacity=tv/100;
+      }catch{}
+    }else thermalCanvas.style.opacity=0;
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+function toggleTorch(){ if(track&&track.getCapabilities&&track.getCapabilities().torch){ track.applyConstraints({advanced:[{torch:!torchOn}]}); torchOn=!torchOn; document.getElementById('see').innerText=torchOn?'🔦 Torch ON':'🔦 Torch OFF'; }else document.getElementById('see').innerText='Torch not supported'; }
+function switchDevice(){ currentDevice=(currentDevice+1)%devices.length; document.getElementById('deviceInfo').innerText='Device: '+devices[currentDevice].name; document.getElementById('see').innerText='📱 Switched to '+devices[currentDevice].name; speak(devices[currentDevice].name); }
+function openSliders(){ let p=document.getElementById('sliderPanel'); p.style.display=p.style.display==='none'?'block':'none'; }
+document.getElementById('exp').oninput=(e)=>{ document.getElementById('expV').innerText=e.target.value; if(track) track.applyConstraints({advanced:[{exposureCompensation:e.target.value/10-5}]}); };
+document.getElementById('night').oninput=(e)=>{ document.getElementById('nightV').innerText=e.target.value; aiCanvas.style.filter=`brightness(${1+e.target.value/100})`; };
+document.getElementById('thermal').oninput=(e)=>{ document.getElementById('thermalV').innerText=e.target.value; };
+document.getElementById('hdr').oninput=(e)=>{ document.getElementById('hdrV').innerText=e.target.value; };
+function capture(){
+  let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight;
+  c.getContext('2d').drawImage(video,0,0);
+  scannedPages.push(c.toDataURL('image/jpeg',0.9));
+  document.getElementById('stat').innerText='Captured Pages:'+scannedPages.length+' - v99.2';
+  document.getElementById('see').innerText='📸 Captured page '+scannedPages.length;
+  if(navigator.vibrate) navigator.vibrate(100);
+}
+function installPWA(){ document.getElementById('see').innerText='Tap Chrome menu ⋮ → Install app'; }
+window.onload=()=>{
+  init();
+  if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js?v=992').then(()=>console.log('SW v99.2 registered')); }
+};
 </script>
 </body>
 </html>
