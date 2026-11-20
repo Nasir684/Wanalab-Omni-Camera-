@@ -1,4 +1,4 @@
-name: Build God Eye APK v99.4 PRO FINAL
+name: Build God Eye APK v1.4.1 PRO Modular
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout v99.4 PRO
+      - name: Checkout v1.4.1 Modular
         uses: actions/checkout@v4
 
       - name: Setup Node 20
@@ -23,38 +23,52 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache Killer - Force v99.4
+      - name: Verify Modular Files Exist (Anti-Mix Check)
         run: |
-          echo "WanaLab God Eye v99.4 PRO FINAL - $(date)"
-          echo "Manifest: https://nasir684.github.io/Wanalab-Omni-Camera-/manifest.json?v=994"
+          echo "Checking v1.4.1 Modular structure..."
+          ls -lh index.html manifest.json sw.js
+          ls -lh js/ai-detection.js js/protocol-universe.js js/export-hub.js
+          echo "--- manifest version ---"
+          cat manifest.json | grep version
+          echo "--- CountingPro check ---"
+          grep -q "CountingPro" js/ai-detection.js && echo "✅ CountingPro found" || (echo "❌ CountingPro MISSING" && exit 1)
+          grep -q "countingPro" js/protocol-universe.js && echo "✅ ProtocolUniverse found" || (echo "❌ ProtocolUniverse MISSING" && exit 1)
+          grep -q "js/ai-detection.js" index.html && echo "✅ index.html loads ai-detection.js" || (echo "❌ index.html NOT modular" && exit 1)
+          grep -q "js/protocol-universe.js" index.html && echo "✅ index.html loads protocol-universe.js" || (echo "❌ index.html NOT modular" && exit 1)
+
+      - name: Cache Killer - Force v1.4.1
+        run: |
+          echo "WanaLab God Eye v1.4.1 PRO Modular - $(date)"
+          echo "Manifest: https://nasir684.github.io/Wanalab-Omni-Camera-/manifest.json?v=141"
           rm -rf ./app || true
 
       - name: Install Bubblewrap CLI Latest
         run: npm install -g @bubblewrap/cli
 
-      - name: Init TWA v99.4 PRO
+      - name: Init TWA v1.4.1 PRO Modular
         run: |
-          bubblewrap init --manifest https://nasir684.github.io/Wanalab-Omni-Camera-/manifest.json?v=994 --directory ./app -- --packageId=com.wanalab.godeye994 --name="God Eye v99.4 PRO" --launcherName="God Eye PRO" --themeColor="#00ff88" --backgroundColor="#000000" --startUrl="/?v=19&force=99&v=994" --display=standalone --enableNotifications --shortcuts --enableSiteSettingsShortcut
+          bubblewrap init --manifest https://nasir684.github.io/Wanalab-Omni-Camera-/manifest.json?v=141 --directory ./app -- --packageId=com.wanalab.godeye --name="God Eye v1.4.1 PRO" --launcherName="God Eye PRO" --themeColor="#00ff88" --backgroundColor="#000000" --startUrl="/?v=141" --display=standalone --enableNotifications --shortcuts --enableSiteSettingsShortcut
 
-      - name: Build APK v99.4 PRO
+      - name: Build APK v1.4.1 PRO
         run: |
           cd app
           bubblewrap build --skipPwaValidation
 
-      - name: Upload APK v99.4 PRO FINAL
+      - name: Upload APK v1.4.1 PRO Modular
         uses: actions/upload-artifact@v4
         with:
-          name: GodEye-v99.4-PRO-FINAL-APK
+          name: GodEye-v1.4.1-PRO-Modular-APK
           path: |
             app/build/outputs/**/*.apk
             app/build/outputs/**/*.aab
             app/app/build/outputs/**/*.apk
           if-no-files-found: warn
 
-      - name: Summary v99.4 PRO
+      - name: Summary v1.4.1 PRO Modular
         run: |
-          echo "### ✅ God Eye v99.4 PRO FINAL Built" >> $GITHUB_STEP_SUMMARY
-          echo "- All 5 Devices Active" >> $GITHUB_STEP_SUMMARY
-          echo "- All 13 Buttons Working" >> $GITHUB_STEP_SUMMARY
-          echo "- All Protocols Positioned" >> $GITHUB_STEP_SUMMARY
-          echo "- Live: https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99&v=994" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ God Eye v1.4.1 PRO Modular Built" >> $GITHUB_STEP_SUMMARY
+          echo "- Architecture: index.html (UI) + js/ai-detection.js (Counting) + js/protocol-universe.js (Config)" >> $GITHUB_STEP_SUMMARY
+          echo "- Counting: Anti-Mix - ID Tracking + Size/Shape + 3-Frame Stability" >> $GITHUB_STEP_SUMMARY
+          echo "- Default: BOTTLE preset, Conf 62%, Size 0.8%-18%" >> $GITHUB_STEP_SUMMARY
+          echo "- Pricing: FREE (Removed for testing)" >> $GITHUB_STEP_SUMMARY
+          echo "- Live: https://nasir684.github.io/Wanalab-Omni-Camera-/?v=141" >> $GITHUB_STEP_SUMMARY
