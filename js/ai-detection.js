@@ -1,194 +1,163 @@
-// WanaLab God Eye PRO v1.9 FINAL - AI Detection + Tracking + ROI + Thermal - Founder Nasir Khan
-window.aiEngine = {
-  model: null,
-  isLoaded: false,
-  aiCanvas: null,
-  ctx: null,
-  video: null,
-  tracking: false,
-  trackedBox: null,
-  trackTemplate: null,
-  countROI: null,
-  ocrROI: null,
-  barcodeROI: null,
-  thermalMode: false,
+// WanaLab God Eye v1.4.1 - ai-detection.js
+// Anti-Mix: ID Tracking + Size + Shape + Stability
+// By Nasir Khan
 
-  async init(){
-    this.aiCanvas = document.getElementById('aiCanvas') || document.getElementById('canvas');
-    this.video = document.getElementById('godVideo') || document.getElementById('camera');
-    if(this.aiCanvas){
-      this.ctx = this.aiCanvas.getContext('2d');
-      this.aiCanvas.width = this.video ? this.video.videoWidth || 1280 : 1280;
-      this.aiCanvas.height = this.video ? this.video.videoHeight || 720 : 720;
-    }
-    const overlay = document.getElementById('overlay') || document.getElementById('stat') || document.getElementById('see');
-    if(overlay) overlay.innerText = 'AI v1.9 READY - Manual Crop + ROI + Tracking + Thermal + Tap Bill';
-    this.isLoaded = true;
-    console.log('AI Engine v1.9 FINAL Loaded - Tracking + Count ROI + Thermal + OCR ROI + Barcode ROI');
-    // Pre-load OpenCV check
-    if(window.cv && window.cv.Mat) console.log('OpenCV Ready for v1.9 tracking/count/thermal');
+const CountingPro = {
+  version: "1.4.1",
+  trackObjects: {},
+  classHistory: {},
+  nextId: 1,
+  particleCount: 0,
+  entryCount: 0,
+  exitCount: 0,
+  countLog: [],
+  countMode: 'total', // total | entry | zone
+  targetClass: 'bottle',
+  countLineY: 0,
+  roiZones: [],
+
+  // Anti-Mix Config - editable from FILTERS page
+  config: {
+    confThreshold: 0.62,
+    minArea: 0.008,  // 0.8% - hand is 30% = ignored
+    maxArea: 0.18,   // 18%
+    shapeCheck: true,
+    stabilityCheck: true,
+    maxDist: 60, // was 80 - tighter tracking
+    timeoutMs: 800, // was 1200
+    stabilityDelay: 1000,
+    historySize: 5,
+    votesNeeded: 3
   },
 
-  // ===== DJI TRACKING - TAP TO LOCK =====
-  startTracking(x, y){
-    if(!window.cv || !this.video) { alert('OpenCV loading - wait 1 sec'); return; }
-    try{
-      const canvas = document.createElement('canvas');
-      canvas.width = this.video.videoWidth; canvas.height = this.video.videoHeight;
-      canvas.getContext('2d').drawImage(this.video,0,0);
-      const src = cv.imread(canvas);
-      const gray = new cv.Mat();
-      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-      const size = 140;
-      const tx = Math.max(0, x - size/2), ty = Math.max(0, y - size/2);
-      this.trackedBox = {x: tx, y: ty, w: size, h: size};
-      const roi = gray.roi(new cv.Rect(tx, ty, size, size));
-      this.trackTemplate = new cv.Mat();
-      roi.copyTo(this.trackTemplate);
-      src.delete(); gray.delete(); roi.delete();
-      this.tracking = true;
-      document.getElementById('trackInfo').innerText = `TRACK LOCKED @ ${Math.round(x)},${Math.round(y)}`;
-      this.followLoop();
-    }catch(e){ console.log('Tracking init error', e); }
+  presets: {
+    bottle: { conf: 0.62, minArea: 0.008, maxArea: 0.18, shape: true },
+    person: { conf: 0.55, minArea: 0.05, maxArea: 0.60, shape: false },
+    cup: { conf: 0.60, minArea: 0.005, maxArea: 0.12, shape: false },
+    car: { conf: 0.60, minArea: 0.10, maxArea: 0.80, shape: false }
   },
 
-  followLoop(){
-    if(!this.tracking || !this.trackedBox || !this.trackTemplate) return;
-    try{
-      const canvas = document.createElement('canvas');
-      canvas.width = this.video.videoWidth; canvas.height = this.video.videoHeight;
-      canvas.getContext('2d').drawImage(this.video,0,0);
-      const src = cv.imread(canvas);
-      const gray = new cv.Mat();
-      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-      const sx = Math.max(0, this.trackedBox.x - 80), sy = Math.max(0, this.trackedBox.y - 80);
-      const searchW = this.trackedBox.w + 160, searchH = this.trackedBox.h + 160;
-      const searchROI = gray.roi(new cv.Rect(sx, sy, searchW, searchH));
-      const result = new cv.Mat();
-      cv.matchTemplate(searchROI, this.trackTemplate, result, cv.TM_CCOEFF_NORMED);
-      const mm = cv.minMaxLoc(result);
-      this.trackedBox.x = sx + mm.maxLoc.x;
-      this.trackedBox.y = sy + mm.maxLoc.y;
-      // Draw DJI style corners
-      this.ctx.clearRect(0,0,this.aiCanvas.width, this.aiCanvas.height);
-      const bx = this.trackedBox.x, by = this.trackedBox.y, bw = this.trackedBox.w, bh = this.trackedBox.h;
-      this.ctx.strokeStyle = '#00ff88'; this.ctx.lineWidth = 3;
-      // Corners
-      const cl = 20;
-      this.ctx.beginPath();
-      this.ctx.moveTo(bx, by+cl); this.ctx.lineTo(bx, by); this.ctx.lineTo(bx+cl, by);
-      this.ctx.moveTo(bx+bw-cl, by); this.ctx.lineTo(bx+bw, by); this.ctx.lineTo(bx+bw, by+cl);
-      this.ctx.moveTo(bx+bw, by+bh-cl); this.ctx.lineTo(bx+bw, by+bh); this.ctx.lineTo(bx+bw-cl, by+bh);
-      this.ctx.moveTo(bx+cl, by+bh); this.ctx.lineTo(bx, by+bh); this.ctx.lineTo(bx, by+bh-cl);
-      this.ctx.stroke();
-      // Center dot + confidence
-      this.ctx.fillStyle = '#00ff88';
-      this.ctx.beginPath(); this.ctx.arc(bx+bw/2, by+bh/2, 4, 0, Math.PI*2); this.ctx.fill();
-      this.ctx.font = '12px monospace'; this.ctx.fillText(`${Math.round(mm.maxVal*100)}% LOCKED`, bx, by-8);
-      src.delete(); gray.delete(); searchROI.delete(); result.delete();
-    }catch(e){}
-    if(this.tracking) requestAnimationFrame(()=>this.followLoop());
+  applyPreset(type) {
+    const p = this.presets[type];
+    if (!p) return;
+    this.config.confThreshold = p.conf;
+    this.config.minArea = p.minArea;
+    this.config.maxArea = p.maxArea;
+    this.config.shapeCheck = p.shape;
+    this.targetClass = type;
+    console.log(`[CountingPro] Preset ${type} applied`);
   },
 
-  stopTracking(){
-    this.tracking = false; this.trackedBox = null;
-    if(this.trackTemplate) { try{this.trackTemplate.delete();}catch{} this.trackTemplate=null; }
-    if(this.ctx) this.ctx.clearRect(0,0,this.aiCanvas.width, this.aiCanvas.height);
-    const el = document.getElementById('trackInfo'); if(el) el.innerText = '';
+  getDistance(x1,y1,x2,y2){ return Math.hypot(x1-x2, y1-y2); },
+
+  getClassMajority(id){
+    let hist = this.classHistory[id] || [];
+    if(hist.length===0) return null;
+    let counts={}; hist.forEach(c=>counts[c]=(counts[c]||0)+1);
+    let best = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+    return counts[best] >= this.config.votesNeeded ? best : null;
   },
 
-  // ===== COUNT ROI - COUNT OBJECTS INSIDE BOX =====
-  countInROI(roi){
-    if(!window.cv || !roi) return 0;
-    try{
-      const canvas = document.createElement('canvas');
-      canvas.width = roi.w; canvas.height = roi.h;
-      canvas.getContext('2d').drawImage(this.video, roi.x, roi.y, roi.w, roi.h, 0,0,roi.w, roi.h);
-      const src = cv.imread(canvas);
-      const gray = new cv.Mat(), thresh = new cv.Mat();
-      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-      cv.threshold(gray, thresh, 0,255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
-      const contours = new cv.MatVector(), hier = new cv.Mat();
-      cv.findContours(thresh, contours, hier, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-      let cnt=0;
-      for(let i=0;i<contours.size();i++){ if(cv.contourArea(contours.get(i))>80) cnt++; }
-      src.delete(); gray.delete(); thresh.delete(); contours.delete(); hier.delete();
-      const el = document.getElementById('countDisplay'); if(el) el.innerText = `COUNT ROI: ${cnt} objects`;
-      return cnt;
-    }catch(e){ return 0; }
-  },
+  // Call this from your loop() with coco predictions
+  process(preds, videoW, videoH, canvasH, isCounting){
+    this.countLineY = canvasH * 0.5;
+    let now = Date.now();
+    let current = [];
 
-  // ===== OCR ROI - TEXT ONLY INSIDE BOX =====
-  async ocrInROI(roi){
-    if(!roi) return '';
-    const canvas = document.createElement('canvas');
-    canvas.width = roi.w; canvas.height = roi.h;
-    canvas.getContext('2d').drawImage(this.video, roi.x, roi.y, roi.w, roi.h, 0,0,roi.w, roi.h);
-    try{
-      const worker = await Tesseract.createWorker('eng');
-      const ret = await worker.recognize(canvas);
-      await worker.terminate();
-      const text = ret.data.text;
-      const box = document.getElementById('ocrBox'); if(box) box.innerText = `OCR ROI: ${text.slice(0,200)}`;
-      localStorage.setItem('lastOCR', text);
-      return text;
-    }catch(e){ return ''; }
-  },
+    // === FILTER 1: Class + Confidence + Size + Shape ===
+    preds.forEach(p=>{
+      if(this.targetClass!=='all' && p.class!==this.targetClass) return;
+      if(p.score < this.config.confThreshold) return;
 
-  // ===== BARCODE ROI - FAST SCAN INSIDE BOX =====
-  async barcodeInROI(roi){
-    if(!roi) return null;
-    const canvas = document.createElement('canvas');
-    canvas.width = roi.w; canvas.height = roi.h;
-    canvas.getContext('2d').drawImage(this.video, roi.x, roi.y, roi.w, roi.h, 0,0,roi.w, roi.h);
-    try{
-      if('BarcodeDetector' in window){
-        const detector = new BarcodeDetector({formats:['ean_13','ean_8','code_128','qr_code','upc_a']});
-        const bitmap = await createImageBitmap(canvas);
-        const codes = await detector.detect(bitmap);
-        if(codes[0]){
-          const val = codes[0].rawValue;
-          const el = document.getElementById('barcodeRes'); if(el) el.innerText = `BARCODE ROI: ${val}`;
-          return val;
+      let [x,y,w,h] = p.bbox;
+      let area = (w*h) / (videoW*videoH);
+      if(area < this.config.minArea || area > this.config.maxArea) return;
+
+      if(this.config.shapeCheck && this.targetClass==='bottle'){
+        if(h < w*1.2) return; // Bottle must be taller than wide
+      }
+
+      current.push({cx:x+w/2, cy:y+h/2, x,y,w,h, cls:p.class, score:p.score, area});
+    });
+
+    // === FILTER 2: ID Tracking + Majority Vote ===
+    let used = new Set();
+    current.forEach(det=>{
+      let bestId=null, bestDist=this.config.maxDist;
+      for(let id in this.trackObjects){
+        if(used.has(id)) continue;
+        let o=this.trackObjects[id];
+        let d=this.getDistance(det.cx,det.cy,o.cx,o.cy);
+        if(d<bestDist && (now-o.lastSeen)<this.config.timeoutMs){bestDist=d; bestId=id;}
+      }
+
+      if(bestId){
+        this.classHistory[bestId]=this.classHistory[bestId]||[];
+        this.classHistory[bestId].push(det.cls);
+        if(this.classHistory[bestId].length>this.config.historySize) this.classHistory[bestId].shift();
+        let maj = this.config.stabilityCheck ? this.getClassMajority(bestId) : det.cls;
+
+        // Anti-Mix: If majority is NOT target, drop it (was flicker)
+        if(this.config.stabilityCheck && maj && this.targetClass!=='all' && maj!==this.targetClass){
+          delete this.trackObjects[bestId];
+          delete this.classHistory[bestId];
+          return;
+        }
+
+        let o=this.trackObjects[bestId];
+        if(isCounting && !o.counted && this.countMode!=='zone'){
+          if(o.cy < this.countLineY && det.cy >= this.countLineY){
+            if(!this.config.stabilityCheck || maj===this.targetClass || this.targetClass==='all'){
+              this.entryCount++; this.particleCount++; o.counted=true;
+              this.countLog.push({id:bestId,type:'ENTRY',class:maj||det.cls,time:new Date().toLocaleTimeString()});
+            }
+          } else if(o.cy > this.countLineY && det.cy <= this.countLineY){
+            this.exitCount++;
+            this.countLog.push({id:bestId,type:'EXIT',class:maj||det.cls,time:new Date().toLocaleTimeString()});
+          }
+        }
+        o.cx=det.cx; o.cy=det.cy; o.lastSeen=now; used.add(bestId); det.id=bestId;
+      } else {
+        let inZone = this.roiZones.length===0 ? true : this.roiZones.some(z=>det.cx>=z.x1 && det.cx<=z.x2 && det.cy>=z.y1 && det.cy<=z.y2);
+        if(inZone || this.countMode!=='zone'){
+          let id='ID_'+this.nextId++;
+          this.trackObjects[id]={cx:det.cx,cy:det.cy,lastSeen:now,counted:false,cls:det.cls,firstSeen:now};
+          this.classHistory[id]=[det.cls];
+          det.id=id;
+          if(isCounting && this.countMode==='total' && inZone){
+            setTimeout(()=>{
+              let maj=this.getClassMajority(id);
+              if(this.trackObjects[id] && !this.trackObjects[id].counted && (!this.config.stabilityCheck || maj===this.targetClass || this.targetClass==='all')){
+                this.particleCount++; this.trackObjects[id].counted=true; this.entryCount++;
+              }
+            }, this.config.stabilityDelay);
+          }
+          used.add(id);
         }
       }
-    }catch(e){}
-    return null;
+    });
+
+    // Cleanup old IDs
+    for(let id in this.trackObjects){
+      if(now-this.trackObjects[id].lastSeen>1200){ delete this.trackObjects[id]; delete this.classHistory[id]; }
+    }
+
+    return current; // draw these in index.html
   },
 
-  // ===== THERMAL FILTER - JET COLORMAP =====
-  applyThermal(){
-    if(!window.cv || !this.video) return;
-    try{
-      const canvas = document.getElementById('thermalCanvas');
-      if(!canvas) return;
-      canvas.width = this.video.videoWidth; canvas.height = this.video.videoHeight;
-      const src = cv.imread(this.video);
-      const gray = new cv.Mat(), colored = new cv.Mat();
-      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-      cv.applyColorMap(gray, colored, cv.COLORMAP_JET);
-      cv.imshow(canvas, colored);
-      src.delete(); gray.delete(); colored.delete();
-      canvas.style.display = 'block';
-    }catch(e){}
+  reset(){
+    this.trackObjects={}; this.classHistory={}; this.nextId=1;
+    this.particleCount=0; this.entryCount=0; this.exitCount=0; this.countLog=[];
   },
-
-  // Legacy mock for compatibility
-  detect(){
-    if(!this.aiCanvas) return;
-    const w = this.aiCanvas.width, h = this.aiCanvas.height;
-    this.ctx.strokeStyle = '#00ff00'; this.ctx.lineWidth = 2; this.ctx.font = '12px monospace';
-    const mock = [{x:w*0.2,y:h*0.3,w:w*0.2,h:h*0.2,label:'Particle 87%'},{x:w*0.6,y:h*0.5,w:w*0.15,h:h*0.15,label:'Fiber 92%'}];
-    mock.forEach(d=>{ this.ctx.strokeRect(d.x,d.y,d.w,d.h); this.ctx.fillStyle='#00ff00'; this.ctx.fillText(d.label,d.x,d.y-5); });
-    const el = document.getElementById('overlay')||document.getElementById('see'); if(el) el.innerText=`AI v1.9 - ${mock.length} mock | Use Tracking/Count ROI buttons for real AI`;
-  },
-
-  countParticles(){
-    const roi = window.countROI || {x:0,y:0,w:this.video.videoWidth, h:this.video.videoHeight};
-    const c = this.countInROI(roi);
-    alert(`WanaLab AI Counter v1.9 FINAL:\nCount: ${c} objects\nROI: ${roi.w}x${roi.h}\nMethod: OpenCV contours area>80\n\nTip: Drag COUNT ROI box for accurate count`);
-    return c;
+  exportLog(){
+    let csv="Time,ID,Type,Class\n";
+    this.countLog.forEach(l=>csv+=`${l.time},${l.id},${l.type},${l.class}\n`);
+    csv+=`\nTOTAL,${this.particleCount},IN ${this.entryCount} OUT ${this.exitCount}\n`;
+    let blob=new Blob([csv],{type:'text/csv'});
+    let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`CountLog-${Date.now()}.csv`; a.click();
   }
 };
 
-document.addEventListener('DOMContentLoaded', ()=>window.aiEngine.init());
+// Export for index.html
+if(typeof window!=='undefined') window.CountingPro = CountingPro;
+if(typeof module!=='undefined') module.exports = CountingPro;
