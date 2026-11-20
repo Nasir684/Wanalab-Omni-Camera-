@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><body style="background:#000;color:#fff;font-family:Arial;padding:20px;text-align:center">
+<h2>Camera Test</h2>
+<p id="msg">Tap button</p>
+<button id="b" style="padding:20px 30px;background:#00ff88;font-size:18px;border:none;border-radius:12px">TEST CAMERA</button>
+<video id="v" autoplay playsinline muted style="width:100%;margin-top:15px;background:#222"></video>
+<script>
+document.getElementById('b').addEventListener('click', async ()=>{
+  let m=document.getElementById('msg');
+  m.innerText='Button CLICKED - trying camera...';
+  try{
+    if(!navigator.mediaDevices) throw new Error('No mediaDevices - You are in WhatsApp, not Chrome');
+    let s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    document.getElementById('v').srcObject=s;
+    m.innerText='✅ CAMERA WORKS - Problem is in index.html, not phone';
+  }catch(e){ m.innerText='❌ ERROR: '+e.name+' - '+e.message; }
+});
+document.getElementById('b').addEventListener('touchend', e=>{ e.preventDefault(); document.getElementById('b').click(); });
+</script></body></html>
