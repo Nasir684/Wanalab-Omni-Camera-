@@ -1,0 +1,9 @@
+{
+  "app": "WanaLab God Eye",
+  "version": "1.6",
+  "build": "v1.6-final",
+  "developer": "Nasir Khan - WanaLab",
+  "updated": "2026-11-20",
+  "features": ["dashboard", "about-v1.6", "voice-commands-14", "advanced-scan", "edit-studio", "barcode", "export"],
+  "forceUpdate": true
+}
