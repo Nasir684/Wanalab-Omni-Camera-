@@ -1,9 +1,9 @@
 {
-  "name": "WanaLab God Eye v1.5 ADVANCED",
+  "name": "WanaLab God Eye v1.6 FINAL",
   "short_name": "God Eye",
-  "description": "Pro AI Counting + Advanced Scan (AUTO/MULTI) + Edit Studio (Rotate, Crop, Filters, Text) + Barcode + Export - By Nasir Khan",
-  "version": "1.5",
-  "start_url": "./index.html?v=150",
+  "description": "Pro AI Counting + Advanced Scan (AUTO/MULTI) + Edit Studio + Dashboard + Voice Commands (Capture, Scan, Dashboard, About) + Barcode + Export - By Nasir Khan",
+  "version": "1.6",
+  "start_url": "./index.html?v=160",
   "scope": "./",
   "display": "standalone",
   "background_color": "#000000",
