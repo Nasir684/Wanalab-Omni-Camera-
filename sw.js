@@ -1,11 +1,11 @@
-// WanaLab God Eye v1.4.3 FIXED - NO CACHE for index.html
-// Fix for: Unclickable START button - forces fresh v1.4.3 file
+// WanaLab God Eye v1.5 ADVANCED - NO CACHE BUG
+// Fix: Deletes ALL old caches (v1.4.1, v1.4.2, v1.4.3, v1.4.4) and always fetches fresh v1.5
 
-const CACHE_NAME = 'god-eye-v1-4-3-fixed';
+const CACHE_NAME = 'god-eye-v1-5-advanced';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  // Do NOT cache anything - old code cached broken index.html here
+  // Do NOT pre-cache index.html - old code cached broken file here
 });
 
 self.addEventListener('activate', event => {
@@ -13,8 +13,10 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(name => {
-          // Delete ALL old caches including god-eye-v1-4-1 and god-eye-v1-4-2
-          return caches.delete(name);
+          // Delete EVERY old cache
+          if (name !== CACHE_NAME) {
+            return caches.delete(name);
+          }
         })
       );
     }).then(() => self.clients.claim())
@@ -22,14 +24,27 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // NETWORK FIRST - always get fresh index.html, never cached old
-  if (event.request.mode === 'navigate' || event.request.url.includes('index.html') || event.request.url.endsWith('/')) {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
-    return;
-  }
+  // NETWORK FIRST for everything - always fresh v1.5
+  // Only use cache if offline AND network fails
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    fetch(event.request)
+      .then(response => {
+        // Don't cache index.html or / - always fresh
+        if (event.request.mode === 'navigate' || event.request.url.includes('index.html') || event.request.url.endsWith('/')) {
+          return response;
+        }
+        // Cache other assets (icons, libs) for offline - optional
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
+});
+
+// Force update when new version arrives
+self.addEventListener('message', event => {
+  if (event.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
 });
