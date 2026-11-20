@@ -1,0 +1,2 @@
+-dontwarn kotlinx.**
+-keep class com.wanalab.godeye.** { *; }
