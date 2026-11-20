@@ -1,9 +1,28 @@
 {
   "app": "WanaLab God Eye",
-  "version": "1.6",
-  "build": "v1.6-final",
+  "version": "1.6.5",
+  "build": "v1.6.5-final",
   "developer": "Nasir Khan - WanaLab",
+  "city": "Dera Ismail Khan, KPK, Pakistan",
   "updated": "2026-11-20",
-  "features": ["dashboard", "about-v1.6", "voice-commands-14", "advanced-scan", "edit-studio", "barcode", "export"],
-  "forceUpdate": true
+  "features": [
+    "dashboard",
+    "about-v1.6.5",
+    "voice-commands-14",
+    "advanced-scan",
+    "edit-studio",
+    "barcode",
+    "export",
+    "cam-fix-no-play-interrupted",
+    "voice-fix-always-listening",
+    "pricing-rs-0-2500-5000-18500",
+    "offline-full-sw-v165",
+    "bill-offline",
+    "count-offline",
+    "thermal-flir",
+    "doc-scan-ocr"
+  ],
+  "forceUpdate": true,
+  "minVersion": "1.6.5",
+  "changes": "CAM Fix - Voice Fix - Pricing Added - Offline Full"
 }
