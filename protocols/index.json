@@ -1,10 +1,10 @@
 {
   "app": "WanaLab God Eye",
-  "version": "1.4.1",
-  "codename": "Anti-Mix",
+  "version": "1.5",
+  "codename": "Anti-Mix + Advanced Scan + Edit Studio",
   "author": "Nasir Khan",
   "last_updated": "2026-11-20",
-  "build": "PRO Counting Anti-Mix",
+  "build": "PRO Counting Anti-Mix + Advanced Scan + Edit Studio",
   "modules": [
     "clip-lenses.json",
     "custom.json",
@@ -18,13 +18,27 @@
     "telephoto.json",
     "thermal.json",
     "uvc-microscopes.json",
-    "wifi-microscopes.json"
+    "wifi-microscopes.json",
+    "scan-advanced.json",
+    "edit-studio.json",
+    "barcode-multi.json"
   ],
   "counting": {
     "enabled": true,
     "mode": "total",
     "default_class": "bottle",
-    "version": "1.4.1"
+    "version": "1.5"
+  },
+  "scan": {
+    "enabled": true,
+    "mode": "advanced",
+    "features": ["barcode", "qr", "auto_scan", "multi_scan", "beep", "scan_light", "sensitivity", "scan_zoom", "history"],
+    "version": "1.5"
+  },
+  "editing": {
+    "enabled": true,
+    "features": ["rotate", "flip", "crop", "brightness", "contrast", "saturation", "filters_bw_warm_cool_sharp", "add_text", "date_stamp", "draw"],
+    "version": "1.5"
   },
   "pricing": {
     "enabled": false,
