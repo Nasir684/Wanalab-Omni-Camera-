@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WanaLab God Eye v1.4.4 FIXED - By Nasir Khan</title>
+<title>WanaLab God Eye v1.5 ADVANCED - By Nasir Khan</title>
 <meta name="theme-color" content="#00ff88">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="wanalab-god-eye-v1-1-icon.png">
@@ -22,6 +22,7 @@
 #voiceBadge{position:fixed;top:36px;left:50%;transform:translateX(-50%);z-index:11;background:#222;color:#fff;padding:5px 12px;border-radius:18px;font-size:9px;border:1px solid #444;cursor:pointer}
 #voiceBadge.on{background:#00ff88;color:#000}
 #info{position:fixed;top:62px;left:6px;right:6px;z-index:10;background:rgba(0,0,0,0.82);padding:6px 8px;border-radius:8px;font-size:9px;border:1px solid #0f8;max-height:22vh;overflow:auto;pointer-events:none}
+#scanPanel{position:fixed;top:170px;left:6px;right:6px;z-index:11;background:rgba(0,0,0,0.92);border:1px solid #ff0;border-radius:10px;padding:8px;display:none;max-height:44vh;overflow:auto}
 #shutter{position:fixed;bottom:112px;left:50%;transform:translateX(-50%);z-index:12;width:68px;height:68px;border-radius:50%;background:#fff;border:4px solid #00ff88;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer}
 #shutter.rec{border-color:#f00;animation:pulse 1s infinite}
 @keyframes pulse{0%{box-shadow:0 0 5px #f00}50%{box-shadow:0 0 18px #f00}100%{box-shadow:0 0 5px #f00}}
@@ -31,8 +32,8 @@
 #controls{position:fixed;bottom:30px;left:4px;right:4px;z-index:10;background:rgba(0,0,0,0.92);border:1px solid #0f8;border-radius:10px;padding:6px;display:flex;flex-wrap:wrap;gap:4px;min-height:36px;max-height:24vh;overflow:auto}
 #controls button{flex:1 1 23%;padding:7px 2px;border:none;border-radius:7px;font-size:7px;font-weight:bold;cursor:pointer}
 #adBanner{position:fixed;bottom:0;left:0;right:0;z-index:9;background:#0a0a0a;height:26px;display:flex;align-items:center;justify-content:center;font-size:7px;color:#666;pointer-events:none}
-#preview{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.96);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:10px}
-#preview img{max-width:95%;max-height:72vh;border-radius:12px;border:2px solid #00ff88}
+#preview{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.96);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:10px;overflow-y:auto}
+#preview img{max-width:95%;max-height:52vh;border-radius:12px;border:2px solid #00ff88}
 #aboutPage,#pricePage,#filterPage{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:99999;display:none;overflow-y:auto;padding:15px}
 #aboutPage.show,#pricePage.show,#filterPage.show{display:flex;align-items:center;justify-content:center}
 input[type=range]{width:100%}
@@ -46,39 +47,72 @@ input[type=range]{width:100%}
 <video id="godVideo" autoplay playsinline muted></video>
 <canvas id="aiCanvas"></canvas>
 <div id="scanBox"><div id="scanLine"></div></div>
-<div id="top"><span>👁️ God Eye v1.4.4 FIXED</span><span id="stat">Tap START</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:3px 8px;border-radius:10px;cursor:pointer">ℹ️</span></div>
+<div id="top"><span>👁️ God Eye v1.5 ADVANCED</span><span id="stat">Tap START</span><span onclick="showAbout()" style="background:#fff;color:#000;padding:3px 8px;border-radius:10px;cursor:pointer">ℹ️</span></div>
 <button id="installBtn" onclick="installApp()">📲 INSTALL</button>
 <div id="voiceBadge" onclick="toggleVoice()">🎤 TAP TO START</div>
 <div id="info"><div id="see" style="color:#0f8;font-weight:bold">Tap START CAMERA below</div><div id="countDisplay" style="color:#ff8800;font-weight:bold"></div><div id="barcodeRes" style="color:#ff0"></div><div id="billBox" style="color:#fff"></div></div>
+<div id="scanPanel">
+  <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:bold"><span>🔍 ADVANCED SCAN</span><span id="scanStatus" style="color:#ff0">OFF</span></div>
+  <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
+    <button onclick="toggleAutoScan()" id="btnAutoScan" style="flex:1;padding:8px;background:#222;color:#fff;border:none;border-radius:8px;font-size:9px">⚡ AUTO: OFF</button>
+    <button onclick="toggleMultiScan()" id="btnMultiScan" style="flex:1;padding:8px;background:#222;color:#fff;border:none;border-radius:8px;font-size:9px">📦 MULTI: OFF</button>
+    <button onclick="toggleScanTorch()" id="btnScanTorch" style="flex:1;padding:8px;background:#222;color:#fff;border:none;border-radius:8px;font-size:9px">🔦 SCAN LIGHT</button>
+    <button onclick="toggleScanBeep()" id="btnScanBeep" style="flex:1;padding:8px;background:#00ff88;color:#000;border:none;border-radius:8px;font-size:9px">🔔 BEEP: ON</button>
+  </div>
+  <label style="font-size:9px;display:block;margin-top:8px">Sensitivity: <span id="scanSensVal">High</span></label>
+  <input type="range" id="scanSens" min="1" max="3" value="3" oninput="updateScanSens()" style="width:100%">
+  <label style="font-size:9px;display:block">Scan Zoom: <span id="scanZoomVal">1x</span></label>
+  <input type="range" id="scanZoom" min="1" max="5" value="1" oninput="updateScanZoom()" style="width:100%">
+  <div id="scanHistory" style="max-height:80px;overflow:auto;background:#000;padding:6px;border-radius:6px;margin-top:6px;font-size:9px;color:#0f8">No scans yet</div>
+  <button onclick="clearScanHistory()" style="width:100%;margin-top:6px;padding:7px;background:#333;color:#fff;border:none;border-radius:8px;font-size:9px">🧹 Clear History</button>
+  <button onclick="toggleScanPanel()" style="width:100%;margin-top:4px;padding:7px;background:#00ff88;color:#000;border:none;border-radius:8px;font-size:9px;font-weight:bold">✅ CLOSE PANEL</button>
+</div>
 <div id="debugBox"></div>
 <button id="shutter" onclick="handleShutter()">📸</button>
-<div id="catTabs"><button onclick="setCat('cam')" id="tabCam" class="active">📷 CAM</button><button onclick="setCat('ai')" id="tabAi">🤖 AI COUNT</button><button onclick="setCat('shop')" id="tabShop">🛒 SHOP</button><button onclick="setCat('sys')" id="tabSys">⚙️ SYS</button></div>
+<div id="catTabs"><button onclick="setCat('cam')" id="tabCam" class="active">📷 CAM</button><button onclick="setCat('scan')" id="tabScan">🔍 SCAN</button><button onclick="setCat('ai')" id="tabAi">🤖 AI</button><button onclick="setCat('shop')" id="tabShop">🛒 SHOP</button><button onclick="setCat('sys')" id="tabSys">⚙️ SYS</button></div>
 <div id="controls"></div>
-<div id="adBanner">WanaLab God Eye v1.4.4 FIXED - By Nasir Khan</div>
-<div id="startOverlay"><h2 style="color:#00ff88">👁️ God Eye v1.4.4</h2><p style="font-size:12px;color:#aaa">Tap START to open camera</p><button id="startBtn">📷 START CAMERA</button><button id="clearBtn" style="padding:10px 20px;background:#333;color:#fff;border:none;border-radius:10px;font-size:12px">🧹 CLEAR CACHE & RELOAD</button><p style="font-size:10px;color:#666">Open in Chrome app, NOT WhatsApp</p><p id="debugText" style="font-size:10px;color:#ff0"></p></div>
-<div id="preview"><img id="previewImg"><div style="display:flex;gap:8px;margin-top:10px;width:95%"><button onclick="savePhoto()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">💾 SAVE</button><button onclick="closePreview()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">❌ CLOSE</button></div></div>
-<div id="filterPage"><div style="max-width:380px;width:100%;background:#001a0a;border:2px solid #00aaff;border-radius:16px;padding:14px"><h3 style="color:#00aaff;text-align:center">🎯 COUNT FILTERS v1.4.4</h3><div style="font-size:8px;color:#aaa;margin:6px 0">Fixes: Hand counted as bottle</div><div style="background:#000;padding:8px;border-radius:8px;margin:6px 0"><label style="font-size:8px">Confidence: <span id="confVal">62%</span></label><input type="range" id="confSlider" min="40" max="85" value="62" oninput="updateFilters()"><label style="font-size:8px;margin-top:6px;display:block">Min Size: <span id="minVal">0.8%</span></label><input type="range" id="minSize" min="1" max="20" value="8" oninput="updateFilters()"><label style="font-size:8px;margin-top:6px;display:block">Max Size: <span id="maxVal">18%</span></label><input type="range" id="maxSize" min="10" max="50" value="18" oninput="updateFilters()"><div style="display:flex;gap:4px;margin-top:8px"><label style="font-size:7px"><input type="checkbox" id="shapeCheck" checked onchange="updateFilters()"> Shape Check</label><label style="font-size:7px"><input type="checkbox" id="stabilityCheck" checked onchange="updateFilters()"> 3-Frame Stability</label></div></div><button onclick="applyPreset('bottle')" style="width:100%;margin-top:6px;padding:8px;background:#00aaff;color:#fff;border:none;border-radius:8px;font-size:8px">🍶 BOTTLE PRESET</button><button onclick="applyPreset('person')" style="width:100%;margin-top:4px;padding:8px;background:#333;color:#fff;border:none;border-radius:8px;font-size:8px">🧍 PERSON PRESET</button><button onclick="hideFilters()" style="width:100%;margin-top:8px;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">✅ SAVE & BACK</button></div></div>
+<div id="adBanner">WanaLab God Eye v1.5 ADVANCED - By Nasir Khan</div>
+<div id="startOverlay"><h2 style="color:#00ff88">👁️ God Eye v1.5</h2><p style="font-size:12px;color:#aaa">Tap START to open camera</p><button id="startBtn">📷 START CAMERA</button><button id="clearBtn" style="padding:10px 20px;background:#333;color:#fff;border:none;border-radius:10px;font-size:12px">🧹 CLEAR CACHE & RELOAD</button><p style="font-size:10px;color:#666">Open in Chrome app, NOT WhatsApp</p><p id="debugText" style="font-size:10px;color:#ff0"></p></div>
+<div id="preview"><img id="previewImg">
+<div id="editPanel" style="width:95%;background:#111;border:1px solid #00ff88;border-radius:10px;padding:8px;margin-top:8px">
+  <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:bold"><span>✏️ EDIT PHOTO</span><span id="editStatus" style="color:#00ff88">Original</span></div>
+  <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
+    <button onclick="rotatePhoto()" style="flex:1;padding:8px;background:#00aaff;color:#fff;border:none;border-radius:8px;font-size:9px">🔄 ROTATE</button>
+    <button onclick="flipPhoto()" style="flex:1;padding:8px;background:#222;color:#fff;border:none;border-radius:8px;font-size:9px">↔️ FLIP</button>
+    <button onclick="cropPhoto()" style="flex:1;padding:8px;background:#ff8800;color:#fff;border:none;border-radius:8px;font-size:9px">✂️ CROP</button>
+    <button onclick="resetEdit()" style="flex:1;padding:8px;background:#333;color:#fff;border:none;border-radius:8px;font-size:9px">↩️ RESET</button>
+  </div>
+  <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
+    <button onclick="applyEditFilter('none')" style="flex:1;padding:7px;background:#fff;color:#000;border:none;border-radius:7px;font-size:8px">Original</button>
+    <button onclick="applyEditFilter('bw')" style="flex:1;padding:7px;background:#333;color:#fff;border:none;border-radius:7px;font-size:8px">B/W</button>
+    <button onclick="applyEditFilter('warm')" style="flex:1;padding:7px;background:#ff8800;color:#fff;border:none;border-radius:7px;font-size:8px">Warm</button>
+    <button onclick="applyEditFilter('cool')" style="flex:1;padding:7px;background:#00aaff;color:#fff;border:none;border-radius:7px;font-size:8px">Cool</button>
+    <button onclick="applyEditFilter('sharp')" style="flex:1;padding:7px;background:#a0f;color:#fff;border:none;border-radius:7px;font-size:8px">Sharp</button>
+  </div>
+  <label style="font-size:9px;display:block;margin-top:8px">Brightness: <span id="brightVal">100%</span></label>
+  <input type="range" id="editBright" min="50" max="200" value="100" oninput="updateEdit()" style="width:100%">
+  <label style="font-size:9px;display:block">Contrast: <span id="contrastVal">100%</span></label>
+  <input type="range" id="editContrast" min="50" max="200" value="100" oninput="updateEdit()" style="width:100%">
+  <label style="font-size:9px;display:block">Saturation: <span id="satVal">100%</span></label>
+  <input type="range" id="editSat" min="0" max="200" value="100" oninput="updateEdit()" style="width:100%">
+  <div style="display:flex;gap:4px;margin-top:6px">
+    <input id="editText" placeholder="Add text on photo..." style="flex:1;padding:8px;border-radius:7px;border:none;color:#000">
+    <button onclick="addTextToPhoto()" style="padding:8px 12px;background:#00ff88;color:#000;border:none;border-radius:7px;font-weight:bold;font-size:9px">✍️ ADD TEXT</button>
+  </div>
+  <div style="display:flex;gap:4px;margin-top:6px">
+    <button onclick="drawModeToggle()" id="drawBtn" style="flex:1;padding:8px;background:#222;color:#fff;border:none;border-radius:8px;font-size:9px">🖌️ DRAW: OFF</button>
+    <button onclick="addDateStamp()" style="flex:1;padding:8px;background:#222;color:#fff;border:none;border-radius:8px;font-size:9px">📅 DATE STAMP</button>
+  </div>
+</div>
+<div style="display:flex;gap:8px;margin-top:10px;width:95%"><button onclick="savePhoto()" style="flex:1;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">💾 SAVE EDITED</button><button onclick="closePreview()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:10px">❌ CLOSE</button></div></div>
+<div id="filterPage"><div style="max-width:380px;width:100%;background:#001a0a;border:2px solid #00aaff;border-radius:16px;padding:14px"><h3 style="color:#00aaff;text-align:center">🎯 COUNT FILTERS v1.5</h3><div style="font-size:8px;color:#aaa;margin:6px 0">Fixes: Hand counted as bottle</div><div style="background:#000;padding:8px;border-radius:8px;margin:6px 0"><label style="font-size:8px">Confidence: <span id="confVal">62%</span></label><input type="range" id="confSlider" min="40" max="85" value="62" oninput="updateFilters()"><label style="font-size:8px;margin-top:6px;display:block">Min Size: <span id="minVal">0.8%</span></label><input type="range" id="minSize" min="1" max="20" value="8" oninput="updateFilters()"><label style="font-size:8px;margin-top:6px;display:block">Max Size: <span id="maxVal">18%</span></label><input type="range" id="maxSize" min="10" max="50" value="18" oninput="updateFilters()"><div style="display:flex;gap:4px;margin-top:8px"><label style="font-size:7px"><input type="checkbox" id="shapeCheck" checked onchange="updateFilters()"> Shape Check</label><label style="font-size:7px"><input type="checkbox" id="stabilityCheck" checked onchange="updateFilters()"> 3-Frame Stability</label></div></div><button onclick="applyPreset('bottle')" style="width:100%;margin-top:6px;padding:8px;background:#00aaff;color:#fff;border:none;border-radius:8px;font-size:8px">🍶 BOTTLE PRESET</button><button onclick="applyPreset('person')" style="width:100%;margin-top:4px;padding:8px;background:#333;color:#fff;border:none;border-radius:8px;font-size:8px">🧍 PERSON PRESET</button><button onclick="hideFilters()" style="width:100%;margin-top:8px;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">✅ SAVE & BACK</button></div></div>
 <div id="pricePage"><div style="max-width:400px;width:100%;background:#001a0a;border:2px solid #ff0;border-radius:16px;padding:12px"><h3 style="color:#ff0">📦 Price DB</h3><div id="dbList" style="max-height:28vh;overflow:auto;background:#000;padding:6px;border-radius:8px;margin:6px 0"></div><div style="display:flex;gap:4px"><input id="newBarcode" placeholder="Barcode" style="flex:1;padding:7px;border-radius:6px;border:none"><input id="newName" placeholder="Name" style="flex:1;padding:7px;border-radius:6px;border:none"><input id="newPrice" type="number" placeholder="Rs" style="width:60px;padding:7px;border-radius:6px;border:none"></div><button onclick="addPriceManual()" style="width:100%;margin-top:6px;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">➕ Add</button><button onclick="hidePrice()" style="width:100%;margin-top:8px;padding:10px;background:#333;color:#fff;border:none;border-radius:8px">Back</button></div></div>
-<div id="aboutPage"><div style="max-width:360px;width:100%;background:linear-gradient(#001a0a,#000);border:2px solid #00ff88;border-radius:18px;padding:18px;text-align:center"><h2 style="color:#00ff88">God Eye v1.4.4</h2><p style="font-size:10px;color:#aaa">CLICKABLE + NO CACHE FIX</p><div style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:10px;padding:10px;text-align:left;font-size:8px;color:#0f8;line-height:14px">✅ FIX: Old SW killed on load<br>✅ FIX: START shows CLICKED!<br>✅ FIX: Tap anywhere starts camera<br>✅ FIX: No audio block, no hang<br><br>🆔 ID Tracking + Size + Shape + Stability</div><p style="font-size:7px;color:#555;margin:10px 0">© 2026 WanaLab - By Nasir Khan</p><button onclick="hideAbout()" style="width:100%;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">✅ BACK</button></div></div>
+<div id="aboutPage"><div style="max-width:360px;width:100%;background:linear-gradient(#001a0a,#000);border:2px solid #00ff88;border-radius:18px;padding:18px;text-align:center"><h2 style="color:#00ff88">God Eye v1.5</h2><p style="font-size:10px;color:#aaa">ADVANCED SCAN + EDIT STUDIO</p><div style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:10px;padding:10px;text-align:left;font-size:8px;color:#0f8;line-height:14px">✅ SCAN Tab + ADV Panel<br>✅ AUTO + MULTI + BEEP + HISTORY<br>✅ EDIT: Rotate, Crop, Filters, Text<br>✅ CAM + SCAN + AI + SHOP + SYS<br><br>🆔 ID Tracking + Size + Shape + Stability</div><p style="font-size:7px;color:#555;margin:10px 0">© 2026 WanaLab - By Nasir Khan</p><button onclick="hideAbout()" style="width:100%;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold">✅ BACK</button></div></div>
 <script>
-// v1.4.4 - Kill old Service Worker immediately, before anything else
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(function(r){
-    r.forEach(function(x){ x.unregister(); });
-  }).catch(function(){});
-}
-if('caches' in window){
-  caches.keys().then(function(n){ n.forEach(function(x){ caches.delete(x); }); }).catch(function(){});
-}
-function showDebug(msg){
-  var d=document.getElementById('debugBox');
-  if(d){ d.style.display='block'; d.innerText=msg; }
-  var t=document.getElementById('debugText');
-  if(t) t.innerText=msg;
-}
-window.addEventListener('error', function(e){
-  showDebug('JS ERROR: ' + e.message);
-});
+if('serviceWorker' in navigator){ navigator.serviceWorker.getRegistrations().then(function(r){ r.forEach(function(x){ x.unregister(); }); }).catch(function(){}); }
+if('caches' in window){ caches.keys().then(function(n){ n.forEach(function(x){ caches.delete(x); }); }).catch(function(){}); }
+function showDebug(msg){ var d=document.getElementById('debugBox'); if(d){ d.style.display='block'; d.innerText=msg; } var t=document.getElementById('debugText'); if(t) t.innerText=msg; }
+window.addEventListener('error', function(e){ showDebug('JS ERROR: ' + e.message); });
 let deferredPrompt=null, stream=null, track=null, coco=null, detecting=false, lastSeen='', billItems=[], totalBill=0, lastBarcode='', priceDB={}, capturedDataUrl='', barcodeMode=false, codeReader=null, isTorch=false, aiEnabled=false, isListening=false, recognition=null, currentLang='en', currentCat='cam';
 let isCounting=false, particleCount=0, isRecording=false, mediaRecorder=null, recordedChunks=[], followMode=false, zoomLevel=1, thermalOn=false, nightOn=false;
 let capturedPhotos=[];
@@ -89,12 +123,14 @@ const video=document.getElementById('godVideo'), aiCanvas=document.getElementByI
 function getDistance(x1,y1,x2,y2){return Math.hypot(x1-x2,y1-y2);}
 function getClassMajority(id){let hist=classHistory[id]||[]; if(hist.length===0) return null; let counts={}; hist.forEach(c=>counts[c]=(counts[c]||0)+1); let best=Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0]; return counts[best]>=3?best:null;}
 const CATS={
-cam:[{id:'capture',txt:'📸 CAPTURE',bg:'#fff',color:'#000',act:()=>capturePhoto()},{id:'video',txt:'🎥 VIDEO',bg:'#f00',color:'#fff',act:()=>toggleVideo()},{id:'torch',txt:'🔦 TORCH',bg:'#333',color:'#fff',act:()=>toggleTorch()},{id:'zoom',txt:'🔭 ZOOM 1x',bg:'#222',color:'#fff',act:()=>cycleZoom()}],
+cam:[{id:'capture',txt:'📸 CAPTURE',bg:'#fff',color:'#000',act:()=>capturePhoto()},{id:'video',txt:'🎥 VIDEO',bg:'#f00',color:'#fff',act:()=>toggleVideo()},{id:'torch',txt:'🔦 TORCH',bg:'#333',color:'#fff',act:()=>toggleTorch()},{id:'zoom',txt:'🔭 ZOOM',bg:'#222',color:'#fff',act:()=>cycleZoom()},{id:'thermal',txt:'🌡️ THERMAL',bg:'#333',color:'#fff',act:()=>toggleThermal()},{id:'night',txt:'🌃 NIGHT',bg:'#333',color:'#fff',act:()=>toggleNight()},{id:'follow',txt:'🎯 FOLLOW',bg:'#333',color:'#fff',act:()=>toggleFollow()},{id:'edit',txt:'✏️ EDIT',bg:'#a0f',color:'#fff',act:()=>openEdit()}],
+scan:[{id:'barcode',txt:'📷 BARCODE',bg:'#ff0',color:'#000',act:()=>toggleBarcode()},{id:'qr',txt:'🔳 QR',bg:'#ff0',color:'#000',act:()=>toggleBarcode()},{id:'adv',txt:'⚡ ADV SCAN',bg:'#00aaff',color:'#fff',act:()=>toggleScanPanel()},{id:'auto',txt:'⚡ AUTO',bg:'#222',color:'#fff',act:()=>toggleAutoScan()},{id:'multi',txt:'📦 MULTI',bg:'#222',color:'#fff',act:()=>toggleMultiScan()},{id:'doc',txt:'📄 DOC',bg:'#fff',color:'#000',act:()=>capturePhoto()},{id:'editScan',txt:'✏️ EDIT SCAN',bg:'#a0f',color:'#fff',act:()=>openEdit()},{id:'filters',txt:'🎯 FILTERS',bg:'#222',color:'#0af',act:()=>showFilters()},{id:'zone',txt:'📐 ZONE',bg:'#00aaff',color:'#fff',act:()=>addROIZone()}],
 ai:[{id:'ai',txt:'🤖 AI',bg:'#222',color:'#888',act:()=>toggleAI()},{id:'count',txt:'🔢 PRO COUNT',bg:'#ff8800',color:'#fff',act:()=>toggleCounting()},{id:'mode',txt:'↕️ TOTAL',bg:'#333',color:'#fff',act:()=>{let modes=['total','entry','zone']; let i=modes.indexOf(countMode); countMode=modes[(i+1)%modes.length]; document.getElementById('btn_mode').innerText='↕️ '+countMode.toUpperCase(); setCountMode(countMode); }},{id:'class',txt:'🏷️ BOTTLE',bg:'#00aaff',color:'#fff',act:()=>{let classes=['bottle','person','all','cup','car']; let i=classes.indexOf(targetClass); targetClass=classes[(i+1)%classes.length]; document.getElementById('btn_class').innerText='🏷️ '+targetClass.toUpperCase(); if(targetClass==='bottle') applyPreset('bottle'); else if(targetClass==='person') applyPreset('person'); setTargetClass(targetClass); }},{id:'filters',txt:'🎯 FILTERS',bg:'#222',color:'#0af',act:()=>showFilters()},{id:'zone',txt:'📐 ZONE',bg:'#00aaff',color:'#fff',act:()=>addROIZone()},{id:'clearZone',txt:'🧹 CLEAR',bg:'#333',color:'#fff',act:()=>clearROIZones()},{id:'follow',txt:'🎯 FOLLOW',bg:'#333',color:'#fff',act:()=>toggleFollow()},{id:'log',txt:'📊 LOG',bg:'#a0f',color:'#fff',act:()=>exportCountLog()}],
 shop:[{id:'barcode',txt:'📷 BARCODE',bg:'#ff0',color:'#000',act:()=>toggleBarcode()},{id:'add',txt:'💰 ADD BILL',bg:'#00ff88',color:'#000',act:()=>addToBill()},{id:'db',txt:'📦 DB',bg:'#fff',color:'#000',act:()=>showPrice()},{id:'export',txt:'📤 EXPORT',bg:'#a0f',color:'#fff',act:()=>openExportCenter()}],
 sys:[{id:'voice',txt:'🎤 VOICE',bg:'#f00',color:'#fff',act:()=>toggleVoice()},{id:'thermal',txt:'🌡️ THERMAL',bg:'#333',color:'#fff',act:()=>toggleThermal()},{id:'night',txt:'🌃 NIGHT',bg:'#333',color:'#fff',act:()=>toggleNight()},{id:'langEn',txt:'EN',bg:'#0f8',color:'#000',act:()=>setLang('en')},{id:'langUr',txt:'اردو',bg:'#333',color:'#fff',act:()=>setLang('ur')},{id:'langPs',txt:'پښتو',bg:'#333',color:'#fff',act:()=>setLang('ps')}]
 };
-function setCat(c){currentCat=c; document.querySelectorAll('#catTabs button').forEach(b=>b.classList.remove('active')); document.getElementById('tab'+c.charAt(0).toUpperCase()+c.slice(1)).classList.add('active'); renderControls();}
+function openEdit(){ if(!capturedDataUrl){ alert('Capture photo first, then Edit'); return; } document.getElementById('previewImg').src=capturedDataUrl; document.getElementById('preview').style.display='flex'; resetEdit(); }
+function setCat(c){currentCat=c; document.querySelectorAll('#catTabs button').forEach(b=>b.classList.remove('active')); let el=document.getElementById('tab'+c.charAt(0).toUpperCase()+c.slice(1)); if(el) el.classList.add('active'); renderControls();}
 function renderControls(){let html=''; CATS[currentCat].forEach(b=>{html+=`<button id="btn_${b.id}" onclick="CATS['${currentCat}'].find(x=>x.id=='${b.id}').act()" style="background:${b.bg};color:${b.color}">${b.txt}</button>`}); document.getElementById('controls').innerHTML=html; updateBtnUI();}
 function updateBtnUI(){let el=document.getElementById('btn_ai'); if(el){el.style.background=aiEnabled?'#0f8':'#222'; el.style.color=aiEnabled?'#000':'#888';} el=document.getElementById('btn_count'); if(el){el.style.background=isCounting?'#ff8800':'#333'; el.innerText=isCounting?`🔢 ON:${particleCount}`:'🔢 PRO COUNT';} el=document.getElementById('btn_mode'); if(el) el.innerText='↕️ '+countMode.toUpperCase(); el=document.getElementById('btn_class'); if(el) el.innerText='🏷️ '+targetClass.toUpperCase();}
 function checkInstalled(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone||localStorage.getItem('wanaInstalled')==='true';}
@@ -129,7 +165,7 @@ async function init(){
     await video.play(); resizeCanvas();
     document.getElementById('startOverlay').style.display='none';
     document.getElementById('debugBox').style.display='none';
-    document.getElementById('stat').innerText='Ready v1.4.4';
+    document.getElementById('stat').innerText='Ready v1.5';
     document.getElementById('see').innerText='Anti-Mix Ready - BOTTLE - Camera ON';
     initVoice(); renderControls(); applyPreset('bottle');
   }catch(e){
@@ -171,8 +207,8 @@ function loop(){
       if(stabilityCheck && maj && targetClass!=='all' && maj!==targetClass){delete trackObjects[bestId]; delete classHistory[bestId]; return;}
       let obj=trackObjects[bestId];
       if(isCounting && !obj.counted && countMode!=='zone'){
-        if(obj.cy < countLineY && det.cy >= countLineY){if(!stabilityCheck || maj===targetClass || targetClass==='all'){entryCount++; particleCount++; obj.counted=true; countLog.push({id:bestId,type:'ENTRY',class:maj||det.cls,time:new Date().toLocaleTimeString()}); if(navigator.vibrate) navigator.vibrate(20);}}
-        else if(obj.cy > countLineY && det.cy <= countLineY){exitCount++; countLog.push({id:bestId,type:'EXIT',class:maj||det.cls,time:new Date().toLocaleTimeString()});}
+        if(obj.cy < countLineY && det.cy >= countLineY){if(!stabilityCheck || maj===targetClass || targetClass==='all'){entryCount++; particleCount++; obj.counted=true; countLog.push({id:bestId,type:'ENTRY',class:maj||det.cls,t:new Date().toLocaleTimeString()}); if(navigator.vibrate) navigator.vibrate(20);}}
+        else if(obj.cy > countLineY && det.cy <= countLineY){exitCount++; countLog.push({id:bestId,type:'EXIT',class:maj||det.cls,t:new Date().toLocaleTimeString()});}
       }
       obj.cx=det.cx; obj.cy=det.cy; obj.lastSeen=now; obj.area=det.area; usedIds.add(bestId); det.id=bestId;
     }else{
@@ -201,22 +237,61 @@ function setCountMode(m){countMode=m; entryCount=0; exitCount=0; particleCount=0
 function setTargetClass(c){targetClass=c;}
 function addROIZone(){let w=aiCanvas.width,h=aiCanvas.height; roiZones.push({x1:w*0.15,y1:h*0.25,x2:w*0.85,y2:h*0.75}); speak('Zone added');}
 function clearROIZones(){roiZones=[]; speak('Zones cleared');}
-function exportCountLog(){if(countLog.length==0){speak('No log'); return;} let csv="Time,ID,Type,Class\n"; countLog.forEach(l=>{csv+=`${l.time},${l.id},${l.type},${l.class}\n`;}); csv+=`\nTOTAL,${particleCount},IN ${entryCount} OUT ${exitCount}\n`; let blob=new Blob([csv],{type:'text/csv'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`CountLog-${Date.now()}.csv`; a.click();}
+function exportCountLog(){if(countLog.length==0){speak('No log'); return;} let csv="Time,ID,Type,Class\n"; countLog.forEach(l=>{csv+=`${l.t},${l.id},${l.type},${l.class}\n`;}); csv+=`\nTOTAL,${particleCount},IN ${entryCount} OUT ${exitCount}\n`; let blob=new Blob([csv],{type:'text/csv'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`CountLog-${Date.now()}.csv`; a.click();}
 async function toggleTorch(){try{if(!track) return; let cap=track.getCapabilities(); if(!cap.torch) return; isTorch=!isTorch; await track.applyConstraints({advanced:[{torch:isTorch}]});}catch{}}
 async function cycleZoom(){try{if(!track) return; let cap=track.getCapabilities(); if(!cap.zoom){zoomLevel=zoomLevel>=3?1:zoomLevel+1; video.style.transform='scale('+(1+(zoomLevel-1)*0.3)+')'; updateBtnUI(); return;} let max=cap.zoom.max||10; zoomLevel=zoomLevel>=max?1:zoomLevel+1; await track.applyConstraints({advanced:[{zoom:zoomLevel}]}); updateBtnUI();}catch{}}
 function toggleThermal(){thermalOn=!thermalOn; nightOn=false; applyFilters(); updateBtnUI();}
 function toggleNight(){nightOn=!nightOn; thermalOn=false; applyFilters(); updateBtnUI();}
 function applyFilters(){let f=''; if(thermalOn) f='hue-rotate(180deg) contrast(1.8) saturate(2) brightness(1.2)'; else if(nightOn) f='brightness(1.6) contrast(1.4) grayscale(0.5)'; video.style.filter=f;}
 async function toggleBarcode(){barcodeMode=!barcodeMode; document.getElementById('scanBox').style.display=barcodeMode?'block':'none'; updateBtnUI(); if(barcodeMode){if(!codeReader) codeReader=new ZXing.BrowserMultiFormatReader(); try{codeReader.decodeFromVideoDevice(null,'godVideo',(r,err)=>{if(r&&r.text) handleBarcode(r.text);});}catch{}}else{if(codeReader) try{codeReader.reset();}catch{}}}
-function handleBarcode(code){if(!code||code===lastBarcode) return; lastBarcode=code; if(navigator.vibrate) navigator.vibrate(60); document.getElementById('newBarcode').value=code; let item=priceDB[code]; if(item){document.getElementById('barcodeRes').innerHTML=`✅ ${code} → ${item.name} Rs.${item.price}`; addToBill(code,item.price,item.name); setTimeout(()=>{if(barcodeMode) toggleBarcode();},1200);} else {document.getElementById('barcodeRes').innerHTML=`NEW ${code}`;}}
+// === ADVANCED SCAN v1.5 ===
+let autoScan=false, multiScan=false, scanBeep=true, scanHistoryList=[], scanTorch=false, scanSensLevel=3;
+function toggleScanPanel(){ let p=document.getElementById('scanPanel'); let show=p.style.display==='none'; p.style.display=show?'block':'none'; if(show && !barcodeMode) toggleBarcode(); }
+function toggleAutoScan(){ autoScan=!autoScan; document.getElementById('btnAutoScan').innerText='⚡ AUTO: '+(autoScan?'ON':'OFF'); document.getElementById('btnAutoScan').style.background=autoScan?'#00ff88':'#222'; document.getElementById('btnAutoScan').style.color=autoScan?'#000':'#fff'; document.getElementById('scanStatus').innerText=autoScan?'AUTO ON':'OFF'; document.getElementById('scanStatus').style.color=autoScan?'#00ff88':'#ff0'; if(autoScan && !barcodeMode) toggleBarcode(); speak(autoScan?'Auto scan on':'Auto scan off'); }
+function toggleMultiScan(){ multiScan=!multiScan; document.getElementById('btnMultiScan').innerText='📦 MULTI: '+(multiScan?'ON':'OFF'); document.getElementById('btnMultiScan').style.background=multiScan?'#ff8800':'#222'; if(multiScan) lastBarcode=''; speak(multiScan?'Multi scan on':'Multi scan off'); }
+function toggleScanTorch(){ toggleTorch(); scanTorch=!scanTorch; document.getElementById('btnScanTorch').style.background=scanTorch?'#ff0':'#222'; document.getElementById('btnScanTorch').style.color=scanTorch?'#000':'#fff'; }
+function toggleScanBeep(){ scanBeep=!scanBeep; document.getElementById('btnScanBeep').innerText='🔔 BEEP: '+(scanBeep?'ON':'OFF'); document.getElementById('btnScanBeep').style.background=scanBeep?'#00ff88':'#222'; document.getElementById('btnScanBeep').style.color=scanBeep?'#000':'#fff'; }
+function updateScanSens(){ scanSensLevel=parseInt(document.getElementById('scanSens').value); document.getElementById('scanSensVal').innerText=['','Low','Medium','High'][scanSensLevel]; }
+function updateScanZoom(){ let z=parseInt(document.getElementById('scanZoom').value); document.getElementById('scanZoomVal').innerText=z+'x'; video.style.transform='scale('+z+')'; }
+function addScanHistory(code){ scanHistoryList.unshift(code+' - '+new Date().toLocaleTimeString()); if(scanHistoryList.length>20) scanHistoryList.pop(); document.getElementById('scanHistory').innerHTML=scanHistoryList.map(s=>'<div style="border-bottom:1px solid #222;padding:3px">✅ '+s+'</div>').join(''); }
+function clearScanHistory(){ scanHistoryList=[]; document.getElementById('scanHistory').innerHTML='No scans yet'; }
+function playBeep(){ if(!scanBeep) return; try{let a=new (window.AudioContext||window.webkitAudioContext)(); let o=a.createOscillator(); o.connect(a.destination); o.start(); setTimeout(()=>o.stop(),90);}catch{} }
+function handleBarcode(code){
+  if(!code) return;
+  if(multiScan){
+    addScanHistory(code); playBeep(); if(navigator.vibrate) navigator.vibrate([30,30,30]);
+    document.getElementById('barcodeRes').innerHTML='✅ MULTI: '+code+' | Total: '+scanHistoryList.length;
+    document.getElementById('newBarcode').value=code;
+    let item=priceDB[code]; if(item) addToBill(code,item.price,item.name);
+    lastBarcode=code; setTimeout(()=>{ lastBarcode=''; },800); return;
+  }
+  if(code===lastBarcode) return;
+  lastBarcode=code; addScanHistory(code); playBeep(); if(navigator.vibrate) navigator.vibrate(60);
+  document.getElementById('newBarcode').value=code;
+  let item=priceDB[code];
+  if(item){document.getElementById('barcodeRes').innerHTML=`✅ ${code} → ${item.name} Rs.${item.price}`; addToBill(code,item.price,item.name); if(!autoScan) setTimeout(()=>{if(barcodeMode) toggleBarcode();},1200);}
+  else {document.getElementById('barcodeRes').innerHTML=`NEW ${code}`;}
+}
+// === PHOTO EDITOR v1.5 ===
+let editRotation=0, editFlip=false, editCrop=false, editFilter='none', isDrawing=false;
+function getEditFilterString(){ let b=document.getElementById('editBright').value; let c=document.getElementById('editContrast').value; let s=document.getElementById('editSat').value; let base=`brightness(${b}%) contrast(${c}%) saturate(${s}%)`; if(editFilter==='bw') base+=' grayscale(100%)'; if(editFilter==='warm') base+=' sepia(40%)'; if(editFilter==='cool') base+=' hue-rotate(180deg)'; if(editFilter==='sharp') base+=' contrast(150%)'; return base; }
+function updateEdit(){ let img=document.getElementById('previewImg'); document.getElementById('brightVal').innerText=document.getElementById('editBright').value+'%'; document.getElementById('contrastVal').innerText=document.getElementById('editContrast').value+'%'; document.getElementById('satVal').innerText=document.getElementById('editSat').value+'%'; img.style.filter=getEditFilterString(); img.style.transform=`rotate(${editRotation}deg) scaleX(${editFlip?-1:1})`; document.getElementById('editStatus').innerText='Edited'; }
+function rotatePhoto(){ editRotation=(editRotation+90)%360; updateEdit(); }
+function flipPhoto(){ editFlip=!editFlip; updateEdit(); }
+function cropPhoto(){ editCrop=!editCrop; let img=document.getElementById('previewImg'); img.style.objectFit=editCrop?'cover':'contain'; img.style.maxHeight=editCrop?'50vh':'52vh'; document.getElementById('editStatus').innerText=editCrop?'Cropped':'Original'; }
+function applyEditFilter(f){ editFilter=f; updateEdit(); }
+function resetEdit(){ editRotation=0; editFlip=false; editCrop=false; editFilter='none'; let b=document.getElementById('editBright'); if(b){b.value=100; document.getElementById('editContrast').value=100; document.getElementById('editSat').value=100; document.getElementById('editText').value='';} let img=document.getElementById('previewImg'); if(img){img.style.filter='none'; img.style.transform='none'; img.style.objectFit='contain';} let st=document.getElementById('editStatus'); if(st) st.innerText='Original'; }
+function addTextToPhoto(){ let txt=document.getElementById('editText').value.trim(); if(!txt) return; let img=document.getElementById('previewImg'); let c=document.createElement('canvas'); c.width=img.naturalWidth||800; c.height=img.naturalHeight||600; let ctx=c.getContext('2d'); ctx.filter=getEditFilterString(); ctx.drawImage(img,0,0,c.width,c.height); ctx.filter='none'; ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(10,c.height-60,c.width-20,50); ctx.fillStyle='#00ff88'; ctx.font='bold 32px Arial'; ctx.fillText(txt,20,c.height-22); capturedDataUrl=c.toDataURL('image/jpeg',0.9); img.src=capturedDataUrl; img.style.filter='none'; document.getElementById('editStatus').innerText='Text Added: '+txt; }
+function addDateStamp(){ document.getElementById('editText').value='WanaLab • '+new Date().toLocaleString(); addTextToPhoto(); }
+function drawModeToggle(){ isDrawing=!isDrawing; document.getElementById('drawBtn').innerText='🖌️ DRAW: '+(isDrawing?'ON':'OFF'); document.getElementById('drawBtn').style.background=isDrawing?'#ff0':'#222'; document.getElementById('drawBtn').style.color=isDrawing?'#000':'#fff'; if(isDrawing) alert('Draw Mode ON - Tap SAVE to keep edited photo.'); }
 function handleShutter(){if(isRecording) toggleVideo(); else capturePhoto();}
-function capturePhoto(){if(!stream){alert('Start camera first'); return;} let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.filter=video.style.filter; ctx.drawImage(video,0,0); ctx.filter='none'; ctx.drawImage(aiCanvas,0,0); capturedDataUrl=c.toDataURL('image/jpeg',0.82); document.getElementById('previewImg').src=capturedDataUrl; document.getElementById('preview').style.display='flex';}
+function capturePhoto(){if(!stream){alert('Start camera first'); return;} let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; let ctx=c.getContext('2d'); ctx.filter=video.style.filter; ctx.drawImage(video,0,0); ctx.filter='none'; ctx.drawImage(aiCanvas,0,0); capturedDataUrl=c.toDataURL('image/jpeg',0.82); document.getElementById('previewImg').src=capturedDataUrl; document.getElementById('preview').style.display='flex'; resetEdit();}
 function closePreview(){document.getElementById('preview').style.display='none';}
-function savePhoto(){let a=document.createElement('a'); a.href=capturedDataUrl; a.download=`GodEye-v1-4-4-${Date.now()}.jpg`; a.click(); capturedPhotos.push({data:capturedDataUrl, ts:new Date().toISOString()}); if(capturedPhotos.length>50) capturedPhotos.shift(); try{localStorage.setItem('wanaPhotos',JSON.stringify(capturedPhotos));}catch{} closePreview();}
+function savePhoto(){ let img=document.getElementById('previewImg'); let b=document.getElementById('editBright'); if(img && b && (editRotation!==0 || editFlip || b.value!=='100' || document.getElementById('editContrast').value!=='100' || document.getElementById('editSat').value!=='100' || editFilter!=='none')){ let c=document.createElement('canvas'); c.width=img.naturalWidth||800; c.height=img.naturalHeight||600; let ctx=c.getContext('2d'); ctx.filter=getEditFilterString(); ctx.translate(c.width/2,c.height/2); ctx.rotate(editRotation*Math.PI/180); ctx.scale(editFlip?-1:1,1); ctx.drawImage(img,-c.width/2,-c.height/2,c.width,c.height); capturedDataUrl=c.toDataURL('image/jpeg',0.9); } let a=document.createElement('a'); a.href=capturedDataUrl; a.download=`GodEye-v1-5-${Date.now()}.jpg`; a.click(); capturedPhotos.push({data:capturedDataUrl, ts:new Date().toISOString()}); if(capturedPhotos.length>50) capturedPhotos.shift(); try{localStorage.setItem('wanaPhotos',JSON.stringify(capturedPhotos));}catch{} closePreview();}
 function addPriceManual(){let bc=document.getElementById('newBarcode').value.trim(); let nm=document.getElementById('newName').value.trim()||'Product'; let pr=parseInt(document.getElementById('newPrice').value)||0; if(!bc||!pr) return; priceDB[bc]={name:nm,price:pr}; try{localStorage.setItem('wanaPriceDB',JSON.stringify(priceDB));}catch{} renderDB();}
 function renderDB(){let h=''; let k=Object.keys(priceDB); if(k.length==0) h='Empty'; else k.forEach(x=>{h+=`<div style="display:flex;justify-content:space-between;padding:4px;background:#111;margin:2px 0;border-radius:6px;font-size:7px"><span>${x} ${priceDB[x].name}</span><span style="color:#0f8">Rs.${priceDB[x].price}</span></div>`}); document.getElementById('dbList').innerHTML=h;}
 function addToBill(bc=null,pr=null,name=null){let it=name||bc||lastSeen||'Product'; let p=pr||250; billItems.push({name:it,price:p}); totalBill+=p; document.getElementById('billBox').innerHTML=`Total Rs.${totalBill} | ${billItems.length} items`;}
-function openExportCenter(){let html=`<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.96);z-index:10001;display:flex;align-items:center;justify-content:center;padding:12px" id="exportCenter"><div style="max-width:380px;width:100%;background:#001a0a;border:2px solid #00ff88;border-radius:16px;padding:14px"><h3 style="color:#00ff88;text-align:center">📤 EXPORT v1.4.4</h3><div style="font-size:8px;color:#aaa;text-align:center">Bill:${billItems.length} Rs.${totalBill} Count T:${particleCount} IN:${entryCount} OUT:${exitCount} Photos:${capturedPhotos.length}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0"><button onclick="exportBill()" style="padding:10px;background:#a0f;color:#fff;border:none;border-radius:8px;font-size:8px">📄 PDF Bill</button><button onclick="exportCSV()" style="padding:10px;background:#0f8;color:#000;border:none;border-radius:8px;font-size:8px">📊 CSV</button><button onclick="exportCountLog()" style="padding:10px;background:#ff4400;color:#fff;border:none;border-radius:8px;font-size:8px">📊 Count Log</button><button onclick="exportPhotosZip()" style="padding:10px;background:#00aaff;color:#fff;border:none;border-radius:8px;font-size:8px">🖼️ ZIP</button></div><button onclick="document.getElementById('exportCenter').remove()" style="width:100%;padding:10px;background:#222;color:#fff;border:none;border-radius:8px">Close</button></div></div>`; document.body.insertAdjacentHTML('beforeend', html);}
+function openExportCenter(){let html=`<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.96);z-index:10001;display:flex;align-items:center;justify-content:center;padding:12px" id="exportCenter"><div style="max-width:380px;width:100%;background:#001a0a;border:2px solid #00ff88;border-radius:16px;padding:14px"><h3 style="color:#00ff88;text-align:center">📤 EXPORT v1.5</h3><div style="font-size:8px;color:#aaa;text-align:center">Bill:${billItems.length} Rs.${totalBill} Count T:${particleCount} IN:${entryCount} OUT:${exitCount} Photos:${capturedPhotos.length}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0"><button onclick="exportBill()" style="padding:10px;background:#a0f;color:#fff;border:none;border-radius:8px;font-size:8px">📄 PDF Bill</button><button onclick="exportCSV()" style="padding:10px;background:#0f8;color:#000;border:none;border-radius:8px;font-size:8px">📊 CSV</button><button onclick="exportCountLog()" style="padding:10px;background:#ff4400;color:#fff;border:none;border-radius:8px;font-size:8px">📊 Count Log</button><button onclick="exportPhotosZip()" style="padding:10px;background:#00aaff;color:#fff;border:none;border-radius:8px;font-size:8px">🖼️ ZIP</button></div><button onclick="document.getElementById('exportCenter').remove()" style="width:100%;padding:10px;background:#222;color:#fff;border:none;border-radius:8px">Close</button></div></div>`; document.body.insertAdjacentHTML('beforeend', html);}
 function exportBill(){if(billItems.length==0) return; const {jsPDF}=window.jspdf; let doc=new jsPDF(); doc.text(`BILL Rs.${totalBill} Count T:${particleCount} IN:${entryCount}`,10,12); let y=20; billItems.forEach((it,i)=>{doc.text(`${i+1}. ${it.name} Rs.${it.price}`,10,y); y+=6;}); doc.save(`Bill-${Date.now()}.pdf`);}
 function exportCSV(){let csv="No,Name,Price\n"; billItems.forEach((it,i)=>{csv+=`${i+1},${it.name},${it.price}\n`;}); let blob=new Blob([csv],{type:'text/csv'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Bill-${Date.now()}.csv`; a.click();}
 async function exportPhotosZip(){if(capturedPhotos.length==0) return; if(!window.JSZip){let s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; await new Promise(r=>{s.onload=r; document.head.appendChild(s);});} let zip=new JSZip(); let folder=zip.folder("Photos"); capturedPhotos.forEach((p,i)=>{folder.file(`photo-${i+1}.jpg`, p.data.split(',')[1], {base64:true});}); let content=await zip.generateAsync({type:"blob"}); let a=document.createElement('a'); a.href=URL.createObjectURL(content); a.download=`Photos-${Date.now()}.zip`; a.click();}
@@ -225,7 +300,6 @@ function startVideo(){if(!stream){alert('Start camera first'); return;} recorded
 function stopVideo(){if(mediaRecorder&&isRecording){mediaRecorder.stop(); isRecording=false;}}
 async function toggleCounting(){if(isCounting){isCounting=false; updateBtnUI(); speak(`Stopped total ${particleCount}`); return;} particleCount=0; entryCount=0; exitCount=0; trackObjects={}; nextId=1; countLog=[]; classHistory={}; isCounting=true; updateBtnUI(); speak(`Counting ${targetClass}`); if(!aiEnabled) await toggleAI();}
 async function toggleFollow(){followMode=!followMode; updateBtnUI(); if(followMode && !aiEnabled) await toggleAI();}
-// v1.4.4 - START button binding - single handler, no double-fire
 var _startDone=false;
 function onStartTap(e){
   if(e) { try{e.preventDefault();}catch{} try{e.stopPropagation();}catch{} }
