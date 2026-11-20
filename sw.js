@@ -1,11 +1,21 @@
-// WanaLab God Eye v1.6 FINAL - NO CACHE BUG
-// Fix: Deletes ALL old caches (v1.4.1, v1.4.2, v1.4.3, v1.4.4, v1.5) and always fetches fresh v1.6
+// WanaLab God Eye v1.6.5 FINAL - OFFLINE + NO CACHE BUG
+// Fix: Deletes ALL old caches (v1.4, v1.5, v1.6, v1.6.1) + Caches v1.6.5 for Offline
 
-const CACHE_NAME = 'god-eye-v1-6-final';
+const CACHE_NAME = 'god-eye-v165-final';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  // Do NOT pre-cache index.html - old code cached broken file here
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      // Cache these for OFFLINE - This is what old file was missing
+      return cache.addAll([
+        './',
+        './index.html?v=165',
+        './index.html',
+        './manifest.json'
+      ]).catch(()=>{});
+    })
+  );
 });
 
 self.addEventListener('activate', event => {
@@ -24,25 +34,34 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // NETWORK FIRST for everything - always fresh v1.6
-  // Only use cache if offline AND network fails
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Don't cache index.html or / - always fresh
-        if (event.request.mode === 'navigate' || event.request.url.includes('index.html') || event.request.url.endsWith('/')) {
-          return response;
-        }
-        // Cache other assets (icons, libs) for offline - optional
+  // For index.html / navigation: NETWORK FIRST, Fallback to CACHE for Offline
+  if (event.request.mode === 'navigate' || event.request.url.includes('index.html') || event.request.url.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        // Save fresh copy for next offline use
+        let copy = response.clone();
+        caches.open(CACHE_NAME).then(c => c.put(event.request, copy));
         return response;
+      }).catch(() => {
+        // Offline: Serve cached v1.6.5
+        return caches.match(event.request).then(res => res || caches.match('./index.html'));
       })
-      .catch(() => {
-        return caches.match(event.request);
-      })
+    );
+    return;
+  }
+  // For other assets (icon, etc): CACHE FIRST, then Network
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+      return fetch(event.request).then(response => {
+        let copy = response.clone();
+        caches.open(CACHE_NAME).then(c => c.put(event.request, copy));
+        return response;
+      }).catch(() => cached);
+    })
   );
 });
 
-// Force update when new version arrives
 self.addEventListener('message', event => {
   if (event.data === 'skipWaiting') {
     self.skipWaiting();
