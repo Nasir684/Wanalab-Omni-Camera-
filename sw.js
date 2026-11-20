@@ -1,7 +1,7 @@
-// WanaLab God Eye v1.5 ADVANCED - NO CACHE BUG
-// Fix: Deletes ALL old caches (v1.4.1, v1.4.2, v1.4.3, v1.4.4) and always fetches fresh v1.5
+// WanaLab God Eye v1.6 FINAL - NO CACHE BUG
+// Fix: Deletes ALL old caches (v1.4.1, v1.4.2, v1.4.3, v1.4.4, v1.5) and always fetches fresh v1.6
 
-const CACHE_NAME = 'god-eye-v1-5-advanced';
+const CACHE_NAME = 'god-eye-v1-6-final';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -24,7 +24,7 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // NETWORK FIRST for everything - always fresh v1.5
+  // NETWORK FIRST for everything - always fresh v1.6
   // Only use cache if offline AND network fails
   event.respondWith(
     fetch(event.request)
