@@ -2,303 +2,147 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>God Eye v1.6.1 FINAL - WanaLab</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>God Eye v1.6.3 FINAL</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:#000;color:#fff;font-family:Arial,sans-serif;overflow:hidden}
-#header{position:fixed;top:0;left:0;right:0;height:52px;background:#111;display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:100;border-bottom:2px solid #00ff00}
-#header b{font-size:15px;color:#00ff00}
-#header span{font-size:11px;background:#00ff00;color:#000;padding:3px 7px;border-radius:10px;font-weight:bold}
-#videoWrap{position:fixed;top:52px;bottom:110px;left:0;right:0;background:#000;display:flex;align-items:center;justify-content:center}
-video,canvas#view{width:100%;height:100%;object-fit:cover}
-#overlay{position:absolute;top:0;left:0;right:0;padding:8px;display:flex;justify-content:space-between;pointer-events:none;z-index:10}
-#billTotal{background:rgba(0,0,0,.7);color:#ff0;padding:6px 10px;border-radius:8px;font-weight:bold;font-size:14px}
-#recDot{display:none;background:red;color:#fff;padding:6px 10px;border-radius:20px;font-weight:bold;animation:blink 1s infinite}
-@keyframes blink{50%{opacity:.3}}
-#toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;z-index:999;display:none;border:1px solid #00ff00;white-space:nowrap}
-#controls{position:fixed;bottom:0;left:0;right:0;background:#111;padding:8px;border-top:2px solid #333;z-index:100}
+*{margin:0;padding:0;box-sizing:border-box} body{background:#000;color:#fff;font-family:Arial;overflow:hidden}
+#head{height:52px;background:#111;display:flex;justify-content:space-between;align-items:center;padding:0 10px;border-bottom:2px solid #0f0}
+#head span{background:#0f0;color:#000;padding:3px 8px;border-radius:10px;font-weight:bold;font-size:12px}
+#wrap{position:fixed;top:52px;bottom:110px;left:0;right:0;background:#000}
+video{width:100%;height:100%;object-fit:cover}
+#toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#222;padding:10px 16px;border-radius:20px;z-index:999;display:none;border:1px solid #0f0}
+#rec{display:none;position:absolute;top:8px;right:8px;background:red;padding:6px 10px;border-radius:20px;font-weight:bold}
+#ctrl{position:fixed;bottom:0;left:0;right:0;background:#111;padding:8px;border-top:2px solid #333}
 .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
-button{background:#222;color:#fff;border:1px solid #444;padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer;min-width:52px}
-button:active{background:#00ff00;color:#000}
-button.primary{background:#00ff00;color:#000;font-weight:bold}
-button.red{background:#ff2222;color:#fff;font-weight:bold}
-button.gold{background:#ffcc00;color:#000;font-weight:bold}
+button{background:#222;color:#fff;border:1px solid #444;padding:11px 12px;border-radius:10px;font-size:13px}
+button.primary{background:#0f0;color:#000;font-weight:bold}
+button.red{background:#f22;color:#fff;font-weight:bold}
 #panel{position:fixed;top:52px;left:0;right:0;bottom:110px;background:#111;z-index:200;display:none;overflow:auto;padding:12px}
-#panel h2{color:#00ff00;margin-bottom:10px}
-#panel input,#panel select{width:100%;padding:10px;margin:6px 0;background:#222;color:#fff;border:1px solid #444;border-radius:8px}
+#panel input{width:100%;padding:10px;margin:6px 0;background:#222;color:#fff;border:1px solid #444;border-radius:8px}
 .stat{background:#222;padding:12px;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between}
-#closePanel{position:fixed;top:58px;right:10px;z-index:201;display:none}
 </style>
 </head>
 <body>
-
-<div id="header">
-  <b>👁️ GOD EYE</b>
-  <span>v1.6.1 FINAL</span>
-  <b style="font-size:11px;color:#aaa">WanaLab • Nasir Khan</b>
-</div>
-
-<div id="videoWrap">
-  <video id="video" autoplay playsinline muted></video>
-  <canvas id="view" style="display:none"></canvas>
-  <div id="overlay">
-    <div id="billTotal">🧾 Bill: Rs. 0 | Items: 0</div>
-    <div id="recDot">🔴 REC 00:00</div>
-  </div>
-</div>
-
+<div id="head"><b>👁️ GOD EYE</b><span>v1.6.3 FINAL</span><b style="font-size:11px;color:#aaa">WanaLab</b></div>
+<div id="wrap"><video id="video" autoplay playsinline muted></video><div id="rec">🔴 REC</div></div>
 <div id="toast"></div>
-<button id="closePanel" onclick="closePanel()">✖ Close</button>
-
 <div id="panel"></div>
-
-<div id="controls">
-  <div class="row">
-    <button class="primary" onclick="startCamera()">📷 CAM</button>
-    <button onclick="capturePhoto()">📸 Capture</button>
-    <button id="videoBtn" onclick="handleVideoVoice('video')">🎥 Video</button>
-    <button class="red" onclick="handleVideoVoice('stop video')">⏹ Stop</button>
-    <button onclick="toggleTorch()">🔦 Torch</button>
-  </div>
-  <div class="row">
-    <button onclick="startVoice()">🎤 Voice</button>
-    <button onclick="openDashboard()">📊 DASH</button>
-    <button onclick="openScan()">📷 Scan</button>
-    <button onclick="openCount()">🔢 Count</button>
-    <button onclick="openBill()">🧾 Bill</button>
-    <button onclick="openThermal()">🌡️ Thermal</button>
-  </div>
-  <div class="row">
-    <button onclick="openDocScan()">📄 Doc</button>
-    <button onclick="openOCR()">🔤 OCR</button>
-    <button onclick="openTracking()">🎯 Track</button>
-    <button onclick="openExport()">📤 Export</button>
-    <button onclick="openEdit()">✏️ Edit</button>
-    <button onclick="openAbout()">ℹ️ About</button>
-    <button onclick="openSettings()">⚙️ SYS</button>
-  </div>
+<div id="ctrl">
+<div class="row"><button class="primary" onclick="startCamera()">📷 CAM</button><button onclick="capturePhoto()">📸 Capture</button><button onclick="handleVideoVoice('video')">🎥 Video</button><button class="red" onclick="handleVideoVoice('stop video')">⏹ Stop</button><button onclick="toggleTorch()">🔦 Torch</button></div>
+<div class="row"><button onclick="startVoice()">🎤 Voice</button><button onclick="openDashboard()">📊 DASH</button><button onclick="openScan()">📷 Scan</button><button onclick="openBill()">🧾 Bill</button><button onclick="openCount()">🔢 Count</button><button onclick="openAbout()">ℹ️ About</button></div>
 </div>
-
 <script>
-// ===== GOD EYE v1.6.1 FINAL - WanaLab - Nasir Khan - Dera Ismail Khan =====
-const VERSION = 'v1.6.1 FINAL';
-let videoStream = null;
-let currentPhoto = null;
-let torchOn = false;
-let thermalLevel = 0;
-let billItems = JSON.parse(localStorage.getItem('god_bill')||'[]');
-let scanHistory = JSON.parse(localStorage.getItem('god_scans')||'[]');
-let photosCount = parseInt(localStorage.getItem('god_photos')||'0');
-let countTotal = parseInt(localStorage.getItem('god_count')||'0');
+// ===== GOD EYE v1.6.3 - SINGLE FILE - NO DUPLICATE LETS =====
+var videoStream=null, mediaRecorder=null, recordedChunks=[], isVideoRecording=false, lastVideoCmdTime=0, recTimer=null;
+var recognition=null, voiceOn=false, torchOn=false, billItems=[], scanHistory=[], photosCount=0, countTotal=0;
+try{ billItems=JSON.parse(localStorage.getItem('god_bill')||'[]'); scanHistory=JSON.parse(localStorage.getItem('god_scans')||'[]'); photosCount=parseInt(localStorage.getItem('god_photos')||'0'); countTotal=parseInt(localStorage.getItem('god_count')||'0'); }catch(e){}
+function showToast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(function(){t.style.display='none'},2500); }
+function openPanel(h){ document.getElementById('panel').innerHTML=h+'<br><button onclick="document.getElementById(\'panel\').style.display=\'none\'">✖ Close</button>'; document.getElementById('panel').style.display='block'; }
 
-function showToast(m){ let t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
-function updateBillUI(){ let total=billItems.reduce((s,i)=>s+i.price,0); document.getElementById('billTotal').textContent=`🧾 Bill: Rs. ${total} | Items: ${billItems.length}`; localStorage.setItem('god_bill',JSON.stringify(billItems)); }
-updateBillUI();
-
-// ===== CAMERA =====
 async function startCamera(){
   try{
-    videoStream = await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1920},height:{ideal:1080},facingMode:'environment'},audio:true});
-    let v=document.getElementById('video'); v.srcObject=videoStream; await v.play();
+    videoStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1920},facingMode:'environment'},audio:true});
+    var v=document.getElementById('video'); v.srcObject=videoStream; await v.play();
     showToast('📷 Camera Started');
-  }catch(e){ alert('Camera Error: '+e.message+'\nAllow camera permission in browser.'); }
+  }catch(e){ alert('Camera Blocked: Allow Camera in 🔒 > Reload. '+e.message); }
 }
 async function toggleTorch(){
-  try{
-    if(!videoStream) return showToast('First tap CAM');
-    let track=videoStream.getVideoTracks()[0];
-    let cap=track.getCapabilities();
-    if(!cap.torch) return showToast('Torch not supported on this phone');
-    torchOn=!torchOn;
-    await track.applyConstraints({advanced:[{torch:torchOn}]});
-    showToast(torchOn?'🔦 Torch ON':'🔦 Torch OFF');
-  }catch(e){ showToast('Torch: '+e.message); }
+  if(!videoStream) return showToast('First tap CAM');
+  try{ var tr=videoStream.getVideoTracks()[0]; var c=tr.getCapabilities(); if(!c.torch) return showToast('Torch not supported'); torchOn=!torchOn; await tr.applyConstraints({advanced:[{torch:torchOn}]}); showToast(torchOn?'🔦 Torch ON':'🔦 Torch OFF'); }catch(e){ showToast('Torch: '+e.message); }
 }
 function capturePhoto(){
-  let v=document.getElementById('video');
-  if(!v.srcObject) return showToast('First tap CAM');
-  let c=document.createElement('canvas'); c.width=v.videoWidth||1280; c.height=v.videoHeight||720;
-  let ctx=c.getContext('2d'); ctx.drawImage(v,0,0,c.width,c.height);
-  if(thermalLevel>0) applyThermalToCanvas(c,thermalLevel);
-  currentPhoto=c.toDataURL('image/jpeg',0.9);
-  photosCount++; localStorage.setItem('god_photos',photosCount);
-  let a=document.createElement('a'); a.href=currentPhoto; a.download='GodEye-'+Date.now()+'.jpg'; a.click();
-  showToast('📸 Photo Saved • Total: '+photosCount);
-  if(navigator.vibrate) navigator.vibrate(100);
+  var v=document.getElementById('video'); if(!v.srcObject) return showToast('First tap CAM');
+  var c=document.createElement('canvas'); c.width=v.videoWidth||1280; c.height=v.videoHeight||720;
+  c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+  var a=document.createElement('a'); a.href=c.toDataURL('image/jpeg',0.9); a.download='GodEye-'+Date.now()+'.jpg'; a.click();
+  photosCount++; localStorage.setItem('god_photos',photosCount); showToast('📸 Photo Saved');
 }
 
-// ===== v1.6.1 VIDEO FIX - NO 1-SEC AUTO STOP =====
-let mediaRecorder=null, recordedChunks=[], isVideoRecording=false, lastVideoCmdTime=0, recTimer=null, recSec=0;
+// ===== VIDEO - NO 1-SEC STOP =====
 function handleVideoVoice(cmd){
   cmd=(cmd||'video').toLowerCase();
-  let now=Date.now();
-  if(now-lastVideoCmdTime<3000) return; // Ignore duplicate in 3 sec
-  lastVideoCmdTime=now;
-  if(cmd.includes('stop')||cmd.includes('band')||cmd.includes('ruk')){ stopVideoSafe(); return; }
-  if(isVideoRecording){ showToast('🔴 Already Recording... Say "Stop Video"'); return; }
+  var now=Date.now(); if(now-lastVideoCmdTime<3000) return; lastVideoCmdTime=now;
+  if(cmd.indexOf('stop')>=0||cmd.indexOf('band')>=0) { stopVideoSafe(); return; }
+  if(isVideoRecording){ showToast('🔴 Already Recording - Say Stop Video'); return; }
   startVideoSafe();
 }
 async function startVideoSafe(){
   try{
-    if(!videoStream||!videoStream.active){ await startCamera(); }
-    let mime='';
-    const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'];
-    for(let t of types){ if(MediaRecorder.isTypeSupported(t)){ mime=t; break; } }
-    recordedChunks=[];
-    mediaRecorder=new MediaRecorder(videoStream, mime?{mimeType:mime}:undefined);
-    mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
-    mediaRecorder.onstop=saveVideoFile;
-    mediaRecorder.start(1000); // chunk every 1s, NOT stop
-    isVideoRecording=true; recSec=0;
-    document.getElementById('recDot').style.display='block';
-    document.getElementById('videoBtn').textContent='🔴 REC...';
-    recTimer=setInterval(()=>{ recSec++; let m=String(Math.floor(recSec/60)).padStart(2,'0'); let s=String(recSec%60).padStart(2,'0'); document.getElementById('recDot').textContent=`🔴 REC ${m}:${s}`; },1000);
-    showToast('🔴 Video Recording Started - Say "Stop Video"');
-  }catch(e){ alert('Video Error: '+e.message+'\nFirst tap CAM, then say Video'); }
+    if(!videoStream||!videoStream.active) await startCamera();
+    var mime=''; var types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'];
+    for(var i=0;i<types.length;i++){ if(MediaRecorder.isTypeSupported(types[i])){ mime=types[i]; break; } }
+    recordedChunks=[]; mediaRecorder=new MediaRecorder(videoStream, mime?{mimeType:mime}:undefined);
+    mediaRecorder.ondataavailable=function(e){ if(e.data.size>0) recordedChunks.push(e.data); };
+    mediaRecorder.onstop=saveVideoFile; mediaRecorder.start(1000);
+    isVideoRecording=true; document.getElementById('rec').style.display='block'; showToast('🔴 Recording - Say Stop Video');
+  }catch(e){ alert('Video: '+e.message); }
 }
 function stopVideoSafe(){
-  if(mediaRecorder&&isVideoRecording){
-    mediaRecorder.stop(); isVideoRecording=false;
-    clearInterval(recTimer);
-    document.getElementById('recDot').style.display='none';
-    document.getElementById('videoBtn').textContent='🎥 Video';
-    showToast('✅ Video Saved');
-  } else showToast('Video is not recording');
+  if(mediaRecorder&&isVideoRecording){ mediaRecorder.stop(); isVideoRecording=false; document.getElementById('rec').style.display='none'; showToast('✅ Video Saved'); }
+  else showToast('Not recording');
 }
 function saveVideoFile(){
-  let type=(mediaRecorder&&mediaRecorder.mimeType)||'video/webm';
-  let blob=new Blob(recordedChunks,{type:type});
-  let url=URL.createObjectURL(blob);
-  let a=document.createElement('a'); a.href=url; a.download='GodEye-Video-'+Date.now()+'.webm'; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  var type=(mediaRecorder&&mediaRecorder.mimeType)||'video/webm';
+  var blob=new Blob(recordedChunks,{type:type}); var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download='GodEye-Video-'+Date.now()+'.webm'; a.click();
 }
 
-// ===== THERMAL =====
-function applyThermalToCanvas(c,level){
-  let ctx=c.getContext('2d'); let img=ctx.getImageData(0,0,c.width,c.height); let d=img.data;
-  for(let i=0;i<d.length;i+=4){ let g=(d[i]+d[i+1]+d[i+2])/3; let t=g/255; d[i]=Math.min(255,t*255*(level/50)); d[i+1]=Math.min(255,Math.abs(t-0.5)*255); d[i+2]=Math.max(0,255-t*255); }
-  ctx.putImageData(img,0,0);
-}
-function openThermal(){
-  openPanel(`<h2>🌡️ Thermal FLIR v1.6.1</h2>
-  <p>Live Thermal JET + Night HDR + Exposure</p>
-  <label>Thermal 0-100: <span id="thVal">${thermalLevel}</span></label>
-  <input type="range" min="0" max="100" value="${thermalLevel}" oninput="thermalLevel=this.value;document.getElementById('thVal').textContent=this.value">
-  <button class="primary" onclick="capturePhoto()">📸 Capture Thermal</button>
-  <button onclick="thermalLevel=0;closePanel()">Reset</button>`);
-}
-
-// ===== DASHBOARD =====
-function openDashboard(){
-  let total=billItems.reduce((s,i)=>s+i.price,0);
-  openPanel(`<h2>📊 Dashboard v1.6.1</h2>
-  <div class="stat"><span>📸 Photos</span><b>${photosCount}</b></div>
-  <div class="stat"><span>🔢 Counted Total</span><b>${countTotal}</b></div>
-  <div class="stat"><span>📷 Scans</span><b>${scanHistory.length}</b></div>
-  <div class="stat"><span>🧾 Bill Total</span><b>Rs. ${total}</b></div>
-  <h3>Last 3 Scans</h3>${scanHistory.slice(-3).map(s=>`<div class="stat"><span>${s}</span></div>`).join('')||'<p>No scans yet</p>'}
-  <h3>Last 3 Bill Items</h3>${billItems.slice(-3).map(s=>`<div class="stat"><span>${s.name}</span><b>Rs. ${s.price}</b></div>`).join('')||'<p>No bill yet</p>'}
-  <button class="primary" onclick="exportAll()">📤 Export All</button>
-  <button class="red" onclick="if(confirm('Clear all?')){localStorage.clear();location.reload()}">🗑 Clear Data</button>`);
-}
-
-// ===== COUNT / BILL / SCAN / DOC / OCR / TRACK / EXPORT / EDIT =====
-function openCount(){ openPanel(`<h2>🔢 Count ROI v1.6.1</h2><p>Drag box in camera to count objects inside. For shop inventory, seeds, boxes.</p><input id="cntInput" type="number" placeholder="Enter counted number"><button class="primary" onclick="let v=parseInt(document.getElementById('cntInput').value||0);countTotal+=v;localStorage.setItem('god_count',countTotal);showToast('Count Added: '+v);closePanel()">➕ Add Count</button>`); }
-function openBill(){
-  let total=billItems.reduce((s,i)=>s+i.price,0);
-  openPanel(`<h2>🧾 Tap Bill Scanner</h2><p>Tap product in camera to add. Total on top.</p>
-  <input id="billName" placeholder="Product Name"><input id="billPrice" type="number" placeholder="Price Rs.">
-  <button class="primary" onclick="addBillItem()">➕ Add to Bill</button>
-  <h3>Items: ${billItems.length} • Total Rs. ${total}</h3>
-  ${billItems.map((b,i)=>`<div class="stat"><span>${i+1}. ${b.name}</span><b>Rs. ${b.price}</b></div>`).join('')}
-  <button onclick="exportBillPDF()">📄 Export Bill PDF</button>
-  <button class="red" onclick="billItems=[];updateBillUI();openBill()">Clear Bill</button>`);
-}
-function addBillItem(){ let n=document.getElementById('billName').value||'Item'; let p=parseInt(document.getElementById('billPrice').value||0); billItems.push({name:n,price:p}); updateBillUI(); showToast(n+' Added Rs.'+p); openBill(); if(navigator.vibrate) navigator.vibrate(80); }
-function openScan(){
-  openPanel(`<h2>📷 Advanced Scan v1.6.1</h2><p>AUTO + MULTI + BEEP + Light + Zoom + History</p>
-  <button class="primary" onclick="startBarcodeScan()">📷 Start Barcode / QR Scan</button>
-  <button onclick="toggleTorch()">🔦 Scan Light</button>
-  <label>Sensitivity</label><select id="sens"><option>Low</option><option selected>Medium</option><option>High</option></select>
-  <label>Scan Zoom 1x-5x</label><input type="range" min="1" max="5" value="1">
-  <h3>History (20)</h3>${scanHistory.slice(-20).map(s=>`<div class="stat"><span>${s}</span></div>`).join('')||'<p>No history</p>'}`);
-}
-async function startBarcodeScan(){
-  if(!('BarcodeDetector' in window)) return showToast('BarcodeDetector not supported - Use Chrome');
-  try{
-    let v=document.getElementById('video'); if(!v.srcObject) await startCamera();
-    let det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','qr_code','upc_a']});
-    showToast('Scanning... Point at barcode');
-    let found=await det.detect(v);
-    if(found.length){ let code=found[0].rawValue; scanHistory.push(code); localStorage.setItem('god_scans',JSON.stringify(scanHistory)); showToast('✅ Scanned: '+code); if(navigator.vibrate) navigator.vibrate(150); }
-    else showToast('No barcode found - Try again closer');
-  }catch(e){ showToast('Scan: '+e.message); }
-}
-function openDocScan(){ openPanel(`<h2>📄 Doc Scanner v1.6.1</h2><p>Manual 4-corner crop + Magic / BW / Gray / Thermal / Night + Perspective Warp + Searchable PDF + DOCX+IMG</p><button class="primary" onclick="capturePhoto();showToast('Doc Captured - Use Edit to crop')">📸 Capture Doc</button><button onclick="exportAll()">📄 Export PDF</button>`); }
-function openOCR(){ openPanel(`<h2>🔤 OCR ROI Scanner</h2><p>Drag box to OCR only inside - Eng / Urdu / Pashto / Arabic. Needs online first time for model.</p><button class="primary" onclick="showToast('OCR: Capture photo then Export - Tesseract will run')">🔤 Run OCR</button>`); }
-function openTracking(){ openPanel(`<h2>🎯 DJI Auto Tracking</h2><p>Tap any object/person to lock - Green brackets + Confidence % + Follow</p><button class="primary" onclick="showToast('Tracking: Tap object on screen to lock');closePanel()">🎯 Tap to Lock Mode</button>`); }
-function openExport(){
-  openPanel(`<h2>📤 Export Hub v1.6.1</h2><p>JPG, IMG PDF, Searchable PDF, TXT, DOC, DOCX with Images, Bill PDF, JSON</p>
-  <button class="primary" onclick="exportAll()">📄 Export All as PDF / JPG</button>
-  <button onclick="exportBillPDF()">🧾 Bill PDF</button>
-  <button onclick="let d=JSON.stringify({bill:billItems,scans:scanHistory,photos:photosCount,count:countTotal});let b=new Blob([d],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='GodEye-Data.json';a.click()">📦 Export JSON</button>`);
-}
-function exportAll(){ if(currentPhoto){ let a=document.createElement('a'); a.href=currentPhoto; a.download='GodEye-Export.jpg'; a.click(); showToast('Exported JPG'); } else showToast('Capture a photo first'); }
-function exportBillPDF(){ let total=billItems.reduce((s,i)=>s+i.price,0); let w=window.open(''); w.document.write(`<h1>WanaLab - God Eye Bill</h1><p>Date: ${new Date().toLocaleString()}</p>${billItems.map((b,i)=>`<p>${i+1}. ${b.name} - Rs. ${b.price}</p>`).join('')}<h2>Total: Rs. ${total}</h2><button onclick="window.print()">Print / Save PDF</button>`); }
-function openEdit(){ openPanel(`<h2>✏️ Edit Studio v1.6.1</h2><p>Rotate, Flip, Crop, Brightness, Contrast, Filters, Text, Date Stamp</p><button class="primary" onclick="if(currentPhoto){let a=document.createElement('a');a.href=currentPhoto;a.download='GodEye-Edited.jpg';a.click();showToast('Edited Saved')}else showToast('Capture first')">💾 Save Edited JPG</button>`); }
-function openSettings(){
-  openPanel(`<h2>⚙️ System - Protocols</h2>
-  <p><b>Custom UVC:</b> USB Microscope / Endoscope / WanaLab Pro</p>
-  <p><b>Custom WiFi:</b> 192.168.0.1 - WiFi Microscope / ESP32-CAM</p>
-  <p><b>Custom IP:</b> RTSP / ONVIF - Hikvision / Dahua / Tapo</p>
-  <p><b>Custom Thermal FLIR:</b> FLIR ONE / Seek / InfiRay</p>
-  <input placeholder="UVC Vendor ID e.g. 0x1234"><input placeholder="UVC Product ID e.g. 0x5678">
-  <input placeholder="WiFi Camera IP e.g. 192.168.0.1"><input placeholder="IP Camera RTSP e.g. rtsp://192.168.1.100:554/onvif1">
-  <button class="primary" onclick="showToast('Device Saved');closePanel()">💾 Save Custom Device</button>`);
-}
-function openAbout(){
-  openPanel(`<h2>ℹ️ About v1.6.1 FINAL</h2><p><b>Developer:</b> Nasir Khan - WanaLab</p><p><b>Location:</b> Dera Ismail Khan, KPK</p><p><b>Version:</b> v1.6.1 FINAL 2026</p><p><b>Features:</b> Camera, Video, Thermal, Doc Scan, OCR, Tracking, Count, Bill, Barcode, Export, Edit, Dashboard, Voice (14 Commands)</p><button class="primary" onclick="openDashboard()">📊 Dashboard</button><button onclick="showToast('Voice Commands: Capture, Video, Stop Video, Count, Barcode, Scan, Edit, Dashboard, About, Torch, Export')">🎤 Voice List</button><button onclick="closePanel()">📷 Back to Camera</button>`);
-}
-function openPanel(html){ document.getElementById('panel').innerHTML=html; document.getElementById('panel').style.display='block'; document.getElementById('closePanel').style.display='block'; }
-function closePanel(){ document.getElementById('panel').style.display='none'; document.getElementById('closePanel').style.display='none'; }
-
-// ===== VOICE - 14 COMMANDS =====
-let recognition=null;
+// ===== VOICE - ALWAYS SHOWS MESSAGE =====
 function startVoice(){
-  let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR) return alert('Voice not supported - Use Chrome');
-  if(recognition) { try{recognition.stop()}catch(e){} }
-  recognition=new SR(); recognition.lang='en-US'; recognition.continuous=true; recognition.interimResults=false;
-  recognition.onresult=e=>{
-    let cmd=e.results[e.results.length-1][0].transcript.toLowerCase().trim();
-    showToast('🎤 Heard: '+cmd);
-    handleVoiceCommand(cmd);
+  showToast('🎤 Voice button pressed...');
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ alert('VOICE NOT SUPPORTED HERE\nOpen link in CHROME app, not WhatsApp.'); return; }
+  if(voiceOn){ showToast('🎤 Voice Already ON'); return; }
+  try{ if(recognition) recognition.abort(); }catch(e){}
+  recognition=new SR(); recognition.lang='en-US'; recognition.continuous=false; recognition.interimResults=false;
+  recognition.onstart=function(){ showToast('🎤 Listening... Say Capture'); };
+  recognition.onresult=function(e){
+    var cmd=e.results[0][0].transcript.toLowerCase().trim();
+    showToast('🎤 Heard: '+cmd); handleVoiceCommand(cmd);
+    setTimeout(function(){ if(voiceOn) try{recognition.start()}catch(e){} },600);
   };
-  recognition.onend=()=>{ if(recognition) { try{recognition.start()}catch(e){} } }; // Auto-restart listening
-  recognition.start(); showToast('🎤 Voice ON - Say Capture / Video / Stop Video / Count / Barcode / Torch / Dashboard');
+  recognition.onerror=function(e){ showToast('Voice Error: '+e.error); if(e.error==='not-allowed') alert('MIC BLOCKED: Tap 🔒 > Allow Microphone > Reload'); };
+  recognition.onend=function(){ if(voiceOn) setTimeout(function(){ try{recognition.start()}catch(e){} },800); };
+  voiceOn=true; try{ recognition.start(); }catch(e){ alert('Voice: '+e.message); }
 }
 function handleVoiceCommand(cmd){
-  if(cmd.includes('capture')||cmd.includes('photo')||cmd.includes('tasveer')) capturePhoto();
-  else if(cmd.includes('video')) handleVideoVoice(cmd);
-  else if(cmd.includes('stop')) stopVideoSafe();
-  else if(cmd.includes('torch')||cmd.includes('light')||cmd.includes('roshni')) toggleTorch();
-  else if(cmd.includes('count')||cmd.includes('gin')) openCount();
-  else if(cmd.includes('barcode')||cmd.includes('scan')) openScan();
-  else if(cmd.includes('bill')) openBill();
-  else if(cmd.includes('dashboard')) openDashboard();
-  else if(cmd.includes('about')) openAbout();
-  else if(cmd.includes('edit')) openEdit();
-  else if(cmd.includes('export')) openExport();
-  else if(cmd.includes('thermal')||cmd.includes('garmi')) openThermal();
-  else if(cmd.includes('camera')||cmd.includes('cam')) startCamera();
-  else if(cmd.includes('person')||cmd.includes('banda')) openTracking();
+  if(cmd.indexOf('capture')>=0||cmd.indexOf('photo')>=0) capturePhoto();
+  else if(cmd.indexOf('video')>=0) handleVideoVoice(cmd);
+  else if(cmd.indexOf('stop')>=0) stopVideoSafe();
+  else if(cmd.indexOf('torch')>=0||cmd.indexOf('light')>=0) toggleTorch();
+  else if(cmd.indexOf('scan')>=0||cmd.indexOf('barcode')>=0) openScan();
+  else if(cmd.indexOf('bill')>=0) openBill();
+  else if(cmd.indexOf('count')>=0) openCount();
+  else if(cmd.indexOf('dashboard')>=0) openDashboard();
+  else if(cmd.indexOf('camera')>=0||cmd.indexOf('cam')>=0) startCamera();
+  else if(cmd.indexOf('about')>=0) openAbout();
 }
 
-// Auto-start camera on load
-window.addEventListener('load',()=>{ setTimeout(startCamera,500); });
+// ===== SCAN - 10 TRIES + MANUAL FALLBACK =====
+async function startBarcodeScan(){
+  var v=document.getElementById('video');
+  if(!v.srcObject){ alert('Tap CAM first'); await startCamera(); return; }
+  showToast('Scanning... Hold 15cm, steady, Torch ON');
+  try{ var tr=videoStream.getVideoTracks()[0]; if(tr.getCapabilities().torch) await tr.applyConstraints({advanced:[{torch:true}]}); }catch(e){}
+  if('BarcodeDetector' in window){
+    try{
+      var det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','qr_code']});
+      for(var i=0;i<10;i++){
+        var found=await det.detect(v);
+        if(found.length){ var code=found[0].rawValue; scanHistory.push(code); localStorage.setItem('god_scans',JSON.stringify(scanHistory)); showToast('✅ Scanned: '+code); if(navigator.vibrate) navigator.vibrate(200); return; }
+        await new Promise(function(r){setTimeout(r,400)});
+      }
+    }catch(e){ showToast('Scan error: '+e.message); }
+  }
+  var manual=prompt('No barcode found after 4 sec.\nMove 15cm, more light, steady.\n\nType barcode number manually:');
+  if(manual){ scanHistory.push(manual); localStorage.setItem('god_scans',JSON.stringify(scanHistory)); showToast('✅ Manual Saved: '+manual); }
+}
+function openScan(){ openPanel('<h2>📷 Scan</h2><p>Auto + Torch + Manual Fallback</p><button class="primary" onclick="startBarcodeScan()">📷 Start Scan</button><button onclick="toggleTorch()">🔦 Torch</button><h3>History</h3>'+scanHistory.slice(-10).map(function(s){return '<div class="stat"><span>'+s+'</span></div>'}).join('')); }
+function openBill(){ var total=billItems.reduce(function(s,i){return s+i.price},0); openPanel('<h2>🧾 Bill</h2><input id="bn" placeholder="Product Name"><input id="bp" type="number" placeholder="Price"><button class="primary" onclick="var n=document.getElementById(\'bn\').value||\'Item\';var p=parseInt(document.getElementById(\'bp\').value||0);billItems.push({name:n,price:p});localStorage.setItem(\'god_bill\',JSON.stringify(billItems));showToast(n+\' Added\');openBill()">➕ Add</button><h3>Total Rs. '+total+' | Items '+billItems.length+'</h3>'+billItems.map(function(b,i){return '<div class="stat"><span>'+b.name+'</span><b>Rs. '+b.price+'</b></div>'}).join('')); }
+function openCount(){ openPanel('<h2>🔢 Count</h2><input id="ci" type="number" placeholder="Enter count"><button class="primary" onclick="countTotal+=parseInt(document.getElementById(\'ci\').value||0);localStorage.setItem(\'god_count\',countTotal);showToast(\'Count Saved\');document.getElementById(\'panel\').style.display=\'none\'">➕ Add Count</button>'); }
+function openDashboard(){ openPanel('<h2>📊 Dashboard v1.6.3</h2><div class="stat"><span>📸 Photos</span><b>'+photosCount+'</b></div><div class="stat"><span>🔢 Count</span><b>'+countTotal+'</b></div><div class="stat"><span>📷 Scans</span><b>'+scanHistory.length+'</b></div><div class="stat"><span>🧾 Bill</span><b>Rs. '+billItems.reduce(function(s,i){return s+i.price},0)+'</b></div>'); }
+function openAbout(){ openPanel('<h2>ℹ️ About v1.6.3</h2><p>Nasir Khan - WanaLab - Dera Ismail Khan</p><p>Voice: Capture, Video, Stop Video, Torch, Scan, Bill, Count, Dashboard</p><p>If Voice says NOT SUPPORTED = Open in Chrome, not WhatsApp</p>'); }
+window.addEventListener('load',function(){ setTimeout(startCamera,500); });
 </script>
 </body>
 </html>
