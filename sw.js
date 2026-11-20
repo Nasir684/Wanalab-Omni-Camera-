@@ -1,18 +1,12 @@
-const CACHE_NAME = 'god-eye-v1-4-1-anti-mix';
-const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './wanalab-god-eye-v1-1-icon.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  'https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js'
-];
+// WanaLab God Eye v1.4.2 FIXED - NO CACHE for index.html
+// This version DELETES old cache and always fetches fresh file
+// Fix for: Hang caused by old cached index.html
+
+const CACHE_NAME = 'god-eye-v1-4-2-fixed';
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-  );
   self.skipWaiting();
+  // Do NOT cache anything on install - old code cached broken index.html here
 });
 
 self.addEventListener('activate', event => {
@@ -20,18 +14,25 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(name => {
-          if (name !== CACHE_NAME) return caches.delete(name);
+          // Delete ALL old caches including god-eye-v1-4-1-anti-mix
+          return caches.delete(name);
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
+  // NETWORK FIRST for HTML - always get fresh index.html
+  // CACHE ONLY for icon, never for index.html
+  if (event.request.mode === 'navigate' || event.request.url.includes('index.html') || event.request.url.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+  // For other files, try network, fallback to cache
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
