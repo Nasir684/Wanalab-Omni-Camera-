@@ -12,8 +12,8 @@
     "fps": 30,
     "protocol": "uvc",
     "addedBy": "user",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
     "id": "custom-wifi-camera",
@@ -31,8 +31,8 @@
     "password": "",
     "resolution": "1280x720",
     "addedBy": "user",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
     "id": "custom-ip-camera",
@@ -49,12 +49,12 @@
     "username": "admin",
     "password": "",
     "addedBy": "user",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
     "id": "custom-thermal-flir",
-    "name": "Custom Thermal FLIR v1.5 - Live Thermal Slider",
+    "name": "Custom Thermal FLIR v1.6 - Live Thermal Slider",
     "type": "THERMAL",
     "mode": "auto",
     "description": "Live Thermal JET colormap + Night HDR + Exposure Sliders - Software FLIR + Hardware FLIR ONE / Seek / InfiRay support - Adjust thermal intensity 0-100%",
@@ -66,17 +66,17 @@
     "palette": "jet, ironbow, hot, rainbow",
     "features": ["live-thermal-0-100", "night-mode-0-100", "hdr-0-100", "exposure-slider", "thermal-filter-preview", "software-thermal"],
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
-    "id": "custom-doc-scanner-v15",
-    "name": "Custom Doc Scanner v1.5 - Manual Crop + ROI Engine + Edit Studio",
+    "id": "custom-doc-scanner-v16",
+    "name": "Custom Doc Scanner v1.6 - Manual Crop + ROI Engine + Edit Studio",
     "type": "DOCSCAN",
     "mode": "auto",
-    "description": "Manual 4-corner crop drag + COUNT ROI + OCR ROI + BARCODE ROI + Magic/BW/Gray/Thermal/Night/HD filters + Perspective Warp + Searchable PDF + DOCX+IMG export + NEW Edit Studio (Rotate, Flip, Brightness, Text)",
+    "description": "Manual 4-corner crop drag + COUNT ROI + OCR ROI + BARCODE ROI + Magic/BW/Gray/Thermal/Night/HD filters + Perspective Warp + Searchable PDF + DOCX+IMG export + Edit Studio (Rotate, Flip, Brightness, Text)",
     "status": "active",
-    "protocol": "opencv-camscan-v15",
+    "protocol": "opencv-camscan-v16",
     "engine": "opencv.js 4.8.0 + tesseract.js v5 + jspdf + docx.js",
     "features": ["manual-4-corner-crop", "drag-adjust", "auto-edge", "warp-perspective", "magic-filter", "bw", "gray", "thermal-filter", "night-filter", "count-roi", "ocr-roi", "barcode-roi", "multipage-pdf", "searchable-pdf", "txt", "doc", "docx-with-images", "tap-bill-overlay", "edit-rotate", "edit-crop", "edit-filters", "edit-text", "edit-date-stamp"],
     "resolution": "1920x1080",
@@ -86,29 +86,29 @@
     "offline": true,
     "needsOnlineFirst": ["ocr-model", "docx-lib"],
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
-    "id": "custom-ocr-scanner-v15",
-    "name": "OCR ROI Scanner v1.5 - Selective OCR",
+    "id": "custom-ocr-scanner-v16",
+    "name": "OCR ROI Scanner v1.6 - Selective OCR",
     "type": "OCR",
     "mode": "auto",
     "description": "Drag box to OCR only inside - 95% accuracy + Full page OCR + Auto-crop + Searchable PDF + DOCX+IMG",
     "status": "active",
-    "protocol": "tesseract-js-v15-roi",
+    "protocol": "tesseract-js-v16-roi",
     "engine": "tesseract.js v5 ROI",
     "features": ["roi-ocr", "full-ocr", "auto-crop-ocr", "searchable-pdf", "txt-export", "docx-img-export", "copy-text", "share-text"],
     "languages": ["eng", "urd", "ps", "ara"],
     "offline": "partial",
     "needsOnlineFirst": true,
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
     "id": "custom-tracking-dji",
-    "name": "DJI Auto Tracking v1.5 - Tap to Lock",
+    "name": "DJI Auto Tracking v1.6 - Tap to Lock",
     "type": "TRACKING",
     "mode": "auto",
     "description": "DJI style tracking - Tap any object/person to lock - Green corner brackets + confidence % + Follow via template matching - Works for person, car, box",
@@ -118,12 +118,12 @@
     "features": ["tap-to-lock", "dji-corner-brackets", "center-dot", "confidence-percent", "auto-follow", "template-matching", "search-area-2x"],
     "resolution": "1920x1080",
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
     "id": "custom-count-roi",
-    "name": "Count ROI v1.5 - Object Counter",
+    "name": "Count ROI v1.6 - Object Counter",
     "type": "COUNT",
     "mode": "auto",
     "description": "Drag box to count objects only inside area - Uses OpenCV contours + threshold - 3x faster and accurate - For shop inventory, seeds, boxes",
@@ -132,12 +132,12 @@
     "engine": "opencv.js threshold + findContours",
     "features": ["roi-count", "contour-filter", "area-filter-80", "live-count", "shop-inventory"],
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
     "id": "custom-bill-tap",
-    "name": "Tap Bill Scanner v1.5 - Tap to Add",
+    "name": "Tap Bill Scanner v1.6 - Tap to Add",
     "type": "BILL",
     "mode": "auto",
     "description": "Tap product in camera view to add price tag - Shows number + Rs. overlay + Total bill at top - Export Bill PDF - Works with barcode price DB",
@@ -146,26 +146,26 @@
     "engine": "canvas overlay + price DB + jsPDF",
     "features": ["tap-to-add", "price-tag-overlay", "number-tag", "total-overlay", "bill-pdf-export", "price-db-link", "vibrate-feedback"],
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
     "id": "custom-barcode-roi",
-    "name": "Barcode ROI v1.5 - Fast Scan + Advanced Scan",
+    "name": "Barcode ROI v1.6 - Fast Scan + Advanced Scan",
     "type": "BARCODE",
     "mode": "auto",
-    "description": "Drag small box to scan barcode only inside - Uses BarcodeDetector + ZXing - 3x faster - Links to Price DB + Auto add to bill + NEW Advanced Scan: AUTO, MULTI, BEEP, History, Zoom, Sensitivity",
+    "description": "Drag small box to scan barcode only inside - Uses BarcodeDetector + ZXing - 3x faster - Links to Price DB + Auto add to bill + Advanced Scan: AUTO, MULTI, BEEP, History, Zoom, Sensitivity",
     "status": "active",
     "protocol": "barcode-detector-roi + zxing",
     "engine": "BarcodeDetector + ZXing + ROI crop",
     "features": ["roi-barcode", "ean13", "ean8", "code128", "qrcode", "price-db", "auto-bill", "fast-scan", "auto-scan", "multi-scan", "beep", "scan-light", "sensitivity", "scan-zoom", "scan-history"],
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
-    "id": "custom-export-hub-v15",
-    "name": "Export Hub v1.5 - All Formats",
+    "id": "custom-export-hub-v16",
+    "name": "Export Hub v1.6 - All Formats",
     "type": "EXPORT",
     "mode": "auto",
     "description": "Export Hub supports: JPG, IMG PDF, Searchable TEXT PDF (OCR layer), TXT, DOC, DOCX with Images per page - All pages synced from index.html via localStorage",
@@ -175,36 +175,78 @@
     "features": ["jpg", "img-pdf", "searchable-pdf", "txt", "doc", "docx-with-images", "bill-pdf", "json", "share", "read-aloud"],
     "exportFormats": ["jpg", "pdf", "searchable-pdf", "txt", "doc", "docx-img", "json", "bill-pdf"],
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
-    "id": "custom-scan-advanced-v15",
-    "name": "Advanced Scan v1.5 - AUTO + MULTI + EDIT",
+    "id": "custom-scan-advanced-v16",
+    "name": "Advanced Scan v1.6 - AUTO + MULTI + EDIT",
     "type": "SCAN",
     "mode": "auto",
-    "description": "NEW v1.5 - Advanced Scan Panel: AUTO Scan (keeps scanning), MULTI Scan (scan 10 in a row), BEEP + Vibrate, Scan Light (Torch), Sensitivity Low/Med/High, Scan Zoom 1x-5x, Scan History 20 items, Linked to Price DB + Bill",
+    "description": "Advanced Scan Panel: AUTO Scan (keeps scanning), MULTI Scan (scan 10 in a row), BEEP + Vibrate, Scan Light (Torch), Sensitivity Low/Med/High, Scan Zoom 1x-5x, Scan History 20 items, Linked to Price DB + Bill",
     "status": "active",
     "protocol": "zxing-advanced-scan",
     "engine": "ZXing + BarcodeDetector",
     "features": ["barcode", "qr", "auto-scan", "multi-scan", "beep", "vibrate", "scan-light", "sensitivity", "scan-zoom", "scan-history", "doc-scan", "price-db", "auto-bill"],
     "resolution": "1920x1080",
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   },
   {
-    "id": "custom-edit-studio-v15",
-    "name": "Edit Studio v1.5 - Photo Editor",
+    "id": "custom-edit-studio-v16",
+    "name": "Edit Studio v1.6 - Photo Editor",
     "type": "EDIT",
     "mode": "auto",
-    "description": "NEW v1.5 - Edit any captured / scanned photo: Rotate 90, Flip, Crop, Brightness, Contrast, Saturation, Filters (B/W, Warm, Cool, Sharp), Add Text, Date Stamp, Draw Mode, Save Edited JPG",
+    "description": "Edit any captured / scanned photo: Rotate 90, Flip, Crop, Brightness, Contrast, Saturation, Filters (B/W, Warm, Cool, Sharp), Add Text, Date Stamp, Draw Mode, Save Edited JPG",
     "status": "active",
     "protocol": "canvas-edit-studio",
     "engine": "canvas 2d + css filters",
     "features": ["rotate", "flip", "crop", "brightness", "contrast", "saturation", "filter-bw", "filter-warm", "filter-cool", "filter-sharp", "add-text", "date-stamp", "draw-mode", "reset", "save-edited"],
     "addedBy": "system",
-    "version": "1.5-advanced",
-    "os": "God Eye v1.5 ADVANCED"
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
+  },
+  {
+    "id": "custom-dashboard-v16",
+    "name": "Dashboard v1.6 - Live Summary",
+    "type": "DASHBOARD",
+    "mode": "auto",
+    "description": "NEW v1.6 FINAL - Live Dashboard: Photos count, Counted total (IN/OUT), Scans count, Bill total Rs., Last 3 scans, Last 3 bill items, Export All, Clear Data",
+    "status": "active",
+    "protocol": "localstorage-dashboard",
+    "engine": "localStorage + canvas stats",
+    "features": ["photos-count", "count-total", "scans-count", "bill-total", "last-scans", "last-bill", "export-all", "clear-data"],
+    "addedBy": "system",
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
+  },
+  {
+    "id": "custom-voice-v16",
+    "name": "Voice Commands v1.6 - 14 Commands",
+    "type": "VOICE",
+    "mode": "auto",
+    "description": "NEW v1.6 FINAL - 14 Voice Commands: Capture, Video, Count, Bottle, Person, Barcode, Scan, Edit, Dashboard, About, Torch, AI, Urdu/Pashto/English, Export - Works in Chrome, English/Urdu/Pashto",
+    "status": "active",
+    "protocol": "webkit-speech-recognition",
+    "engine": "SpeechRecognition + speechSynthesis",
+    "features": ["capture", "video", "count", "bottle", "person", "barcode", "scan", "edit", "dashboard", "about", "torch", "ai", "language-switch", "export"],
+    "languages": ["eng", "urd", "ps"],
+    "addedBy": "system",
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
+  },
+  {
+    "id": "custom-about-v16",
+    "name": "About v1.6 - God Eye FINAL",
+    "type": "ABOUT",
+    "mode": "auto",
+    "description": "NEW v1.6 FINAL - About Page: Developer Nasir Khan - WanaLab, Dera Ismail Khan KPK, Version v1.6 FINAL 2026, Features list, Dashboard + Voice List buttons, Back to Camera",
+    "status": "active",
+    "protocol": "about-page",
+    "features": ["developer-info", "version-info", "features-list", "dashboard-link", "voice-list-link"],
+    "addedBy": "system",
+    "version": "1.6-final",
+    "os": "God Eye v1.6 FINAL"
   }
 ]
