@@ -1,9 +1,9 @@
 {
-  "name": "WanaLab God Eye v1.4.2 FIXED",
+  "name": "WanaLab God Eye v1.5 ADVANCED",
   "short_name": "God Eye",
-  "description": "Pro AI Counting FIXED - No Hang, START Button, Bottle/Person accurate counting, Export Center, Barcode - By Nasir Khan",
-  "version": "1.4.2",
-  "start_url": "./index.html?v=142",
+  "description": "Pro AI Counting + Advanced Scan (AUTO/MULTI) + Edit Studio (Rotate, Crop, Filters, Text) + Barcode + Export - By Nasir Khan",
+  "version": "1.5",
+  "start_url": "./index.html?v=150",
   "scope": "./",
   "display": "standalone",
   "background_color": "#000000",
