@@ -1,12 +1,11 @@
-// WanaLab God Eye v1.4.2 FIXED - NO CACHE for index.html
-// This version DELETES old cache and always fetches fresh file
-// Fix for: Hang caused by old cached index.html
+// WanaLab God Eye v1.4.3 FIXED - NO CACHE for index.html
+// Fix for: Unclickable START button - forces fresh v1.4.3 file
 
-const CACHE_NAME = 'god-eye-v1-4-2-fixed';
+const CACHE_NAME = 'god-eye-v1-4-3-fixed';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  // Do NOT cache anything on install - old code cached broken index.html here
+  // Do NOT cache anything - old code cached broken index.html here
 });
 
 self.addEventListener('activate', event => {
@@ -14,7 +13,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(name => {
-          // Delete ALL old caches including god-eye-v1-4-1-anti-mix
+          // Delete ALL old caches including god-eye-v1-4-1 and god-eye-v1-4-2
           return caches.delete(name);
         })
       );
@@ -23,15 +22,13 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // NETWORK FIRST for HTML - always get fresh index.html
-  // CACHE ONLY for icon, never for index.html
+  // NETWORK FIRST - always get fresh index.html, never cached old
   if (event.request.mode === 'navigate' || event.request.url.includes('index.html') || event.request.url.endsWith('/')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
     return;
   }
-  // For other files, try network, fallback to cache
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
   );
