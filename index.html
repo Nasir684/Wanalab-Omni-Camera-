@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>God Eye v1.6.8 - WanaLab</title>
+<title>God Eye v1.6.9 - WanaLab</title>
 <meta name="theme-color" content="#000000">
-<!-- NO PWA - manifest.json + sw.js deleted -->
 <style>
 *{margin:0;padding:0;box-sizing:border-box} body{background:#000;color:#fff;font-family:Arial;overflow:hidden}
 #head{height:52px;background:#111;display:flex;justify-content:space-between;align-items:center;padding:0 10px;border-bottom:2px solid #0f0}
@@ -16,7 +15,7 @@ video{width:100%;height:100%;object-fit:cover}
 #scanBox{display:none;position:absolute;width:80%;height:120px;border:3px solid #0f0;border-radius:12px;z-index:10;pointer-events:none}
 #scanStatus{display:none;position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#0f0;padding:8px 14px;border-radius:20px;font-size:13px;white-space:nowrap;z-index:11}
 #offlineBar{display:none;position:fixed;top:52px;left:0;right:0;background:#ffcc00;color:#000;text-align:center;padding:6px;font-weight:bold;z-index:150;font-size:13px}
-#toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#222;padding:10px 16px;border-radius:20px;z-index:999;display:none;border:1px solid #0f0;white-space:nowrap}
+#toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#222;padding:10px 16px;border-radius:20px;z-index:999;display:none;border:1px solid #0f0;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
 #rec{display:none;position:absolute;top:8px;right:8px;background:red;padding:6px 10px;border-radius:20px;font-weight:bold;z-index:12}
 #ctrl{position:fixed;bottom:0;left:0;right:0;background:#111;padding:8px;border-top:2px solid #333}
 .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
@@ -26,7 +25,8 @@ button.red{background:#f22;color:#fff;font-weight:bold}
 button.gold{background:#ffcc00;color:#000;font-weight:bold}
 #panel{position:fixed;top:52px;left:0;right:0;bottom:172px;background:#111;z-index:200;display:none;overflow:auto;padding:12px}
 #panel input{width:100%;padding:10px;margin:6px 0;background:#222;color:#fff;border:1px solid #444;border-radius:8px}
-.stat{background:#222;padding:12px;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between;align-items:center}
+.stat{background:#222;padding:12px;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.cat{margin:16px 0 6px;font-size:16px}
 .priceCard{background:#222;border:2px solid #0f0;border-radius:12px;padding:14px;margin:10px 0}
 .priceCard.goldCard{border-color:#ffcc00}
 .priceCard h3{color:#0f0} .priceCard.goldCard h3{color:#ffcc00}
@@ -34,25 +34,23 @@ button.gold{background:#ffcc00;color:#000;font-weight:bold}
 </style>
 </head>
 <body>
-<div id="head"><b>👁️ GOD EYE</b><span>v1.6.8</span><b style="font-size:11px;color:#aaa">WanaLab</b></div>
+<div id="head"><b>👁️ GOD EYE</b><span>v1.6.9</span><b style="font-size:11px;color:#aaa">WanaLab</b></div>
 <div id="offlineBar">📴 OFFLINE MODE - Camera / Voice / Bill / Scan / Face work without internet</div>
 <div id="wrap"><div id="camPlaceholder">📷<br>Tap CAM to Start<br><small>Camera will ask permission 1 time</small></div><video id="video" autoplay playsinline muted style="display:none"></video><canvas id="faceCanvas"></canvas><div id="scanBox"></div><div id="scanStatus">Scanning...</div><div id="rec">🔴 REC</div></div>
 <div id="toast"></div>
 <div id="panel"></div>
 <div id="ctrl">
 <div class="row"><button class="primary" onclick="startCamera()">📷 CAM</button><button onclick="capturePhoto()">📸 Capture</button><button onclick="handleVideoVoice('video')">🎥 Video</button><button class="red" onclick="handleVideoVoice('stop video')">⏹ Stop</button><button onclick="toggleTorch()">🔦 Torch</button></div>
-<div class="row"><button onclick="startVoice()">🎤 Voice</button><button onclick="openDashboard()">📊 DASH</button><button onclick="openScan()">📷 Scan</button><button onclick="openBill()">🧾 Bill</button><button onclick="openCount()">🔢 Count</button></div>
+<div class="row"><button onclick="startVoice()">🎤 Voice</button><button onclick="stopVoice()">🔇 OFF</button><button onclick="openDashboard()">📊 DASH</button><button onclick="openScan()">📷 Scan</button><button onclick="openBill()">🧾 Bill</button><button onclick="openCount()">🔢 Count</button></div>
 <div class="row"><button class="primary" onclick="toggleFace()">👤 Face ON/OFF</button><button onclick="openEnroll()">👤 Enroll</button><button onclick="openAlerts()">🚨 Alerts</button><button onclick="openFaceLog()">📝 Face Log</button><button onclick="openIPCam()">📹 IP CAM</button></div>
 <div class="row"><button class="gold" onclick="openPricing()">💰 Pricing</button><button onclick="openAbout()">ℹ️ About</button><button onclick="openSettings()">⚙️ SYS</button><button onclick="location.reload()">🔄 Reload</button></div>
 </div>
 
-<!-- LIBS -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<!-- WanaLab v1.6.8 - Order matters: Universe first, Detection last -->
 <script src="js/protocol-universe.js"></script>
 <script src="js/device-hub.js"></script>
 <script src="js/export-hub.js"></script>
@@ -63,18 +61,17 @@ button.gold{background:#ffcc00;color:#000;font-weight:bold}
 <script src="js/ai-detection.js"></script>
 
 <script>
-// ===== GOD EYE v1.6.8 FINAL - Scan / Count / Voice + Face / IP CAM - No PWA =====
+// ===== GOD EYE v1.6.9 - All Protocols + Advanced Voice =====
 var videoStream=null, mediaRecorder=null, recordedChunks=[], isVideoRecording=false, lastVideoCmdTime=0;
 var recognition=null, voiceOn=false, torchOn=false, isCameraStarting=false;
 var billItems=[], scanHistory=[], photosCount=0, countTotal=0, scanning=false, scanLoopId=null;
 var cocoModel=null;
 try{ billItems=JSON.parse(localStorage.getItem('god_bill')||'[]'); scanHistory=JSON.parse(localStorage.getItem('god_scans')||'[]'); photosCount=parseInt(localStorage.getItem('god_photos')||'0'); countTotal=parseInt(localStorage.getItem('god_count')||'0'); }catch(e){}
-function showToast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(function(){t.style.display='none'},2500); }
+function showToast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(function(){t.style.display='none'},2800); }
 function openPanel(h){ document.getElementById('panel').innerHTML=h+'<br><button onclick="closePanel()">✖ Close</button>'; document.getElementById('panel').style.display='block'; }
 function closePanel(){ document.getElementById('panel').style.display='none'; stopScanLoop(); }
-function updateOffline(){ var bar=document.getElementById('offlineBar'); if(!navigator.onLine){ bar.style.display='block'; } else bar.style.display='none'; }
+function updateOffline(){ var bar=document.getElementById('offlineBar'); bar.style.display=navigator.onLine?'none':'block'; }
 window.addEventListener('online',updateOffline); window.addEventListener('offline',updateOffline); updateOffline();
-// NO serviceWorker - PWA deleted
 
 async function startCamera(){
   if(isCameraStarting) return showToast('Camera starting... wait');
@@ -87,10 +84,7 @@ async function startCamera(){
     v.srcObject=videoStream;
     try{ await v.play(); }catch(e){ setTimeout(function(){ v.play().catch(function(){}); },300); }
     showToast('📷 Camera Started');
-  }catch(e){
-    if(e.name==='NotAllowedError') showToast('Camera Blocked: Tap 🔒 > Camera = Allow > Reload');
-    else if(e.name!=='AbortError') showToast('Camera: '+e.message);
-  }
+  }catch(e){ if(e.name==='NotAllowedError') showToast('Camera Blocked: Tap 🔒 > Camera = Allow > Reload'); else if(e.name!=='AbortError') showToast('Camera: '+e.message); }
   isCameraStarting=false;
 }
 async function toggleTorch(){
@@ -103,7 +97,6 @@ function capturePhoto(){
   c.getContext('2d').drawImage(v,0,0,c.width,c.height);
   var a=document.createElement('a'); a.href=c.toDataURL('image/jpeg',0.9); a.download='GodEye-'+Date.now()+'.jpg'; a.click();
   photosCount++; try{localStorage.setItem('god_photos',photosCount);}catch(e){}
-  // Feed export hub
   if(window.exportHub) exportHub.setData(c,'');
   showToast('📸 Photo Saved');
 }
@@ -111,7 +104,7 @@ function capturePhoto(){
 // ===== VIDEO =====
 function handleVideoVoice(cmd){
   cmd=(cmd||'video').toLowerCase();
-  var now=Date.now(); if(now-lastVideoCmdTime<3000) return; lastVideoCmdTime=now;
+  var now=Date.now(); if(now-lastVideoCmdTime<2000) return; lastVideoCmdTime=now;
   if(cmd.indexOf('stop')>=0||cmd.indexOf('band')>=0){ stopVideoSafe(); return; }
   if(isVideoRecording){ showToast('🔴 Already Recording - Say Stop Video'); return; }
   startVideoSafe();
@@ -130,33 +123,106 @@ async function startVideoSafe(){
 function stopVideoSafe(){ if(mediaRecorder&&isVideoRecording){ mediaRecorder.stop(); isVideoRecording=false; document.getElementById('rec').style.display='none'; showToast('✅ Video Saved'); } else showToast('Not recording'); }
 function saveVideoFile(){ var type=(mediaRecorder&&mediaRecorder.mimeType)||'video/webm'; var blob=new Blob(recordedChunks,{type:type}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='GodEye-Video-'+Date.now()+'.webm'; a.click(); setTimeout(function(){URL.revokeObjectURL(url)},5000); }
 
-// ===== VOICE =====
+// ===== VOICE v1.6.9 - ADVANCED - ALL PROTOCOLS =====
+var voiceLangCycle=['en-US','ur-PK','ps-AF'];
+var voiceLangIdx=0;
+var voiceRestartTimer=null;
+var lastVoiceCmd='', lastVoiceTime=0;
+
 function startVoice(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ showToast('VOICE: Open in CHROME, not WhatsApp'); return; }
-  if(voiceOn){ showToast('🎤 Voice Already ON - Say Capture / Count / Scan'); return; }
-  try{ if(recognition) recognition.abort(); }catch(e){}
-  recognition=new SR(); recognition.lang='en-US'; recognition.continuous=true; recognition.interimResults=false;
-  recognition.onstart=function(){ showToast('🎤 Listening... Say Capture / Count / Scan'); };
-  recognition.onresult=function(e){ for(var i=e.resultIndex;i<e.results.length;i++){ if(e.results[i].isFinal){ var cmd=e.results[i][0].transcript.toLowerCase().trim(); showToast('🎤 Heard: '+cmd); handleVoiceCommand(cmd); } } };
-  recognition.onerror=function(e){ showToast('Voice Error: '+e.error); if(e.error==='not-allowed') showToast('MIC BLOCKED: Tap 🔒 > Microphone = Allow'); };
-  recognition.onend=function(){ if(voiceOn) setTimeout(function(){ try{recognition.start()}catch(e){} },500); };
-  voiceOn=true; try{ recognition.start(); }catch(e){ showToast('Voice: '+e.message); }
+  if(voiceOn){
+    voiceLangIdx=(voiceLangIdx+1)%voiceLangCycle.length;
+    showToast('🎤 Language: '+voiceLangCycle[voiceLangIdx]);
+    restartVoice(); return;
+  }
+  voiceOn=true; restartVoice();
 }
-function handleVoiceCommand(cmd){
-  if(cmd.indexOf('capture')>=0||cmd.indexOf('photo')>=0||cmd.indexOf('take')>=0) capturePhoto();
-  else if(cmd.indexOf('stop')>=0) stopVideoSafe();
-  else if(cmd.indexOf('video')>=0) handleVideoVoice(cmd);
-  else if(cmd.indexOf('torch')>=0||cmd.indexOf('light')>=0) toggleTorch();
-  else if(cmd.indexOf('scan')>=0||cmd.indexOf('barcode')>=0) openScan();
-  else if(cmd.indexOf('bill')>=0) openBill();
-  else if(cmd.indexOf('count')>=0) countFromCamera();
-  else if(cmd.indexOf('dashboard')>=0) openDashboard();
-  else if(cmd.indexOf('pricing')>=0||cmd.indexOf('price')>=0) openPricing();
-  else if(cmd.indexOf('camera')>=0||cmd.indexOf('cam')>=0) startCamera();
-  else if(cmd.indexOf('face')>=0) toggleFace();
-  else if(cmd.indexOf('about')>=0) openAbout();
-  else showToast('Heard: '+cmd+' - Try: Capture, Count, Scan, Face');
+function restartVoice(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
+  try{ if(recognition) recognition.abort(); }catch(e){}
+  clearTimeout(voiceRestartTimer);
+  recognition=new SR();
+  recognition.lang=voiceLangCycle[voiceLangIdx];
+  recognition.continuous=true; recognition.interimResults=false; recognition.maxAlternatives=1;
+  recognition.onstart=function(){ showToast('🎤 Listening ['+recognition.lang+'] - Capture / Gintee / Bill / Scan / Torch / Dashboard'); };
+  recognition.onresult=function(e){
+    for(var i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal){
+        var txt=e.results[i][0].transcript.trim();
+        // Debounce: ignore same command within 1.5s (echo)
+        var now=Date.now();
+        if(txt.toLowerCase()===lastVoiceCmd && now-lastVoiceTime<1500) continue;
+        lastVoiceCmd=txt.toLowerCase(); lastVoiceTime=now;
+        showToast('🎤 Heard: '+txt);
+        handleVoiceCommand(txt);
+      }
+    }
+  };
+  recognition.onerror=function(e){
+    if(e.error==='not-allowed'){ voiceOn=false; showToast('MIC BLOCKED: Tap 🔒 > Microphone = Allow > Reload'); }
+    else if(e.error==='no-speech'){ /* ignore */ }
+    else if(e.error==='network'){ showToast('Voice needs internet first time - Offline commands work after'); }
+    else showToast('Voice: '+e.error);
+  };
+  recognition.onend=function(){ if(voiceOn){ clearTimeout(voiceRestartTimer); voiceRestartTimer=setTimeout(function(){ try{recognition.start();}catch(e){} },800); } };
+  try{ recognition.start(); }catch(e){ showToast('Voice: '+e.message); }
+}
+function stopVoice(){ voiceOn=false; clearTimeout(voiceRestartTimer); try{ if(recognition) recognition.abort(); }catch(e){} showToast('🎤 Voice OFF'); }
+
+// Word-boundary matcher - no false triggers: "discount" != "count"
+function makeHas(cmd){
+  var c=' '+cmd.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF ]/g,' ').replace(/\s+/g,' ')+' ';
+  return function(){ for(var i=0;i<arguments.length;i++){ if(c.indexOf(' '+arguments[i]+' ')>=0) return true; } return false; };
+}
+
+function handleVoiceCommand(raw){
+  var has=makeHas(raw);
+  var cmd=raw.toLowerCase();
+
+  // 1. SYSTEM - check first, most specific
+  if(has('voice off','mic off','awaz band','bnd awaz')) return stopVoice();
+  if(has('voice','awaz','zuban','language','bhasha','pashto','urdu','english')) return startVoice();
+  if(has('close','bandkaro','wapas','back','close panel')) return closePanel();
+  if(has('dashboard','dash','report','summary','hisabkitab','aaj')) return openDashboard();
+  if(has('pricing','price','qeemat','kitne','kitna','rate','buy','kharid')) return openPricing();
+  if(has('settings','setting','sys','system','device','devices')) return openSettings();
+  if(has('about','info','maloomat','kaun')) return openAbout();
+
+  // 2. CAMERA / CAPTURE
+  if(has('capture','photo','tasveer','tasweer','pic','khicha','kheench','click','snapshot','shot')) return capturePhoto();
+  if(has('camera','cam','camerakhol','khol')) return startCamera();
+  if(has('video','movie','record','recording','film')) return handleVideoVoice('video');
+  if(has('stop','band','ruk','roko','bas','stop video','stop recording')) return stopVideoSafe();
+
+  // 3. LIGHT / NIGHT / THERMAL
+  if(has('torch','light','batti','roshni','flash','chamak')) return toggleTorch();
+  if(has('night','raat','andhera','hdr','night mode')) { if(window.nightGodEngine) nightGodEngine.capture10Frames(); else showToast('Night HDR not loaded'); return; }
+  if(has('thermal','garam','garmi','temp','temperature','flir','heat')) { if(window.flirEngine){ flirEngine.setFusionMode('thermal'); } showToast('🔥 Thermal ON - Simulated'); return; }
+
+  // 4. SHOP - COUNT / SCAN / BILL
+  if(has('count','gintee','ginti','gin','shumar','counting','bottle','botal')) return countFromCamera();
+  if(has('scan','barcode','bar','code','qr','scan barcode')) return openScan();
+  if(has('bill','hisab','hisaab','paisa','cash','total')) return openBill();
+  if(has('add bill','add item','add')) return openBill();
+
+  // 5. DOCUMENTS / OCR / EXPORT - ALL protocols
+  if(has('doc','document','dastavez','cnic','card','license','parchi')) return openDocScan();
+  if(has('ocr','parh','parho','read','text','likhai')) return openDocScan();
+  if(has('pdf','export pdf','save pdf')) { if(window.exportHub){ exportHub.exportPDF(); } else showToast('Export Hub not loaded'); return; }
+  if(has('docx','word','doc file')) { if(window.exportHub){ exportHub.exportDOCXwithImages(); } return; }
+  if(has('json','txt','text file')) { if(window.exportHub){ exportHub.exportJSON(); } return; }
+  if(has('export','save','download','print')) { if(window.exportHub){ exportHub.exportPDF(); } else window.print(); return; }
+
+  // 6. SECURITY - FACE / IP CAM
+  if(has('face','chehra','shakal','pehchan','face on')) return toggleFace();
+  if(has('enroll','tag','naam','register','save face')) return openEnroll();
+  if(has('alert','alerts','khatra','chor','unknown')) return openAlerts();
+  if(has('log','history','face log','kon aya','kisne')) return openFaceLog();
+  if(has('ip','cctv','camera2','dvr','ipcam','ip cam','home camera')) return openIPCam();
+
+  showToast('Heard: '+raw+' - Try: Capture, Gintee, Bill, Scan, Torch, Doc, PDF, Face, Dashboard, Night, Thermal');
 }
 
 // ===== SCAN =====
@@ -164,15 +230,11 @@ function stopScanLoop(){ scanning=false; if(scanLoopId) clearTimeout(scanLoopId)
 async function startBarcodeScan(){
   var v=document.getElementById('video');
   if(!v.srcObject){ showToast('First tap CAM'); await startCamera(); return; }
-  closePanel();
-  scanning=true;
+  closePanel(); scanning=true;
   document.getElementById('scanBox').style.display='block';
   var st=document.getElementById('scanStatus'); st.style.display='block'; st.textContent='Scanning... Hold barcode in green box, 15cm';
   try{ var tr=videoStream.getVideoTracks()[0]; if(tr.getCapabilities().torch) await tr.applyConstraints({advanced:[{torch:true}]}); }catch(e){}
-  if(!('BarcodeDetector' in window)){
-    st.textContent='This phone has no BarcodeDetector - Type below';
-    openScan(); return;
-  }
+  if(!('BarcodeDetector' in window)){ st.textContent='This phone has no BarcodeDetector - Type below'; openScan(); return; }
   var det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','qr_code']});
   async function loop(){
     if(!scanning) return;
@@ -191,24 +253,41 @@ function saveManualBarcode(){
   scanHistory.push(m); try{localStorage.setItem('god_scans',JSON.stringify(scanHistory));}catch(e){} showToast('✅ Manual Saved: '+m); document.getElementById('manualCode').value=''; openScan();
 }
 
-// ===== COUNT - REAL AI via CountingPro + COCO-SSD =====
+// ===== DOC SCAN + OCR - Voice: "Doc" / "OCR" / "CNIC" =====
+function openDocScan(){
+  openPanel('<h2>📄 Doc Scan + OCR</h2><p>Document ko camera ke samne rakho, phir Capture dabao. OCR Urdu / Pashto / English parhega.</p><button class="primary" onclick="capturePhoto();showToast(\'Doc Captured - OCR running...\')">📸 Capture Doc</button><button class="primary" onclick="runOCR()">🔍 Run OCR</button><div id="ocrOut" style="background:#000;padding:10px;border-radius:8px;margin-top:10px;min-height:60px;color:#0f0">OCR text yahan aayega...</div><h3>Export</h3><button onclick="if(window.exportHub)exportHub.exportSearchablePDF()">📄 Searchable PDF</button> <button onclick="if(window.exportHub)exportHub.exportDOCXwithImages()">📝 DOCX</button> <button onclick="if(window.exportHub)exportHub.exportJSON()">📦 JSON</button>');
+}
+async function runOCR(){
+  var v=document.getElementById('video'); if(!v.srcObject) return showToast('First tap CAM');
+  var out=document.getElementById('ocrOut'); if(out) out.textContent='OCR running... 5 sec...';
+  try{
+    var c=document.createElement('canvas'); c.width=v.videoWidth||1280; c.height=v.videoHeight||720;
+    c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+    if(window.Tesseract){
+      var res=await Tesseract.recognize(c,'eng+urd', {logger:function(m){ if(out&&m.status) out.textContent=m.status+' '+(m.progress?Math.round(m.progress*100)+'%':''); }});
+      var txt=res.data.text||'No text found';
+      if(out) out.textContent=txt;
+      if(window.exportHub) exportHub.setData(c,txt);
+      showToast('✅ OCR Done');
+    } else if(window.camscanEngine){ var r=await camscanEngine.ocr(c); if(out) out.textContent=r.text||'No text'; }
+    else showToast('OCR lib not loaded');
+  }catch(e){ if(out) out.textContent='OCR Error: '+e.message; }
+}
+
+// ===== COUNT - REAL AI =====
 async function countFromCamera(){
   var v=document.getElementById('video'); if(!v.srcObject){ showToast('First tap CAM'); startCamera(); return; }
-  closePanel();
-  showToast('🔢 AI Counting - Loading model...');
+  closePanel(); showToast('🔢 AI Counting - Loading model...');
   try{
-    if(typeof cocoSsd==='undefined') throw new Error('COCO model not loaded - check internet');
+    if(typeof cocoSsd==='undefined') throw new Error('COCO not loaded - check internet');
     if(!cocoModel) cocoModel=await cocoSsd.load();
     var preds=await cocoModel.detect(v);
     if(window.CountingPro){
-      CountingPro.targetClass='bottle';
-      if(CountingPro.syncFromUniverse) CountingPro.syncFromUniverse();
+      CountingPro.targetClass='bottle'; if(CountingPro.syncFromUniverse) CountingPro.syncFromUniverse();
       var tracked=CountingPro.process(preds, v.videoWidth, v.videoHeight, v.videoHeight, true);
-      countTotal=CountingPro.particleCount;
-      try{localStorage.setItem('god_count',countTotal);}catch(e){}
+      countTotal=CountingPro.particleCount; try{localStorage.setItem('god_count',countTotal);}catch(e){}
       showToast('🔢 AI Count: '+tracked.length+' bottles now, Total '+countTotal);
     } else {
-      // Fallback: count bottles directly
       var bottles=preds.filter(function(p){return p.class==='bottle'&&p.score>0.5});
       countTotal+=bottles.length; try{localStorage.setItem('god_count',countTotal);}catch(e){}
       showToast('🔢 Count: +'+bottles.length+' = Total '+countTotal);
@@ -221,7 +300,7 @@ function addManualCount(){
   countTotal+=val; try{localStorage.setItem('god_count',countTotal);}catch(e){} showToast('Count Saved: Total '+countTotal); openCount();
 }
 
-// ===== FACE v1.6.8 - Detection Only, NO Fake Identity =====
+// ===== FACE - Detection Only =====
 var faceOn=false, knownFaces=[], faceLog=[], faceAlerts=[], lastFaceAlert=0;
 try{ knownFaces=JSON.parse(localStorage.getItem('god_faces')||'[]'); faceLog=JSON.parse(localStorage.getItem('god_face_log')||'[]'); faceAlerts=JSON.parse(localStorage.getItem('god_face_alerts')||'[]'); }catch(e){}
 function toggleFace(){
@@ -232,118 +311,124 @@ function toggleFace(){
 }
 async function faceLoop(){
   if(!faceOn) return;
-  var v=document.getElementById('video');
-  var canvas=document.getElementById('faceCanvas');
+  var v=document.getElementById('video'); var canvas=document.getElementById('faceCanvas');
   if(v.srcObject && 'FaceDetector' in window){
-    try{
-      var det=new FaceDetector({fastMode:true,maxDetectedFaces:5});
-      var faces=await det.detect(v);
-      drawFaces(canvas,v,faces);
-      handleFaceResults(faces,v);
-    }catch(e){}
+    try{ var det=new FaceDetector({fastMode:true,maxDetectedFaces:5}); var faces=await det.detect(v); drawFaces(canvas,v,faces); handleFaceResults(faces,v); }catch(e){}
   }
   setTimeout(faceLoop,400);
 }
 function drawFaces(canvas,video,faces){
   canvas.width=video.videoWidth||1280; canvas.height=video.videoHeight||720;
   var ctx=canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
-  faces.forEach(function(f){
-    var box=f.boundingBox;
-    ctx.strokeStyle='#ffcc00'; ctx.lineWidth=4; ctx.strokeRect(box.x,box.y,box.width,box.height);
-    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(box.x,box.y+box.height,box.width,28);
-    ctx.fillStyle='#fff'; ctx.font='16px Arial'; ctx.fillText('Face Detected',box.x+6,box.y+box.height+20);
-  });
+  faces.forEach(function(f){ var box=f.boundingBox; ctx.strokeStyle='#ffcc00'; ctx.lineWidth=4; ctx.strokeRect(box.x,box.y,box.width,box.height); ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(box.x,box.y+box.height,box.width,28); ctx.fillStyle='#fff'; ctx.font='16px Arial'; ctx.fillText('Face Detected',box.x+6,box.y+box.height+20); });
 }
 function handleFaceResults(faces,video){
-  if(!faces.length) return;
-  var now=Date.now();
+  if(!faces.length) return; var now=Date.now();
   var lastLog=parseInt(localStorage.getItem('god_last_face_log')||'0');
-  if(now-lastLog>30000){
-    try{localStorage.setItem('god_last_face_log',now);}catch(e){}
-    var time=new Date().toLocaleString('en-PK');
-    faceLog.unshift(time+' - Face Detected - Camera: Mobile');
-    try{localStorage.setItem('god_face_log',JSON.stringify(faceLog.slice(0,200)));}catch(e){}
-  }
-  if(now-lastFaceAlert>10000){
-    lastFaceAlert=now;
-    if(navigator.vibrate) navigator.vibrate(500);
-    try{
-      var c=document.createElement('canvas'); c.width=320; c.height=240;
-      c.getContext('2d').drawImage(video,0,0,320,240);
-      var img=c.toDataURL('image/jpeg',0.6);
-      faceAlerts.unshift({time:new Date().toLocaleString('en-PK'),img:img});
-      try{localStorage.setItem('god_face_alerts',JSON.stringify(faceAlerts.slice(0,50)));}catch(e){}
-      showToast('🚨 Face Detected - Alert Saved');
-    }catch(e){}
-  }
+  if(now-lastLog>30000){ try{localStorage.setItem('god_last_face_log',now);}catch(e){} faceLog.unshift(new Date().toLocaleString('en-PK')+' - Face Detected'); try{localStorage.setItem('god_face_log',JSON.stringify(faceLog.slice(0,200)));}catch(e){} }
+  if(now-lastFaceAlert>10000){ lastFaceAlert=now; if(navigator.vibrate) navigator.vibrate(500); try{ var c=document.createElement('canvas'); c.width=320; c.height=240; c.getContext('2d').drawImage(video,0,0,320,240); faceAlerts.unshift({time:new Date().toLocaleString('en-PK'),img:c.toDataURL('image/jpeg',0.6)}); try{localStorage.setItem('god_face_alerts',JSON.stringify(faceAlerts.slice(0,50)));}catch(e){} showToast('🚨 Face Detected - Alert Saved'); }catch(e){} }
 }
 function openEnroll(){
   var list=knownFaces.map(function(f,i){ return '<div class="stat"><span>'+f.name+'</span><button onclick="knownFaces.splice('+i+',1);try{localStorage.setItem(\'god_faces\',JSON.stringify(knownFaces));}catch(e){}showToast(\'Deleted\');openEnroll()">Delete</button></div>'; }).join('');
-  openPanel('<h2>👤 Enroll Face - Tag Only</h2><p>Note: Browser cannot match faces. Enroll only tags a photo for manual check. Next face will still show as Face Detected, not auto-named.</p><input id="enrollName" placeholder="Enter Name - e.g. Nasir"><button class="primary" onclick="saveEnroll()">💾 Save Tag</button><h3>Tagged Photos</h3>'+(list||'<p>No tags yet</p>'));
+  openPanel('<h2>👤 Enroll - Tag Only</h2><p>Browser cannot match faces. Enroll only tags a photo for manual check.</p><input id="enrollName" placeholder="Enter Name"><button class="primary" onclick="saveEnroll()">💾 Save Tag</button><h3>Tagged</h3>'+(list||'<p>No tags yet</p>'));
 }
 function saveEnroll(){
-  var n=document.getElementById('enrollName').value.trim();
-  if(!n) return showToast('Enter name first');
-  var v=document.getElementById('video'); var img='';
-  if(v.srcObject){ try{ var c=document.createElement('canvas'); c.width=160; c.height=120; c.getContext('2d').drawImage(v,0,0,160,120); img=c.toDataURL('image/jpeg',0.5); }catch(e){} }
-  knownFaces.push({name:n,img:img,time:Date.now()});
-  try{localStorage.setItem('god_faces',JSON.stringify(knownFaces));}catch(e){}
-  showToast('✅ Tag Saved '+n); openEnroll();
+  var n=document.getElementById('enrollName').value.trim(); if(!n) return showToast('Enter name first');
+  var v=document.getElementById('video'); var img=''; if(v.srcObject){ try{ var c=document.createElement('canvas'); c.width=160; c.height=120; c.getContext('2d').drawImage(v,0,0,160,120); img=c.toDataURL('image/jpeg',0.5); }catch(e){} }
+  knownFaces.push({name:n,img:img,time:Date.now()}); try{localStorage.setItem('god_faces',JSON.stringify(knownFaces));}catch(e){} showToast('✅ Tag Saved '+n); openEnroll();
 }
 function openAlerts(){
   var list=faceAlerts.map(function(a,i){ return '<div style="margin:8px 0"><img src="'+a.img+'" style="width:100%;border-radius:8px"><div class="stat"><span>Face - '+a.time+'</span></div><button onclick="faceAlerts.splice('+i+',1);try{localStorage.setItem(\'god_face_alerts\',JSON.stringify(faceAlerts));}catch(e){}openAlerts()">Delete</button> <button class="primary" onclick="openEnroll()">Tag This Person</button></div>'; }).join('');
-  openPanel('<h2>🚨 Alert History - Faces</h2><p>'+faceAlerts.length+' Alerts - Offline Saved</p>'+(list||'<p>No alerts yet</p>')+'<button onclick="faceAlerts=[];try{localStorage.setItem(\'god_face_alerts\',JSON.stringify([]));}catch(e){}openAlerts()">🗑 Clear All</button>');
+  openPanel('<h2>🚨 Alert History</h2><p>'+faceAlerts.length+' Alerts</p>'+(list||'<p>No alerts yet</p>')+'<button onclick="faceAlerts=[];try{localStorage.setItem(\'god_face_alerts\',JSON.stringify([]));}catch(e){}openAlerts()">🗑 Clear All</button>');
 }
 function openFaceLog(){
   var list=faceLog.slice(0,100).map(function(l){ return '<div class="stat"><span>'+l+'</span></div>'; }).join('');
-  openPanel('<h2>📝 Face Log - Who Came When</h2>'+(list||'<p>No logs yet</p>')+'<button onclick="faceLog=[];try{localStorage.setItem(\'god_face_log\',JSON.stringify([]));}catch(e){}openFaceLog()">🗑 Clear Log</button>');
+  openPanel('<h2>📝 Face Log</h2>'+(list||'<p>No logs yet</p>')+'<button onclick="faceLog=[];try{localStorage.setItem(\'god_face_log\',JSON.stringify([]));}catch(e){}openFaceLog()">🗑 Clear Log</button>');
 }
 
-// ===== IP CAM - Safe, via rtspEngine =====
+// ===== IP CAM =====
 function openIPCam(){
-  openPanel('<h2>📹 IP CAM - Protocols</h2><p><b>Offline:</b> MJPEG (ESP32-CAM) - http://192.168.1.50:81/stream<br><b>Online:</b> HLS (.m3u8)<br><b>RTSP:</b> Needs go2rtc gateway on PC - Browser cannot play RTSP directly</p><input id="ipUrl" placeholder="Paste HLS / MJPEG URL"><button class="primary" onclick="playIPCam()">▶ Play IP Cam</button><div id="ipPlayer" style="margin-top:10px"></div><button onclick="if(window.rtspEngine) rtspEngine.stop(); showToast(\'IP Cam Stopped\')">⏹ Stop IP Cam</button>');
+  openPanel('<h2>📹 IP CAM</h2><p><b>Offline:</b> MJPEG ESP32 - http://192.168.1.50:81/stream<br><b>Online:</b> HLS .m3u8<br><b>RTSP:</b> Needs go2rtc on PC</p><input id="ipUrl" placeholder="Paste HLS / MJPEG URL"><button class="primary" onclick="playIPCam()">▶ Play IP Cam</button><div id="ipPlayer" style="margin-top:10px"></div><button onclick="if(window.rtspEngine) rtspEngine.stop(); showToast(\'IP Cam Stopped\')">⏹ Stop IP Cam</button>');
 }
 function playIPCam(){
-  var url=document.getElementById('ipUrl').value.trim();
-  if(!url) return showToast('Paste URL first');
-  var box=document.getElementById('ipPlayer');
-  box.textContent='';
-  if(url.indexOf('.m3u8')>=0||url.indexOf('m3u8')>=0){
-    if(window.rtspEngine) rtspEngine.playHLS(url); else showToast('rtspEngine not loaded');
-    box.textContent='HLS playing - see camera view';
-  } else if(url.indexOf('rtsp://')===0){
-    var p=document.createElement('p'); p.style.color='#ffcc00'; p.textContent='RTSP needs go2rtc gateway on PC (192.168.1.50:1984). Check console for setup. Trying via gateway...';
-    box.appendChild(p);
-    if(window.rtspEngine) rtspEngine.playRTSP(url,'http://192.168.1.50:1984');
-  } else {
-    if(window.rtspEngine) rtspEngine.playMJPEG(url); else showToast('rtspEngine not loaded');
-    box.textContent='MJPEG playing - see camera view';
-  }
+  var url=document.getElementById('ipUrl').value.trim(); if(!url) return showToast('Paste URL first');
+  var box=document.getElementById('ipPlayer'); box.textContent='';
+  if(url.indexOf('m3u8')>=0){ if(window.rtspEngine) rtspEngine.playHLS(url); box.textContent='HLS playing - see camera view'; }
+  else if(url.indexOf('rtsp://')===0){ var p=document.createElement('p'); p.style.color='#ffcc00'; p.textContent='RTSP needs go2rtc gateway (192.168.1.50:1984). Trying...'; box.appendChild(p); if(window.rtspEngine) rtspEngine.playRTSP(url,'http://192.168.1.50:1984'); }
+  else { if(window.rtspEngine) rtspEngine.playMJPEG(url); box.textContent='MJPEG playing - see camera view'; }
   showToast('IP Cam: Connecting...');
 }
 
 // ===== PANELS =====
-function openScan(){ openPanel('<h2>📷 Scan - No Popup</h2><p>Camera ke samne barcode rakho, green box me. Khud scan hoga.</p><button class="primary" onclick="startBarcodeScan()">📷 Start Scan (Continuous)</button><button onclick="toggleTorch()">🔦 Torch</button><button class="red" onclick="stopScanLoop()">⏹ Stop Scan</button><h3>Manual</h3><input id="manualCode" placeholder="Type barcode here"><button class="primary" onclick="saveManualBarcode()">💾 Save Manual Barcode</button><h3>History</h3>'+scanHistory.slice(-10).map(function(s){return '<div class="stat"><span>'+s+'</span></div>'}).join('')); }
-function openBill(){ var total=billItems.reduce(function(s,i){return s+i.price},0); openPanel('<h2>🧾 Bill - Offline</h2><input id="bn" placeholder="Product Name"><input id="bp" type="number" placeholder="Price Rs."><button class="primary" onclick="var n=document.getElementById(\'bn\').value||\'Item\';var p=parseInt(document.getElementById(\'bp\').value||0);billItems.push({name:n,price:p});try{localStorage.setItem(\'god_bill\',JSON.stringify(billItems));}catch(e){}showToast(n+\' Added\');openBill()">➕ Add</button><h3>Total Rs. '+total+' | Items '+billItems.length+'</h3>'+billItems.map(function(b,i){return '<div class="stat"><span>'+b.name+'</span><b>Rs. '+b.price+'</b></div>'}).join('')+'<button onclick="if(window.exportHub){exportHub.setData(null,billItems.map(function(b){return b.name+\' Rs.\'+b.price}).join(String.fromCharCode(10))); exportHub.exportBill();} else window.print()">🧾 Export Bill PDF</button> <button onclick="window.print()">🖨 Print Bill</button>'); }
-function openCount(){ openPanel('<h2>🔢 Count - AI Camera + Manual</h2><p>Total Count: <b>'+countTotal+'</b></p><button class="primary" onclick="countFromCamera()">📷 Count From Camera (AI Bottle)</button><p style="font-size:12px;color:#aaa;margin-top:8px">AI counts bottles. Agar galat ho to neeche manual se adjust karo.</p><input id="ci" type="number" placeholder="Enter count to add"><button class="primary" onclick="addManualCount()">➕ Add Count</button><button onclick="countTotal=0;if(window.CountingPro)CountingPro.reset();try{localStorage.setItem(\'god_count\',0);}catch(e){}showToast(\'Count Reset\');openCount()">🔄 Reset Count</button>'); }
-function openDashboard(){ openPanel('<h2>📊 Dashboard - Offline Data</h2><div class="stat"><span>📸 Photos</span><b>'+photosCount+'</b></div><div class="stat"><span>🔢 Count</span><b>'+countTotal+'</b></div><div class="stat"><span>📷 Scans</span><b>'+scanHistory.length+'</b></div><div class="stat"><span>🧾 Bill</span><b>Rs. '+billItems.reduce(function(s,i){return s+i.price},0)+'</b></div><div class="stat"><span>👤 Tagged Faces</span><b>'+knownFaces.length+'</b></div><div class="stat"><span>🚨 Alerts</span><b>'+faceAlerts.length+'</b></div><div class="stat"><span>📶 Status</span><b>'+(navigator.onLine?'Online':'Offline')+'</b></div>'); }
+function openScan(){ openPanel('<h2>📷 Scan</h2><p>Barcode ko green box me rakho, 15cm.</p><button class="primary" onclick="startBarcodeScan()">📷 Start Scan</button><button onclick="toggleTorch()">🔦 Torch</button><button class="red" onclick="stopScanLoop()">⏹ Stop Scan</button><h3>Manual</h3><input id="manualCode" placeholder="Type barcode"><button class="primary" onclick="saveManualBarcode()">💾 Save Manual</button><h3>History</h3>'+scanHistory.slice(-10).map(function(s){return '<div class="stat"><span>'+s+'</span></div>'}).join('')); }
+function openBill(){ var total=billItems.reduce(function(s,i){return s+i.price},0); openPanel('<h2>🧾 Bill - Offline</h2><input id="bn" placeholder="Product Name"><input id="bp" type="number" placeholder="Price Rs."><button class="primary" onclick="var n=document.getElementById(\'bn\').value||\'Item\';var p=parseInt(document.getElementById(\'bp\').value||0);billItems.push({name:n,price:p});try{localStorage.setItem(\'god_bill\',JSON.stringify(billItems));}catch(e){}showToast(n+\' Added\');openBill()">➕ Add</button><h3>Total Rs. '+total+' | Items '+billItems.length+'</h3>'+billItems.map(function(b,i){return '<div class="stat"><span>'+b.name+'</span><b>Rs. '+b.price+'</b></div>'}).join('')+'<button onclick="if(window.exportHub){exportHub.setData(null,billItems.map(function(b){return b.name+\' Rs.\'+b.price}).join(String.fromCharCode(10))); exportHub.exportBill();} else window.print()">🧾 Export Bill PDF</button> <button onclick="window.print()">🖨 Print</button>'); }
+function openCount(){ openPanel('<h2>🔢 Count - AI + Manual</h2><p>Total: <b>'+countTotal+'</b></p><button class="primary" onclick="countFromCamera()">📷 Count From Camera (AI Bottle)</button><input id="ci" type="number" placeholder="Enter count to add"><button class="primary" onclick="addManualCount()">➕ Add Count</button><button onclick="countTotal=0;if(window.CountingPro)CountingPro.reset();try{localStorage.setItem(\'god_count\',0);}catch(e){}showToast(\'Count Reset\');openCount()">🔄 Reset</button>'); }
+
+// ===== DASHBOARD v1.6.9 - Clean, 6 Categories, 38 Apps =====
+function openDashboard(){
+  var billTotal=billItems.reduce(function(s,i){return s+i.price},0);
+  var cats=[
+    {icon:'🏪',title:'Shop / Business',color:'#0f0',items:[
+      ['🔢 Bottle / Stock Count',countTotal,'openCount()'],
+      ['📷 Barcode Scans',scanHistory.length,'openScan()'],
+      ['🧾 Bill Total','Rs. '+billTotal,'openBill()'],
+      ['🧾 Bill Items',billItems.length,'openBill()'],
+    ]},
+    {icon:'📄',title:'Documents',color:'#00ccff',items:[
+      ['📸 Photos / Docs',photosCount,'capturePhoto()'],
+      ['🔍 OCR - Urdu / Pashto / EN','Tap to Run','openDocScan()'],
+      ['📄 Searchable PDF','Export',"if(window.exportHub)exportHub.exportSearchablePDF()"],
+      ['📝 DOCX + Images','Export',"if(window.exportHub)exportHub.exportDOCXwithImages()"],
+      ['📦 JSON / TXT','Export',"if(window.exportHub)exportHub.exportJSON()"],
+    ]},
+    {icon:'🛡️',title:'Security',color:'#ffcc00',items:[
+      ['👤 Faces Detected',faceLog.length,'openFaceLog()'],
+      ['🚨 Alerts',faceAlerts.length,'openAlerts()'],
+      ['🏷️ Tagged Photos',knownFaces.length,'openEnroll()'],
+      ['📹 IP Cam / CCTV',navigator.onLine?'Online':'Offline','openIPCam()'],
+    ]},
+    {icon:'🌡️',title:'Thermal / Night',color:'#ff6600',items:[
+      ['🔥 Thermal','Simulated',"if(window.flirEngine)flirEngine.setFusionMode('thermal')"],
+      ['🌙 Night HDR','5-Frame',"if(window.nightGodEngine)nightGodEngine.capture10Frames()"],
+      ['🔦 Torch',torchOn?'ON':'OFF','toggleTorch()'],
+      ['🌡️ Real Temp','Native Only',"showToast('Real Temp needs Android FLIR SDK')"],
+    ]},
+    {icon:'📹',title:'Capture / Media',color:'#ff00ff',items:[
+      ['📸 Photos',photosCount,'capturePhoto()'],
+      ['🎥 Video',isVideoRecording?'REC':'Ready',"handleVideoVoice('video')"],
+      ['🎤 Voice',voiceOn?'ON ['+voiceLangCycle[voiceLangIdx]+']':'OFF','startVoice()'],
+      ['📷 Camera',videoStream?'LIVE':'OFF','startCamera()'],
+    ]},
+    {icon:'⚙️',title:'System',color:'#aaa',items:[
+      ['📶 Status',navigator.onLine?'Online':'Offline','openSettings()'],
+      ['📱 Devices','5',"if(window.showDeviceHub)showDeviceHub()"],
+      ['💰 Plan','FREE / PRO','openPricing()'],
+      ['ℹ️ About','v1.6.9','openAbout()'],
+    ]},
+  ];
+  var html='<h2>📊 Dashboard - God Eye v1.6.9</h2><p style="color:#aaa;font-size:12px">Tap any row. Voice: "Dashboard" / "Gintee" / "Bill" / "Doc" / "PDF" / "Night" / "Thermal"</p>';
+  html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"><button class="primary" onclick="startVoice()">🎤 Voice ['+voiceLangCycle[voiceLangIdx]+']</button><button onclick="startVoice();">🌐 Lang EN→UR→PS</button><button onclick="stopVoice()">🔇 Voice OFF</button><button onclick="openPricing()">💰 Upgrade PRO</button></div>';
+  cats.forEach(function(c){
+    html+='<h3 class="cat" style="color:'+c.color+'">'+c.icon+' '+c.title+'</h3>';
+    c.items.forEach(function(it){ html+='<div class="stat" onclick="'+it[2]+'"><span>'+it[0]+'</span><b>'+it[1]+' ›</b></div>'; });
+  });
+  html+='<h3 class="cat">🎤 Voice - All Commands</h3><p style="font-size:12px;color:#aaa;line-height:1.8"><b>Camera:</b> Capture, Video, Stop, Camera<br><b>Light:</b> Torch, Night, Thermal<br><b>Shop:</b> Count / Gintee, Scan, Bill / Hisab<br><b>Docs:</b> Doc, OCR, PDF, DOCX, JSON, Export<br><b>Security:</b> Face, Enroll, Alert, Log, IP Cam / CCTV<br><b>System:</b> Dashboard, Pricing, Settings, About, Voice, Close<br><b>Lang:</b> Tap 🎤 again = EN → UR → PS</p>';
+  html+='<button onclick="if(confirm(\'Clear all offline data?\')){localStorage.clear();location.reload()}">🗑 Clear All Data</button>';
+  openPanel(html);
+}
 function openPricing(){
-  openPanel('<h2>💰 WanaLab - God Eye Pricing</h2><p>All prices in PKR - One-time / Yearly - For Dera Ismail Khan & All Pakistan</p>'
-  +'<div class="priceCard"><h3>🆓 FREE - Trial</h3><p><b>Price: Rs. 0</b></p><p>✅ Camera + Capture<br>✅ Voice - 5 Commands<br>✅ Bill - 10 Items<br>✅ Scan - 10 Scans / Day<br>❌ Thermal / OCR / Export<br>❌ Offline Full</p><button onclick="showToast(\'FREE Already Active\')">✅ Current Plan</button></div>'
-  +'<div class="priceCard goldCard"><h3>⭐ PRO - Shop / Business - MOST POPULAR</h3><p><b>Price: Rs. 2,500 / Year</b> <br><small>Rs. 208 / Month - JazzCash / EasyPaisa</small></p><p>✅ Everything in FREE<br>✅ Unlimited Bill + Scan + Count<br>✅ Thermal (Simulated) + Night HDR (5-Frame)<br>✅ Doc Scan + OCR Urdu / Pashto<br>✅ Export PDF / DOCX / JPG<br>✅ Full Offline Mode<br>✅ Voice - All 14 Commands</p><button class="primary" onclick="buyPro(\'PRO - Rs. 2500 / Year\')">💳 Buy PRO - JazzCash</button></div>'
-  +'<div class="priceCard"><h3>🏪 SHOP PRO - 3 Devices</h3><p><b>Price: Rs. 5,000 / Year</b></p><p>✅ Everything in PRO<br>✅ 3 Phones / Tablets<br>✅ Multi-Shop Dashboard<br>✅ Staff - 3 Accounts<br>✅ Priority WhatsApp Support</p><button class="primary" onclick="buyPro(\'SHOP PRO - Rs. 5000 / Year\')">💳 Buy SHOP PRO</button></div>'
-  +'<div class="priceCard"><h3>🏢 GOD EYE HARDWARE BUNDLE</h3><p><b>Price: Rs. 18,500 One-time</b></p><p>✅ God Eye App PRO - Lifetime<br>✅ UVC USB Microscope 1600x<br>✅ WiFi Microscope / ESP32-CAM<br>✅ Thermal Camera FLIR ONE (Native App Needed for Real Temp)<br>✅ Tripod + LED Light<br>✅ Free Delivery - D.I.Khan</p><button class="primary" onclick="buyPro(\'HARDWARE BUNDLE - Rs. 18500\')">💳 Order Bundle</button></div>'
-  +'<h3>💳 Payment</h3><p>JazzCash / EasyPaisa: <b>0345-XXXXXXX - Replace with real number</b><br>Bank: Meezan Bank - WanaLab<br>WhatsApp Order: Send screenshot of this page</p>');
+  openPanel('<h2>💰 WanaLab - God Eye Pricing</h2><p>PKR - Dera Ismail Khan & All Pakistan</p>'
+  +'<div class="priceCard"><h3>🆓 FREE</h3><p><b>Rs. 0</b></p><p>✅ Camera + Capture<br>✅ Voice - 5 Commands<br>✅ Bill - 10 Items<br>✅ Scan - 10 / Day</p><button onclick="showToast(\'FREE Active\')">✅ Current</button></div>'
+  +'<div class="priceCard goldCard"><h3>⭐ PRO - MOST POPULAR</h3><p><b>Rs. 2,500 / Year</b> - Rs. 208 / Month</p><p>✅ Unlimited Bill + Scan + Count<br>✅ Thermal (Sim) + Night HDR 5-Frame<br>✅ Doc Scan + OCR Urdu / Pashto<br>✅ Export PDF / DOCX / JPG / JSON<br>✅ Full Offline<br>✅ Voice - All 38 Commands</p><button class="primary" onclick="buyPro(\'PRO - Rs. 2500 / Year\')">💳 Buy PRO</button></div>'
+  +'<div class="priceCard"><h3>🏪 SHOP PRO - 3 Devices</h3><p><b>Rs. 5,000 / Year</b></p><p>✅ Everything in PRO<br>✅ 3 Phones / Tablets<br>✅ Multi-Shop Dashboard<br>✅ Staff - 3 Accounts</p><button class="primary" onclick="buyPro(\'SHOP PRO - Rs. 5000 / Year\')">💳 Buy SHOP PRO</button></div>'
+  +'<div class="priceCard"><h3>🏢 HARDWARE BUNDLE</h3><p><b>Rs. 18,500 One-time</b></p><p>✅ PRO Lifetime<br>✅ UVC Microscope 1600x<br>✅ WiFi Microscope / ESP32-CAM<br>✅ FLIR ONE (Native App for Real Temp)<br>✅ Tripod + LED<br>✅ Free Delivery D.I.Khan</p><button class="primary" onclick="buyPro(\'HARDWARE BUNDLE - Rs. 18500\')">💳 Order Bundle</button></div>'
+  +'<h3>💳 Payment</h3><p>JazzCash / EasyPaisa: <b>0345-XXXXXXX - Replace with real</b><br>Meezan Bank - WanaLab</p>');
 }
-function buyPro(plan){
-  var msg='Assalam-o-Alaikum WanaLab!\nI want to buy: '+plan+'\nName: \nShop: \nCity: Dera Ismail Khan';
-  showToast('Opening WhatsApp for: '+plan);
-  window.open('https://wa.me/92345XXXXXXX?text='+encodeURIComponent(msg),'_blank');
-}
+function buyPro(plan){ var msg='Assalam-o-Alaikum WanaLab!\nI want: '+plan+'\nName: \nShop: \nCity: Dera Ismail Khan'; showToast('Opening WhatsApp: '+plan); window.open('https://wa.me/92345XXXXXXX?text='+encodeURIComponent(msg),'_blank'); }
 function openSettings(){
-  openPanel('<h2>⚙️ System - v1.6.8</h2><p><b>Version:</b> v1.6.8</p><p><b>Offline:</b> '+(navigator.onLine?'Online':'Offline Mode ON')+' - Camera / Bill / Scan work without internet. No app install needed - open link in Chrome.</p><p><b>Custom UVC:</b> USB Microscope / Endoscope</p><p><b>Custom WiFi:</b> 192.168.0.1 - WiFi Microscope</p><p><b>Custom IP:</b> RTSP / ONVIF via go2rtc - Hikvision / Dahua</p><p><b>Custom Thermal:</b> FLIR ONE - Simulated in browser, Real Temp needs Native App</p><input placeholder="UVC Vendor ID"><input placeholder="WiFi IP e.g. 192.168.0.1"><button class="primary" onclick="showToast(\'Device Saved Offline\');document.getElementById(\'panel\').style.display=\'none\'">💾 Save Device</button><button onclick="if(confirm(\'Clear all offline data?\')){localStorage.clear();location.reload()}">🗑 Clear Offline Data</button>');
+  openPanel('<h2>⚙️ System - v1.6.9</h2><p><b>Version:</b> v1.6.9</p><p><b>Offline:</b> '+(navigator.onLine?'Online':'Offline')+' - Camera / Bill / Scan work without internet. No install needed - open in Chrome.</p><p><b>Voice Lang:</b> '+voiceLangCycle[voiceLangIdx]+' - Tap 🎤 to cycle EN → UR → PS</p><p><b>UVC:</b> USB Microscope / Endoscope</p><p><b>WiFi:</b> 192.168.0.1 - WiFi Microscope</p><p><b>IP:</b> RTSP / ONVIF via go2rtc - Hikvision / Dahua</p><p><b>Thermal:</b> FLIR ONE - Simulated in browser</p><input placeholder="UVC Vendor ID"><input placeholder="WiFi IP e.g. 192.168.0.1"><button class="primary" onclick="showToast(\'Device Saved\');document.getElementById(\'panel\').style.display=\'none\'">💾 Save Device</button><button onclick="if(confirm(\'Clear all offline data?\')){localStorage.clear();location.reload()}">🗑 Clear Offline Data</button>');
 }
-function openAbout(){ openPanel('<h2>ℹ️ About v1.6.8</h2><p><b>Developer:</b> Nasir Khan - WanaLab</p><p><b>City:</b> Dera Ismail Khan, KPK, Pakistan</p><p><b>Fixes v1.6.8:</b> No PWA, Real AI Count (COCO + CountingPro), Face Detection Only (no fake identity), IP CAM via rtspEngine (HLS/MJPEG/RTSP via go2rtc), XSS fix, Export Hub wired</p><p><b>Voice:</b> Capture, Video, Stop Video, Torch, Scan, Bill, Count, Pricing, Dashboard, Face</p><button class="gold" onclick="openPricing()">💰 View Pricing</button>'); }
+function openAbout(){ openPanel('<h2>ℹ️ About v1.6.9</h2><p><b>Developer:</b> Nasir Khan - WanaLab<br><b>City:</b> Dera Ismail Khan, KPK</p><p><b>Fixes v1.6.9:</b> Voice covers ALL 38 protocols, Word-boundary matching, Debounce, 3 languages EN/UR/PS, Dashboard 6 categories</p><p><b>Voice:</b> Say "Dashboard" to see all commands</p><button class="gold" onclick="openPricing()">💰 View Pricing</button>'); }
 </script>
 </body>
   </html>
