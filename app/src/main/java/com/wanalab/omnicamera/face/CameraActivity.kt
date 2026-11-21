@@ -35,6 +35,8 @@ class CameraActivity : AppCompatActivity() {
     private var lastProcessed = 0L
     private val faceScope = CoroutineScope(Dispatchers.Default)
     private var isProcessing = false
+    private var isOnlineNow = false
+    private var lastFaceText = "Face: Waiting..."
 
     companion object {
         private const val REQUEST_CODE = 1001
@@ -58,6 +60,18 @@ class CameraActivity : AppCompatActivity() {
         }
         root.addView(overlayView)
 
+        // Tap face to enroll - captures current frame
+        overlayView.setOnClickListener {
+            val bmp = previewView.bitmap
+            if (bmp != null) {
+                FaceEnrollActivity.pendingBitmap = bmp.copy(Bitmap.Config.ARGB_8888, false)
+                Toast.makeText(this, "Face captured, enter name", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, FaceEnrollActivity::class.java))
+            } else {
+                Toast.makeText(this, "No frame yet, wait 1 sec", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         statusText = TextView(this).apply {
             text = "Face: Offline Ready"
             setTextColor(android.graphics.Color.WHITE)
@@ -71,39 +85,79 @@ class CameraActivity : AppCompatActivity() {
         }
         root.addView(statusText, statusParams)
 
+        // 1. Viewer - Bottom 40
         val viewerBtn = Button(this).apply {
             text = "View Home / Workplace Cameras"
             setOnClickListener {
                 startActivity(Intent(this@CameraActivity, HomeCameraViewerActivity::class.java))
             }
         }
-        val params = FrameLayout.LayoutParams(-1, -2).apply {
+        val viewerParams = FrameLayout.LayoutParams(-1, -2).apply {
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
             setMargins(24, 0, 24, 40)
         }
-        root.addView(viewerBtn, params)
+        root.addView(viewerBtn, viewerParams)
+
+        // 2. Enroll - Bottom 110
+        val enrollBtn = Button(this).apply {
+            text = "Enroll Face / Known Faces"
+            setOnClickListener {
+                val bmp = previewView.bitmap
+                if (bmp != null) {
+                    FaceEnrollActivity.pendingBitmap = bmp.copy(Bitmap.Config.ARGB_8888, false)
+                }
+                startActivity(Intent(this@CameraActivity, FaceEnrollActivity::class.java))
+            }
+        }
+        val enrollParams = FrameLayout.LayoutParams(-1, -2).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            setMargins(24, 0, 24, 110)
+        }
+        root.addView(enrollBtn, enrollParams)
+
+        // 3. Alert History - Bottom 180
+        val alertBtn = Button(this).apply {
+            text = "Alert History - Unknown Faces"
+            setOnClickListener {
+                startActivity(Intent(this@CameraActivity, FaceAlertHistoryActivity::class.java))
+            }
+        }
+        val alertParams = FrameLayout.LayoutParams(-1, -2).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            setMargins(24, 0, 24, 180)
+        }
+        root.addView(alertBtn, alertParams)
+
+        // 4. Face Log - Bottom 250
+        val logBtn = Button(this).apply {
+            text = "Face Log - Who Came When"
+            setOnClickListener {
+                startActivity(Intent(this@CameraActivity, FaceLogActivity::class.java))
+            }
+        }
+        val logParams = FrameLayout.LayoutParams(-1, -2).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            setMargins(24, 0, 24, 250)
+        }
+        root.addView(logBtn, logParams)
+
         setContentView(root)
 
-        // Face Engine - Offline, init in background
+        // Face Engine - Offline
         faceEngine = FaceEngine(this)
         faceScope.launch {
             try {
                 faceEngine.init()
-                runOnUiThread { statusText.text = "Face: Offline Ready - GPU/CPU" }
+                runOnUiThread { updateStatus() }
             } catch (e: Exception) {
                 runOnUiThread { statusText.text = "Face: Model missing, check assets" }
             }
         }
 
-        // Network Auto - Offline / Online status
+        // Network - Offline / Online, does NOT overwrite face count
         NetworkAutoManager.start(this) { online, wifi ->
-            runOnUiThread {
-                statusText.text = if (online) {
-                    "Face: Offline Ready | Network: ONLINE - Cloud Auto ON"
-                } else {
-                    "Face: Offline Ready | Network: OFFLINE - LAN Only"
-                }
-            }
+            isOnlineNow = online
+            runOnUiThread { updateStatus() }
         }
 
         if (allPermissionsGranted()) {
@@ -111,6 +165,11 @@ class CameraActivity : AppCompatActivity() {
         } else {
             ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_CODE)
         }
+    }
+
+    private fun updateStatus() {
+        val net = if (isOnlineNow) "ONLINE - Cloud Auto ON" else "OFFLINE - LAN Only"
+        statusText.text = "$lastFaceText | $net"
     }
 
     private fun allPermissionsGranted(): Boolean {
@@ -148,12 +207,9 @@ class CameraActivity : AppCompatActivity() {
         try {
             val provider = cameraProvider ?: return
             provider.unbindAll()
-
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
             }
-
-            // Face Analysis - 1 frame per 300ms, to save battery, offline
             val analysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build().also {
@@ -161,7 +217,6 @@ class CameraActivity : AppCompatActivity() {
                         processFaceFrame(imageProxy)
                     }
                 }
-
             provider.bindToLifecycle(this, selector, preview, analysis)
         } catch (e: Exception) {
             try {
@@ -178,44 +233,59 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun processFaceFrame(imageProxy: ImageProxy) {
+        // FIXED: Use previewView.bitmap, NOT imageProxy.toBitmap()
+        // FIXED: Close only once, at end
         try {
             val now = System.currentTimeMillis()
-            // Throttle - only 3 FPS for face, saves battery
             if (now - lastProcessed < 300 || isProcessing) {
-                imageProxy.close()
                 return
             }
             lastProcessed = now
             isProcessing = true
 
-            val bitmap = imageProxy.toBitmap() // CameraX helper, API 24+ via ImageProxy
-            // If toBitmap() not available on your CameraX version, use YUV converter below
+            val bitmap = previewView.bitmap ?: run {
+                isProcessing = false
+                return
+            }
+            // Copy for FaceEngine + Alert, so recycle does not crash alert
+            val safeCopy = bitmap.copy(Bitmap.Config.ARGB_8888, false)
+
             faceScope.launch {
                 try {
-                    val results = faceEngine.processFrame("mobile_camera", bitmap)
+                    val results = faceEngine.processFrame("mobile_camera", safeCopy)
+                    if (results.isNotEmpty()) {
+                        // Face Log - Save who came when, offline
+                        FaceLogManager.logFaces(this@CameraActivity, results)
+                        // Auto Alert - Unknown only
+                        if (results.any { !it.isKnown }) {
+                            FaceAlertManager.onFaceDetected(this@CameraActivity, results, safeCopy)
+                        }
+                    }
                     runOnUiThread {
                         overlayView.setFaces(results)
                         if (results.isNotEmpty()) {
                             val known = results.count { it.isKnown }
                             val unknown = results.size - known
-                            statusText.text = "Face: $known Known, $unknown Unknown | Offline"
+                            lastFaceText = if (unknown > 0) {
+                                "ALERT: $unknown Unknown! Snapshot Saved"
+                            } else {
+                                "Face: $known Known, $unknown Unknown"
+                            }
+                            updateStatus()
                         }
-                    }
-                    // Online only - send face event if internet
-                    if (NetworkAutoManager.isOnline && results.isNotEmpty()) {
-                        // MQTT / Cloud sync will auto-start here, offline it is skipped
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
                     isProcessing = false
-                    bitmap.recycle()
+                    try { safeCopy.recycle() } catch (e: Exception) {}
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            isProcessing = false
         } finally {
-            imageProxy.close()
+            try { imageProxy.close() } catch (e: Exception) {}
         }
     }
 
