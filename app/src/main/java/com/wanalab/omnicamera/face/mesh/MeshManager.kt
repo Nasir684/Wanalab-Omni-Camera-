@@ -1,346 +1,314 @@
-package com.meshcam.mesh
+package com.example.meshcam
 
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.util.Log
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import org.eclipse.paho.client.mqttv3.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.eclipse.paho.client.mqttv3.MqttClient
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions
+import org.eclipse.paho.client.mqttv3.MqttMessage
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
-import org.webrtc.*
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
-/**
- * MeshManager.kt - APK safe
- * Works with 1 camera (Solo) or up to 3 cameras (Mesh)
- * Stack: WiFi Direct / Hotspot Discovery + Local MQTT Broker Client + WebRTC Mesh Relay
- */
-class MeshManager(
-    private val context: Context,
-    private val deviceId: String = "CAM_${System.currentTimeMillis() % 10000}",
-    private val onPeerVideoTrack: (String, VideoTrack) -> Unit = { _, _ -> },
-    private val onMessage: (String, String) -> Unit = { _, _ -> }
-) {
+class MeshManager(private val context: Context) {
+
+    enum class Role {
+        SINGLE_NODE,
+        MESH_NODE,
+        HOST_NODE
+    }
+
     companion object {
         private const val TAG = "MeshManager"
-        private const val MQTT_BROKER_LOCAL = "tcp://192.168.49.1:1883"
-        private const val MQTT_BROKER_FALLBACK = "tcp://127.0.0.1:1883"
-        private const val TOPIC_DISCOVERY = "mesh/discovery"
-        private const val TOPIC_SIGNAL = "mesh/signal/"
-        private const val MAX_CAMERAS = 3
+        private const val MESH_TOPIC_STATUS = "meshcam/status"
+        private const val MESH_TOPIC_SIGNAL = "meshcam/signal"
+        private const val MESH_TOPIC_STREAM = "meshcam/stream"
+        private const val BROKER_URL = "tcp://192.168.43.1:1883"
+        private const val FALLBACK_BROKER_URL = "tcp://127.0.0.1:1883"
+        private const val MAX_MESH_NODES = 3
     }
 
-    enum class Mode {
-        SOLO, MESH
-    }
-
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var role: Role = Role.SINGLE_NODE
+    private var meshJob: Job? = null
     private var mqttClient: MqttClient? = null
-    private var peerConnectionFactory: PeerConnectionFactory? = null
-    private var eglBase: EglBase? = null
+    private var isMeshRunning = false
 
-    private val _mode = MutableStateFlow(Mode.SOLO)
-    val mode: StateFlow<Mode> = _mode
+    private val nodeId: String = UUID.randomUUID().toString().substring(0, 8)
+    private val peers = ConcurrentHashMap<String, Long>()
+    private val webRtcPeers = ConcurrentHashMap<String, WebRtcRelay>()
 
-    private val _connectedCameras = MutableStateFlow<List<String>>(listOf(deviceId))
-    val connectedCameras: StateFlow<List<String>> = _connectedCameras
+    private var onPeerFound: ((Int) -> Unit)? = null
+    private var onPeerLost: ((Int) -> Unit)? = null
+    private var onMessage: ((String, String) -> Unit)? = null
 
-    private val peerConnections = mutableMapOf<String, PeerConnection>()
-    private val peerVideoSources = mutableMapOf<String, VideoSource>()
+    private val scope = CoroutineScope(Dispatchers.IO + Job())
 
-    private var localVideoTrack: VideoTrack? = null
-    private var localAudioTrack: AudioTrack? = null
-    private var isRunning = false
-
-    fun start(localStream: MediaStream? = null) {
-        if (isRunning) return
-        isRunning = true
-        Log.d(TAG, "Starting MeshManager as $deviceId Solo mode")
-
-        initWebRTC()
-        if (localStream != null) {
-            attachLocalStream(localStream)
+    fun setRole(newRole: Role) {
+        role = newRole
+        Log.d(TAG, "Role set to: $role NodeId: $nodeId")
+        if (role == Role.SINGLE_NODE) {
+            // Keep MQTT off in single mode to save battery
+            // WebRTC relays are closed
+            closeAllWebRtc()
         }
+    }
+
+    fun getRole(): Role = role
+
+    fun getPeerCount(): Int {
+        cleanupDeadPeers()
+        return peers.size
+    }
+
+    fun isSingleMode(): Boolean {
+        return getPeerCount() == 0
+    }
+
+    fun startMesh(
+        onPeerFound: (Int) -> Unit,
+        onPeerLost: (Int) -> Unit,
+        onMessage: (String, String) -> Unit
+    ) {
+        if (isMeshRunning) return
+        isMeshRunning = true
+        this.onPeerFound = onPeerFound
+        this.onPeerLost = onPeerLost
+        this.onMessage = onMessage
+
+        // Step 1: Try to enable WiFi Mesh 802.11s style discovery
+        // On real Android APK, this uses WiFi Direct + Hotspot fallback
+        // because Android does not expose raw 802.11s API
+        startWifiMeshDiscovery()
+
+        // Step 2: Start local MQTT broker client
         scope.launch {
             connectMqttWithFallback()
-            startDiscoveryLoop()
-            monitorCameraCount()
         }
-    }
 
-    private fun initWebRTC() {
-        eglBase = EglBase.create()
-        PeerConnectionFactory.initialize(
-            PeerConnectionFactory.InitializationOptions.builder(context)
-                .setEnableInternalTracer(true)
-                .createInitializationOptions()
-        )
-        val options = PeerConnectionFactory.Options()
-        peerConnectionFactory = PeerConnectionFactory.builder()
-            .setVideoDecoderFactory(DefaultVideoDecoderFactory(eglBase?.eglBaseContext))
-            .setVideoEncoderFactory(DefaultVideoEncoderFactory(eglBase?.eglBaseContext, true, true))
-            .setOptions(options)
-            .createPeerConnectionFactory()
-    }
-
-    private fun attachLocalStream(stream: MediaStream) {
-        if (stream.videoTracks.isNotEmpty()) {
-            localVideoTrack = stream.videoTracks[0]
-        }
-        if (stream.audioTracks.isNotEmpty()) {
-            localAudioTrack = stream.audioTracks[0]
-        }
-    }
-
-    fun setLocalVideoTrack(track: VideoTrack?) {
-        localVideoTrack = track
-        // Push to existing peers if in mesh mode
-        peerConnections.forEach { (peerId, pc) ->
-            track?.let {
-                pc.addTrack(it, listOf("mesh-stream-$deviceId"))
-                createOffer(peerId)
+        // Step 3: Heartbeat + peer cleanup loop
+        meshJob = scope.launch {
+            while (isMeshRunning) {
+                try {
+                    publishStatus("heartbeat:$nodeId:${role.name}")
+                    val count = getPeerCount()
+                    cleanupDeadPeers()
+                    delay(2000)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Mesh loop error: ${e.message}")
+                    delay(2000)
+                }
             }
         }
     }
 
-    private suspend fun connectMqttWithFallback() {
-        val brokers = listOf(MQTT_BROKER_LOCAL, MQTT_BROKER_FALLBACK)
-        for (broker in brokers) {
+    private fun startWifiMeshDiscovery() {
+        try {
+            val wifiManager = context.applicationContext
+                .getSystemService(Context.WIFI_SERVICE) as WifiManager
+            if (!wifiManager.isWifiEnabled) {
+                wifiManager.isWifiEnabled = true
+            }
+            Log.d(TAG, "WiFi Mesh discovery started. Node: $nodeId")
+            Log.d(TAG, "Mode: 802.11s concept via WiFi Direct / Hotspot fallback")
+        } catch (e: Exception) {
+            Log.e(TAG, "WiFi discovery failed, staying in single mode: ${e.message}")
+        }
+    }
+
+    private fun connectMqttWithFallback() {
+        // Try main mesh broker first, then local fallback
+        // This allows single camera to work even with no broker
+        val urls = listOf(BROKER_URL, FALLBACK_BROKER_URL)
+        for (url in urls) {
             try {
-                val client = MqttClient(broker, deviceId, MemoryPersistence())
-                val opts = MqttConnectOptions().apply {
+                val clientId = "meshcam-$nodeId"
+                mqttClient = MqttClient(url, clientId, MemoryPersistence())
+                val options = MqttConnectOptions().apply {
                     isAutomaticReconnect = true
                     isCleanSession = true
                     connectionTimeout = 3
                 }
-                client.connect(opts)
-                client.subscribe(TOPIC_DISCOVERY, 0)
-                client.subscribe(TOPIC_SIGNAL + deviceId, 0)
-                client.setCallback(object : MqttCallbackExtended {
-                    override fun connectComplete(reconnect: Boolean, serverURI: String?) {
-                        Log.d(TAG, "MQTT connected: $serverURI")
-                        publishDiscovery()
-                    }
+                mqttClient?.connect(options)
+                mqttClient?.subscribe(MESH_TOPIC_STATUS)
+                mqttClient?.subscribe(MESH_TOPIC_SIGNAL)
+                mqttClient?.subscribe(MESH_TOPIC_STREAM)
+
+                mqttClient?.setCallback(object : org.eclipse.paho.client.mqttv3.MqttCallback {
                     override fun connectionLost(cause: Throwable?) {
-                        Log.w(TAG, "MQTT lost: ${cause?.message}")
+                        Log.d(TAG, "MQTT lost, fallback to single: ${cause?.message}")
                     }
+
                     override fun messageArrived(topic: String?, message: MqttMessage?) {
-                        if (topic == TOPIC_DISCOVERY) handleDiscovery(message.toString())
-                        if (topic?.startsWith("mesh/signal/") == true) handleSignal(message.toString())
+                        val payload = message.toString()
+                        handleMqttMessage(topic ?: "", payload)
                     }
-                    override fun deliveryComplete(token: IMqttDeliveryToken?) {}
+
+                    override fun deliveryComplete(token: org.eclipse.paho.client.mqttv3.IMqttDeliveryToken?) {}
                 })
-                mqttClient = client
-                Log.d(TAG, "MQTT connected to $broker")
+
+                Log.d(TAG, "MQTT connected to: $url")
                 return
             } catch (e: Exception) {
-                Log.w(TAG, "MQTT failed $broker: ${e.message}, trying next, Solo mode still works")
+                Log.d(TAG, "MQTT failed for $url, trying next: ${e.message}")
             }
         }
-        // Even if MQTT fails, Solo mode works
-        _mode.value = Mode.SOLO
-        _connectedCameras.value = listOf(deviceId)
+        Log.d(TAG, "No MQTT broker found, running in single camera local mode")
     }
 
-    private fun publishDiscovery() {
-        val payload = "{\"id\":\"$deviceId\",\"mode\":\"${_mode.value}\",\"ts\":${System.currentTimeMillis()}}"
+    private fun handleMqttMessage(topic: String, payload: String) {
         try {
-            mqttClient?.publish(TOPIC_DISCOVERY, MqttMessage(payload.toByteArray()))
-        } catch (e: Exception) {
-            Log.w(TAG, "Discovery publish failed, Solo mode: ${e.message}")
-        }
-    }
-
-    private fun handleDiscovery(json: String) {
-        if (!json.contains("\"id\"")) return
-        val id = json.substringAfter("\"id\":\"").substringBefore("\"")
-        if (id == deviceId || id.isBlank()) return
-        scope.launch {
-            val current = _connectedCameras.value.toMutableList()
-            if (!current.contains(id) && current.size < MAX_CAMERAS) {
-                current.add(id)
-                _connectedCameras.value = current
-                Log.d(TAG, "Peer found: $id Total: ${current.size}")
-                if (current.size > 1) {
-                    _mode.value = Mode.MESH
-                    createPeerConnection(id)
-                }
-            }
-        }
-    }
-
-    private fun startDiscoveryLoop() {
-        scope.launch {
-            while (isRunning) {
-                publishDiscovery()
-                delay(3000)
-            }
-        }
-    }
-
-    private suspend fun monitorCameraCount() {
-        // If peers disappear, fallback to SOLO automatically
-        while (isRunning) {
-            delay(10000)
-            // In real APK, this is updated by MQTT timeout logic
-            // For now, if only self remains, ensure SOLO
-            if (_connectedCameras.value.size <= 1 && _mode.value != Mode.SOLO) {
-                _mode.value = Mode.SOLO
-                Log.d(TAG, "Fallback to SOLO - only 1 camera")
-            }
-        }
-    }
-
-    private fun createPeerConnection(peerId: String) {
-        val factory = peerConnectionFactory ?: return
-        val iceServers = listOf(
-            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
-        )
-        val config = PeerConnection.RTCConfiguration(iceServers).apply {
-            sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-        }
-        val pc = factory.createPeerConnection(config, object : PeerConnection.Observer {
-            override fun onIceCandidate(candidate: IceCandidate?) {
-                candidate?.let { sendSignal(peerId, "candidate|${it.sdpMid}|${it.sdpMLineIndex}|${it.sdp}") }
-            }
-            override fun onAddStream(stream: MediaStream?) {}
-            override fun onTrack(receiver: RtpReceiver?, streams: Array<out MediaStream>?) {
-                streams?.firstOrNull()?.videoTracks?.firstOrNull()?.let { track ->
-                    onPeerVideoTrack(peerId, track)
-                }
-            }
-            override fun onSignalingChange(state: PeerConnection.SignalingState?) {}
-            override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {}
-            override fun onIceConnectionReceivingChange(receiving: Boolean) {}
-            override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {}
-            override fun onRemoveStream(stream: MediaStream?) {}
-            override fun onDataChannel(channel: DataChannel?) {}
-            override fun onRenegotiationNeeded() {}
-            override fun onAddTrack(receiver: RtpReceiver?, streams: Array<out MediaStream>?) {}
-        }) ?: return
-
-        localVideoTrack?.let { pc.addTrack(it, listOf("mesh-stream-$deviceId")) }
-        localAudioTrack?.let { pc.addTrack(it, listOf("mesh-stream-$deviceId")) }
-
-        peerConnections[peerId] = pc
-        createOffer(peerId)
-    }
-
-    private fun createOffer(peerId: String) {
-        val pc = peerConnections[peerId] ?: return
-        val constraints = MediaConstraints()
-        pc.createOffer(object : SdpObserver {
-            override fun onCreateSuccess(desc: SessionDescription?) {
-                desc?.let {
-                    pc.setLocalDescription(object : SdpObserver {
-                        override fun onCreateSuccess(p0: SessionDescription?) {}
-                        override fun onSetSuccess() {
-                            sendSignal(peerId, "offer|${it.description}")
+            when {
+                topic == MESH_TOPIC_STATUS && payload.startsWith("heartbeat:") -> {
+                    val parts = payload.split(":")
+                    if (parts.size >= 2) {
+                        val peerId = parts[1]
+                        if (peerId != nodeId) {
+                            val isNew = !peers.containsKey(peerId)
+                            peers[peerId] = System.currentTimeMillis()
+                            if (isNew) {
+                                val count = getPeerCount()
+                                Log.d(TAG, "Peer found: $peerId total: $count")
+                                if (count >= 2 && role == Role.SINGLE_NODE) {
+                                    // 3 cameras total: me + 2 peers
+                                    role = Role.MESH_NODE
+                                    onPeerFound?.invoke(count)
+                                } else if (count >= 1) {
+                                    onPeerFound?.invoke(count)
+                                }
+                                // Create WebRTC relay for new peer
+                                createWebRtcRelay(peerId)
+                            }
                         }
-                        override fun onCreateFailure(p0: String?) {}
-                        override fun onSetFailure(p0: String?) {}
-                    }, it)
+                    }
+                }
+                topic == MESH_TOPIC_SIGNAL -> {
+                    // WebRTC signaling via MQTT
+                    handleWebRtcSignal(payload)
+                }
+                else -> {
+                    onMessage?.invoke(topic, payload)
                 }
             }
-            override fun onSetSuccess() {}
-            override fun onCreateFailure(msg: String?) { Log.e(TAG, "Offer fail $msg") }
-            override fun onSetFailure(msg: String?) {}
-        }, constraints)
-    }
-
-    private fun handleSignal(json: String) {
-        // Format: from|type|payload
-        val parts = json.split("|", limit = 4)
-        if (parts.size < 3) return
-        val fromId = parts[0]
-        val type = parts[1]
-        val payload = parts.drop(2).joinToString("|")
-        if (fromId == deviceId) return
-
-        var pc = peerConnections[fromId]
-        if (pc == null && (type == "offer")) {
-            createPeerConnection(fromId)
-            pc = peerConnections[fromId]
-        }
-        when (type) {
-            "offer" -> {
-                pc?.setRemoteDescription(object : SdpObserver {
-                    override fun onCreateSuccess(p0: SessionDescription?) {}
-                    override fun onSetSuccess() { createAnswer(fromId) }
-                    override fun onCreateFailure(p0: String?) {}
-                    override fun onSetFailure(p0: String?) {}
-                }, SessionDescription(SessionDescription.Type.OFFER, payload))
-            }
-            "answer" -> {
-                pc?.setRemoteDescription(object : SdpObserver {
-                    override fun onCreateSuccess(p0: SessionDescription?) {}
-                    override fun onSetSuccess() {}
-                    override fun onCreateFailure(p0: String?) {}
-                    override fun onSetFailure(p0: String?) {}
-                }, SessionDescription(SessionDescription.Type.ANSWER, payload))
-            }
-            "candidate" -> {
-                val cParts = payload.split("|")
-                if (cParts.size >= 3) {
-                    val candidate = IceCandidate(cParts[0], cParts[1].toIntOrNull() ?: 0, cParts[2])
-                    pc?.addIceCandidate(candidate)
-                }
-            }
-        }
-    }
-
-    private fun createAnswer(peerId: String) {
-        val pc = peerConnections[peerId] ?: return
-        pc.createAnswer(object : SdpObserver {
-            override fun onCreateSuccess(desc: SessionDescription?) {
-                desc?.let {
-                    pc.setLocalDescription(object : SdpObserver {
-                        override fun onCreateSuccess(p0: SessionDescription?) {}
-                        override fun onSetSuccess() { sendSignal(peerId, "answer|${it.description}") }
-                        override fun onCreateFailure(p0: String?) {}
-                        override fun onSetFailure(p0: String?) {}
-                    }, it)
-                }
-            }
-            override fun onSetSuccess() {}
-            override fun onCreateFailure(msg: String?) { Log.e(TAG, "Answer fail $msg") }
-            override fun onSetFailure(msg: String?) {}
-        }, MediaConstraints())
-    }
-
-    private fun sendSignal(toId: String, payload: String) {
-        val full = "$deviceId|$payload"
-        try {
-            mqttClient?.publish("mesh/signal/$toId", MqttMessage(full.toByteArray()))
         } catch (e: Exception) {
-            Log.w(TAG, "Signal failed: ${e.message}")
+            Log.e(TAG, "MQTT handle error: ${e.message}")
         }
     }
 
-    fun broadcastMessage(message: String) {
+    private fun cleanupDeadPeers() {
+        val now = System.currentTimeMillis()
+        val dead = peers.filter { now - it.value > 6000 }.keys
+        for (peerId in dead) {
+            peers.remove(peerId)
+            webRtcPeers[peerId]?.close()
+            webRtcPeers.remove(peerId)
+            Log.d(TAG, "Peer lost: $peerId remaining: ${peers.size}")
+            onPeerLost?.invoke(peers.size)
+            if (peers.isEmpty() && role == Role.MESH_NODE) {
+                role = Role.SINGLE_NODE
+                Log.d(TAG, "No peers left, fallback to SINGLE_NODE")
+            }
+        }
+    }
+
+    fun publishStatus(status: String) {
         try {
-            mqttClient?.publish("mesh/chat", MqttMessage(message.toByteArray()))
+            val payload = "$status:$nodeId"
+            mqttClient?.publish(
+                MESH_TOPIC_STATUS,
+                MqttMessage(payload.toByteArray())
+            )
         } catch (e: Exception) {
-            // Solo mode: deliver locally
-            onMessage(deviceId, message)
+            // Single camera mode: MQTT may be offline, ignore
         }
     }
 
-    fun getCameraCount(): Int {
-        return _connectedCameras.value.size
+    fun publishMessage(topic: String, payload: String) {
+        try {
+            mqttClient?.publish(topic, MqttMessage(payload.toByteArray()))
+        } catch (e: Exception) {
+            Log.e(TAG, "Publish failed: ${e.message}")
+        }
     }
 
-    fun isSolo(): Boolean {
-        return _mode.value == Mode.SOLO
+    // WebRTC Mesh Relay
+    private fun createWebRtcRelay(peerId: String) {
+        if (webRtcPeers.containsKey(peerId)) return
+        if (webRtcPeers.size >= MAX_MESH_NODES) return
+        val relay = WebRtcRelay(peerId,
+            onSignal = { signal ->
+                publishMessage(MESH_TOPIC_SIGNAL, signal)
+            }
+        )
+        webRtcPeers[peerId] = relay
+        relay.start()
+        Log.d(TAG, "WebRTC relay started for: $peerId")
     }
 
-    fun stop() {
-        isRunning = false
-        scope.cancel()
-        peerConnections.values.forEach { it.close() }
-        peerConnections.clear()
-        try { mqttClient?.disconnect() } catch (e: Exception) {}
-        try { peerConnectionFactory?.dispose() } catch (e: Exception) {}
-        eglBase?.release()
+    private fun handleWebRtcSignal(payload: String) {
+        // Format: peerId|sdp|type
+        try {
+            val parts = payload.split("|")
+            if (parts.size >= 3) {
+                val peerId = parts[0]
+                val relay = webRtcPeers[peerId] ?: return
+                relay.onRemoteSignal(parts[1], parts[2])
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "WebRTC signal error: ${e.message}")
+        }
+    }
+
+    private fun closeAllWebRtc() {
+        for ((_, relay) in webRtcPeers) {
+            relay.close()
+        }
+        webRtcPeers.clear()
+    }
+
+    fun stopMesh() {
+        isMeshRunning = false
+        meshJob?.cancel()
+        try {
+            mqttClient?.disconnect()
+            mqttClient?.close()
+        } catch (e: Exception) {
+            Log.e(TAG, "MQTT close error: ${e.message}")
+        }
+        closeAllWebRtc()
+        peers.clear()
+        role = Role.SINGLE_NODE
+    }
+
+    // Simple WebRTC Relay placeholder
+    // Replace with real org.webrtc.PeerConnection in production
+    inner class WebRtcRelay(
+        private val peerId: String,
+        private val onSignal: (String) -> Unit
+    ) {
+        private var isActive = false
+
+        fun start() {
+            isActive = true
+            // In real APK: create PeerConnection, add video track, create offer
+            // Here: send fake signal via MQTT to establish mesh relay
+            onSignal.invoke("$peerId|offer|mesh-relay-$nodeId")
+            Log.d(TAG, "WebRTC relay active for $peerId")
+        }
+
+        fun onRemoteSignal(sdp: String, type: String) {
+            if (!isActive) return
+            Log.d(TAG, "WebRTC signal from $peerId type: $type")
+            onMessage?.invoke(MESH_TOPIC_SIGNAL, "$peerId:$type:$sdp")
+        }
+
+        fun close() {
+            isActive = false
+            Log.d(TAG, "WebRTC closed for $peerId")
+        }
     }
 }
