@@ -1,3 +1,11 @@
+val info = TextView(this).apply {
+    text = "OFFLINE ALWAYS: RTSP (192.168.x.x) | ONVIF Discovery | MJPEG (ESP32) | Local MQTT\n" +
+           "ONLINE AUTO: HLS (.m3u8) | DASH (.mpd) | RTMP Cloud | SRT Remote | WebRTC Cloud\n" +
+           "No internet? Offline cameras keep working. Internet back? Online auto-starts."
+    textSize = 13f
+    setPadding(0, 16, 0, 16)
+}
+root.addView(info)
 package com.godeye.app.face
 
 import android.content.Context
