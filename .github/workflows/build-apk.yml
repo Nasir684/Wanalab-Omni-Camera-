@@ -12,10 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node 22 - Capacitor needs >=22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -23,8 +23,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # NO android-actions/setup-android - THIS WAS THE BUG
-      # Install SDK manually - never asks for 'tools'
+      # NO android-actions/setup-android - was asking for 'tools'
       - name: Setup Android SDK Manually
         run: |
           echo "ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
