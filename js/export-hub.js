@@ -1,6 +1,7 @@
 {
-  "version": "v99.4 PRO FINAL EXPORT HUB",
+  "version": "1.4.2",
   "author": "Nasir Khan",
+  "app": "WanaLab God Eye",
   "formats": [
     {
       "id": "jpg-single",
@@ -9,7 +10,8 @@
       "button": "📸 JPG Single",
       "protocol": "canvas-to-jpeg",
       "status": "active",
-      "position": "top-left"
+      "position": "top-left",
+      "needsLib": []
     },
     {
       "id": "img-pdf",
@@ -18,7 +20,8 @@
       "button": "📄 IMG PDF",
       "protocol": "jspdf-image",
       "status": "active",
-      "position": "top-right"
+      "position": "top-right",
+      "needsLib": ["jspdf"]
     },
     {
       "id": "searchable-pdf",
@@ -27,7 +30,9 @@
       "button": "🔍 Searchable PDF PRO",
       "protocol": "jspdf + tesseract-5",
       "status": "active",
-      "position": "middle-left"
+      "position": "middle-left",
+      "needsLib": ["jspdf", "tesseract"],
+      "note": "Lazy-load Tesseract only on tap - don't load on page load"
     },
     {
       "id": "docx-img",
@@ -36,7 +41,8 @@
       "button": "📝 DOCX + Images",
       "protocol": "docx-8.5 + tesseract",
       "status": "active",
-      "position": "middle-right"
+      "position": "middle-right",
+      "needsLib": ["docx", "tesseract"]
     },
     {
       "id": "bill-pdf",
@@ -45,7 +51,8 @@
       "button": "🧾 BILL PDF",
       "protocol": "jspdf-bill-tap",
       "status": "active",
-      "position": "center"
+      "position": "center",
+      "needsLib": ["jspdf"]
     },
     {
       "id": "json",
@@ -54,7 +61,8 @@
       "button": "📦 JSON",
       "protocol": "json-stringify",
       "status": "active",
-      "position": "bottom-left"
+      "position": "bottom-left",
+      "needsLib": []
     },
     {
       "id": "txt",
@@ -63,7 +71,8 @@
       "button": "📝 TXT",
       "protocol": "blob-text",
       "status": "active",
-      "position": "bottom-middle"
+      "position": "bottom-middle",
+      "needsLib": []
     },
     {
       "id": "pdf-full",
@@ -72,10 +81,10 @@
       "button": "📄 Text + Img PDF",
       "protocol": "jspdf-text-image",
       "status": "active",
-      "position": "bottom-right"
+      "position": "bottom-right",
+      "needsLib": ["jspdf"]
     }
   ],
-  "all_buttons_working": true,
   "total_formats": 8,
-  "test_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/export.html?v=994"
+  "test_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/export.html"
 }
