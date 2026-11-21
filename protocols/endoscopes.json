@@ -4,12 +4,17 @@
     "name": "Generic USB Endoscope 5m 1080p",
     "type": "UVC",
     "mode": "micro",
-    "description": "5m flexible endoscope 1080p Type-C - Inspection camera",
+    "description": "5m flexible endoscope 1080p Type-C - Inspection camera for pipes, engine, wall. 6 LEDs adjustable.",
     "resolution": "1920x1080",
     "length": "5m",
     "led": "6 LEDs adjustable",
     "connection": "USB-C OTG",
-    "status": "working"
+    "protocol": "uvc",
+    "status": "working",
+    "use": "Pipes, engine, wall inspection, Count ROI",
+    "voice": ["endoscope", "inspection", "pipe", "uvc"],
+    "price_rs": 3000,
+    "version": "1.6.9"
   },
   {
     "id": "depstech-endoscope-wf028",
@@ -17,8 +22,18 @@
     "type": "WIFI",
     "mode": "micro",
     "ip": "192.168.10.1",
-    "description": "WiFi endoscope dual lens",
-    "status": "working"
+    "ipNote": "Default 192.168.10.1 - Some batches use 192.168.1.1 - Check WiFi name on box",
+    "ipAlt": "192.168.1.1",
+    "url": "http://192.168.10.1:8080/?action=stream",
+    "urlAlt": "http://192.168.1.1:8080/?action=stream",
+    "protocol": "mjpeg",
+    "description": "WiFi endoscope dual lens - Front + Side lens. Connect phone to DEPSTECH WiFi first, then open stream.",
+    "resolution": "1920x1080",
+    "status": "working",
+    "use": "Pipes, engine, dual lens inspection",
+    "voice": ["depstech", "endoscope", "wifi", "inspection"],
+    "price_rs": 6500,
+    "version": "1.6.9"
   },
   {
     "id": "teslong-endoscope",
@@ -26,7 +41,15 @@
     "type": "UVC",
     "mode": "micro",
     "vendorIds": [1133],
-    "description": "Teslong inspection camera",
-    "status": "working"
+    "vendorNote": "Generic UVC chip 1133 - Same chip as Jiusion - May match Jiusion in Device Hub",
+    "description": "Teslong inspection camera - 5m rigid / flexible probe. Good for engine, pipes.",
+    "resolution": "1920x1080",
+    "connection": "USB-C OTG",
+    "protocol": "uvc",
+    "status": "working",
+    "use": "Engine, pipes, inspection",
+    "voice": ["teslong", "endoscope", "inspection"],
+    "price_rs": 8000,
+    "version": "1.6.9"
   }
 ]
