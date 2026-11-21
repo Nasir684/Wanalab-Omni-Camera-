@@ -1,0 +1,17 @@
+{
+  "name": "wanalab-god-eye",
+  "version": "1.6.9",
+  "description": "God Eye - WanaLab Omni Camera",
+  "private": true,
+  "scripts": {
+    "build": "npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/cli": "latest",
+    "@capacitor/core": "latest"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
