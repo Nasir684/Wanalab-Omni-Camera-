@@ -23,7 +23,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # DO NOT use android-actions/setup-android - it asks for obsolete 'tools' and fails
       - name: Setup Android SDK Manually
         run: |
           echo "ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
@@ -38,6 +37,22 @@ jobs:
           rm tools.zip
           yes | $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses
           $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Prepare Web Assets - www folder
+        run: |
+          mkdir -p www
+          # Copy root web files into www/ - Capacitor needs www/
+          cp -r *.html www/ 2>/dev/null || true
+          cp -r *.css www/ 2>/dev/null || true
+          cp -r *.js www/ 2>/dev/null || true
+          cp -r assets www/ 2>/dev/null || true
+          cp -r js www/ 2>/dev/null || true
+          cp -r css www/ 2>/dev/null || true
+          cp -r images www/ 2>/dev/null || true
+          cp -r img www/ 2>/dev/null || true
+          # If no index.html in www, use root index.html
+          ls -la www/
+          test -f www/index.html || cp index.html www/index.html
 
       - name: Install Capacitor 7 + TypeScript + Sync
         run: |
