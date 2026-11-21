@@ -22,6 +22,10 @@ class HomeCameraViewerActivity : AppCompatActivity() {
     private lateinit var input3: EditText
     private lateinit var statusText: TextView
 
+    // FIX: Track last connected URLs, don't reconnect if same
+    private var lastConnectedUrls: List<String> = emptyList()
+    private var isFirstResume = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -49,7 +53,7 @@ class HomeCameraViewerActivity : AppCompatActivity() {
 
         val connectBtn = Button(this).apply {
             text = "Connect All - Auto Protocol"
-            setOnClickListener { connectAll() }
+            setOnClickListener { connectAll(force = true) }
         }
         val stopBtn = Button(this).apply {
             text = "Stop All"
@@ -79,7 +83,8 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         player3 = ExoPlayer.Builder(this).build()
         view1.player = player1; view2.player = player2; view3.player = player3
 
-        // AUTO NETWORK LISTENER - Offline / Online switch
+        // FIX: Network listener - only auto-start if URLs already connected
+        // Don't call autoStartAll blindly, it will double-connect
         NetworkAutoManager.start(this) { online, wifi ->
             runOnUiThread {
                 statusText.text = if (online) {
@@ -87,13 +92,9 @@ class HomeCameraViewerActivity : AppCompatActivity() {
                 } else {
                     "OFFLINE - LAN Only - RTSP / ONVIF / MJPEG ON, HLS / Cloud Paused"
                 }
-                // Auto-start online protocols when internet returns
-                if (online) {
-                    AutoProtocolEngine.autoStartAll(this, true)
-                    Toast.makeText(this, "Internet back - Online protocols auto-started", Toast.LENGTH_SHORT).show()
-                } else {
-                    // Keep offline running, pause online only
-                    AutoProtocolEngine.autoStartAll(this, false)
+                // Only re-connect if we were already connected before
+                if (lastConnectedUrls.isNotEmpty()) {
+                    connectAll(force = true)
                 }
             }
         }
@@ -105,8 +106,18 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         if (input1.text.toString() != saved[0]) input1.setText(saved[0])
         if (input2.text.toString() != saved[1]) input2.setText(saved[1])
         if (input3.text.toString() != saved[2]) input3.setText(saved[2])
-        // Auto-reconnect on return from Settings, respects offline/online
-        connectAll()
+
+        // FIX: Don't reconnect on every resume / rotate
+        // Only connect on first resume, or if URLs changed
+        val current = listOf(input1.text.toString().trim(), input2.text.toString().trim(), input3.text.toString().trim())
+        if (isFirstResume || current != lastConnectedUrls) {
+            isFirstResume = false
+            connectAll(force = false)
+        }
+        // Resume playback if paused
+        if (player1.playbackState != ExoPlayer.STATE_IDLE) player1.play()
+        if (player2.playbackState != ExoPlayer.STATE_IDLE) player2.play()
+        if (player3.playbackState != ExoPlayer.STATE_IDLE) player3.play()
     }
 
     override fun onPause() {
@@ -114,18 +125,27 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         player1.pause(); player2.pause(); player3.pause()
     }
 
-    private fun connectAll() {
+    private fun connectAll(force: Boolean = false) {
         val u1 = input1.text.toString().trim()
         val u2 = input2.text.toString().trim()
         val u3 = input3.text.toString().trim()
+        val current = listOf(u1, u2, u3)
+
+        // FIX: Skip if same URLs and not forced - prevents RTSP ban
+        if (!force && current == lastConnectedUrls) return
+        // FIX: Don't connect empty URLs - ExoPlayer will crash / spam errors
+        if (u1.isBlank() && u2.isBlank() && u3.isBlank()) {
+            statusText.text = "No camera URLs - Go to Settings or Discover ONVIF"
+            return
+        }
 
         AutoProtocolEngine.clear()
-        AutoProtocolEngine.register(player1, u1, "Camera 1")
-        AutoProtocolEngine.register(player2, u2, "Camera 2")
-        AutoProtocolEngine.register(player3, u3, "Camera 3")
+        if (u1.isNotBlank()) AutoProtocolEngine.register(player1, u1, "Camera 1")
+        if (u2.isNotBlank()) AutoProtocolEngine.register(player2, u2, "Camera 2")
+        if (u3.isNotBlank()) AutoProtocolEngine.register(player3, u3, "Camera 3")
 
-        // This respects offline / online automatically
         AutoProtocolEngine.autoStartAll(this, NetworkAutoManager.isOnline)
+        lastConnectedUrls = current
 
         Toast.makeText(this, "Auto Protocol: Offline always ON, Online auto when internet", Toast.LENGTH_SHORT).show()
     }
@@ -135,10 +155,10 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         OnvifDiscovery.discover { onvifUrl ->
             runOnUiThread {
                 Toast.makeText(this, "Found ONVIF: $onvifUrl", Toast.LENGTH_LONG).show()
-                // Auto-fill first empty slot
                 if (input1.text.isBlank()) input1.setText(onvifUrl)
                 else if (input2.text.isBlank()) input2.setText(onvifUrl)
                 else if (input3.text.isBlank()) input3.setText(onvifUrl)
+                else Toast.makeText(this, "All 3 slots full - Replace one manually", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -146,10 +166,14 @@ class HomeCameraViewerActivity : AppCompatActivity() {
     private fun stopAll() {
         player1.stop(); player2.stop(); player3.stop()
         player1.clearMediaItems(); player2.clearMediaItems(); player3.clearMediaItems()
+        lastConnectedUrls = emptyList()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        // FIX: Stop network listener, no leak
+        try { NetworkAutoManager.stop() } catch (e: Exception) {}
+        try { AutoProtocolEngine.clear() } catch (e: Exception) {}
         player1.release(); player2.release(); player3.release()
     }
 }
