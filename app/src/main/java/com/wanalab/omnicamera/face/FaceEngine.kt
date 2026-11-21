@@ -43,7 +43,7 @@ class Converters {
     @TypeConverter
     fun toFloatArray(value: String): FloatArray {
         if (value.isBlank()) return FloatArray(0)
-        return value.split(",").map { it.toFloat() }.toFloatArray()
+        return value.split(",").mapNotNull { it.toFloatOrNull() }.toFloatArray()
     }
 }
 
@@ -99,20 +99,24 @@ class FaceEngine(private val context: Context) {
     private var recognizer: Interpreter? = null
     private val db = FaceDatabase.get(context)
 
-    // FIX 1: 0.75 not 0.60 - 0.60 gives false alerts in shop
-    // 0.75+ = Known, 0.60-0.75 = Unknown, don't alert with wrong name
+    // FIX 1: 0.75 not 0.60 - No false alert for stranger with beard/glasses
     private val matchThreshold = 0.75f
 
-    // FIX 2: Cache - Don't query Room every frame (30 queries/sec = lag + heat)
-    @Volatile private var cachedFaces: List<KnownFaceEntity> = emptyList()
+    // FIX 2: Cache - Don't query DB every frame (30 queries/sec -> lag)
+    @Volatile
+    private var cachedFaces: List<KnownFaceEntity> = emptyList()
 
-    // Called from CameraActivity after init() - Loads DB once into memory
+    companion object {
+        private const val TAG = "FaceEngine"
+    }
+
+    // FIX 2: Call this in CameraActivity + Enroll after init / enroll / delete
     suspend fun refreshCache() = withContext(Dispatchers.IO) {
         try {
             cachedFaces = db.dao().getAll()
-            Log.d("FaceEngine", "Cache refreshed: ${cachedFaces.size} known faces")
+            Log.d(TAG, "Cache refreshed, known faces=${cachedFaces.size}")
         } catch (e: Exception) {
-            Log.e("FaceEngine", "Cache refresh failed: ${e.message}")
+            Log.e(TAG, "Cache refresh failed: ${e.message}")
         }
     }
 
@@ -127,9 +131,9 @@ class FaceEngine(private val context: Context) {
                 .setMinDetectionConfidence(0.5f)
                 .build()
             faceDetector = FaceDetector.createFromOptions(context, detectorOptions)
-            Log.d("FaceEngine", "Detector: GPU OK")
+            Log.d(TAG, "Detector GPU OK")
         } catch (e: Exception) {
-            Log.e("FaceEngine", "Detector GPU failed, trying CPU: ${e.message}")
+            Log.e(TAG, "Detector GPU failed, trying CPU: ${e.message}")
             try {
                 val detectorOptions = FaceDetector.FaceDetectorOptions.builder()
                     .setBaseOptions(BaseOptions.builder().setDelegate(Delegate.CPU).setModelAssetPath("blaze_face_short_range.tflite").build())
@@ -137,12 +141,13 @@ class FaceEngine(private val context: Context) {
                     .setMinDetectionConfidence(0.5f)
                     .build()
                 faceDetector = FaceDetector.createFromOptions(context, detectorOptions)
+                Log.d(TAG, "Detector CPU OK")
             } catch (e2: Exception) {
-                Log.e("FaceEngine", "Detector CPU failed - MODEL MISSING in assets/: ${e2.message}")
+                Log.e(TAG, "Detector missing - Check assets/blaze_face_short_range.tflite : ${e2.message}")
             }
         }
 
-        // 2. Face Mesh - 468 landmarks - Optional, don't crash if missing
+        // 2. Face Mesh - 468 landmarks - Optional, app works without it
         try {
             val meshOptions = FaceMesh.FaceMeshOptions.builder()
                 .setBaseOptions(BaseOptions.builder().setDelegate(Delegate.GPU).setModelAssetPath("face_landmarker.task").build())
@@ -154,9 +159,9 @@ class FaceEngine(private val context: Context) {
                 .setOutputFacialTransformationMatrixes(false)
                 .build()
             faceMesh = FaceMesh.createFromOptions(context, meshOptions)
-            Log.d("FaceEngine", "FaceMesh: GPU OK")
+            Log.d(TAG, "FaceMesh GPU OK")
         } catch (e: Exception) {
-            Log.e("FaceEngine", "FaceMesh GPU failed, trying CPU: ${e.message}")
+            Log.e(TAG, "FaceMesh GPU failed, trying CPU: ${e.message}")
             try {
                 val meshOptions = FaceMesh.FaceMeshOptions.builder()
                     .setBaseOptions(BaseOptions.builder().setDelegate(Delegate.CPU).setModelAssetPath("face_landmarker.task").build())
@@ -169,8 +174,8 @@ class FaceEngine(private val context: Context) {
                     .build()
                 faceMesh = FaceMesh.createFromOptions(context, meshOptions)
             } catch (e2: Exception) {
-                Log.e("FaceEngine", "FaceMesh missing - Face will work without landmarks: ${e2.message}")
-                faceMesh = null // Don't crash, landmarks are optional
+                Log.e(TAG, "FaceMesh missing - Overlay will work without landmarks: ${e2.message}")
+                faceMesh = null
             }
         }
 
@@ -181,10 +186,10 @@ class FaceEngine(private val context: Context) {
             buffer.put(model)
             buffer.rewind()
             recognizer = Interpreter(buffer, Interpreter.Options().setNumThreads(4))
-            Log.d("FaceEngine", "MobileFaceNet OK")
+            Log.d(TAG, "MobileFaceNet OK")
         } catch (e: Exception) {
-            Log.e("FaceEngine", "MobileFaceNet MISSING in assets/ - Face recognition will NOT work: ${e.message}")
-            e.printStackTrace()
+            Log.e(TAG, "MobileFaceNet missing - Check assets/mobilefacenet.tflite : ${e.message}")
+            recognizer = null
         }
     }
 
@@ -193,11 +198,13 @@ class FaceEngine(private val context: Context) {
         val mpImage = BitmapImageBuilder(bitmap).build()
         try {
             val detectionResult = detector.detect(mpImage)
-            // Mesh is optional - only run if available, don't block detection
-            val meshResult = try { faceMesh?.detect(mpImage) } catch (e: Exception) { null }
+            // Mesh is optional - Only run if detector found face, saves CPU
+            val meshResult = if (detectionResult.detections().isNotEmpty()) {
+                try { faceMesh?.detect(mpImage) } catch (e: Exception) { null }
+            } else null
 
             val results = mutableListOf<FaceResult>()
-            // FIX 2: Use cachedFaces, NOT db.dao().getAll() every frame
+            // FIX 2: Use cache, NOT db.dao().getAll() every frame
             val knownFaces = cachedFaces
 
             for (i in detectionResult.detections().indices) {
@@ -207,8 +214,8 @@ class FaceEngine(private val context: Context) {
 
                 val faceCrop = cropAndResize(bitmap, rect, 112, 112) ?: continue
                 val embedding = getEmbedding(faceCrop)
-                // Recycle crop immediately - Don't leak Bitmap
-                try { if (!faceCrop.isRecycled) faceCrop.recycle() } catch (e: Exception) {}
+                // FIX: Recycle crop, don't leak
+                try { if (faceCrop != bitmap) faceCrop.recycle() } catch (e: Exception) {}
                 if (embedding.isEmpty()) continue
 
                 val landmarks = mutableListOf<Float>()
@@ -250,16 +257,15 @@ class FaceEngine(private val context: Context) {
             }
             return@withContext results
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "processFrame error: ${e.message}")
             return@withContext emptyList()
         } finally {
-            mpImage.close()
+            try { mpImage.close() } catch (e: Exception) {}
         }
     }
 
-    // FIX 3: Enroll with 3 photos - Front, Left, Right - Average embedding
-    // 1 photo enroll fails at night / different angle. 3 photos = stable.
-    // Call from FaceEnrollActivity with list of 3 bitmaps
+    // FIX 3: 3-Photo Enroll - Front + Left + Right, averaged
+    // Called from new FaceEnrollActivity: enrollPerson(name, id, List<Bitmap>)
     suspend fun enrollPerson(name: String, personId: String, bitmaps: List<Bitmap>): Boolean = withContext(Dispatchers.Default) {
         if (bitmaps.isEmpty()) return@withContext false
         val embeddings = mutableListOf<FloatArray>()
@@ -270,29 +276,25 @@ class FaceEngine(private val context: Context) {
             }
         }
         if (embeddings.isEmpty()) return@withContext false
-        // Average all embeddings, then normalize - More robust than 1 photo
-        val avg = FloatArray(192) { idx ->
-            var sum = 0f
-            for (e in embeddings) sum += e[idx]
-            sum / embeddings.size
+        // Average all embeddings, then normalize - Works in bright + night + glasses
+        val avg = FloatArray(192) { 0f }
+        for (emb in embeddings) {
+            for (i in 0 until 192) {
+                if (i < emb.size) avg[i] += emb[i]
+            }
         }
+        for (i in avg.indices) avg[i] /= embeddings.size.toFloat()
         val finalEmbedding = normalize(avg)
         db.dao().insert(KnownFaceEntity(personId = personId, name = name, embedding = finalEmbedding, createdAt = System.currentTimeMillis()))
-        // FIX 2: Refresh cache after enroll, so new person is recognized immediately
+        // Refresh cache so Camera sees new face without restart
         refreshCache()
-        Log.d("FaceEngine", "Enrolled $name with ${embeddings.size} photos")
+        Log.d(TAG, "Enrolled $name with ${embeddings.size} photos")
         return@withContext true
     }
 
-    // Backward compatible - Old code calls enrollPerson(name, id, singleBitmap)
-    // Keep this, so FaceEnrollActivity won't break if it still passes 1 bitmap
+    // Old single-photo enroll - Kept for backward compat, calls 3-photo version
     suspend fun enrollPerson(name: String, personId: String, bitmap: Bitmap): Boolean {
         return enrollPerson(name, personId, listOf(bitmap))
-    }
-
-    suspend fun deletePerson(personId: String) = withContext(Dispatchers.IO) {
-        db.dao().delete(personId)
-        refreshCache()
     }
 
     private fun getEmbedding(faceCrop: Bitmap): FloatArray {
@@ -311,6 +313,7 @@ class FaceEngine(private val context: Context) {
         try {
             interpreter.run(input, output)
         } catch (e: Exception) {
+            Log.e(TAG, "Recognizer run failed: ${e.message}")
             return FloatArray(0)
         }
         return normalize(output[0])
@@ -341,7 +344,7 @@ class FaceEngine(private val context: Context) {
         return try {
             val cropped = Bitmap.createBitmap(bitmap, left, top, width, height)
             val scaled = Bitmap.createScaledBitmap(cropped, w, h, true)
-            try { if (!cropped.isRecycled) cropped.recycle() } catch (e: Exception) {}
+            try { if (cropped != scaled) cropped.recycle() } catch (e: Exception) {}
             scaled
         } catch (e: Exception) {
             null
@@ -352,5 +355,8 @@ class FaceEngine(private val context: Context) {
         try { faceDetector?.close() } catch (e: Exception) {}
         try { faceMesh?.close() } catch (e: Exception) {}
         try { recognizer?.close() } catch (e: Exception) {}
+        faceDetector = null
+        faceMesh = null
+        recognizer = null
     }
 }
