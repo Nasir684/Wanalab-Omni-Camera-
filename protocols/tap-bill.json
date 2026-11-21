@@ -1,11 +1,36 @@
 {
   "id": "tap-bill-v1",
+  "name": "Tap Bill - Tap Item to Bill",
+  "version": "1.6.9",
+  "description": "Tap any item in camera to add to bill. Count ROI + Tap Bill linked for Shop. Bill PDF + JPG + TXT export.",
+  "status": "active",
   "bill": {
     "currency": "Rs.",
     "defaultPrice": 250,
     "markerColor": "#00ff88",
     "fontSize": 20,
-    "export": "BILL_PDF"
+    "item": "Tap to set name - Default: Item",
+    "quantity": 1,
+    "totalFormula": "total = quantity * price",
+    "export": ["BILL_PDF", "JPG", "TXT"]
   },
-  "priceDB": { "storage": "localStorage", "key": "wanaPriceDB" }
+  "priceDB": {
+    "storage": "localStorage",
+    "key": "wanaPriceDB",
+    "backup": "export_json",
+    "warning": "Clear Chrome = Prices gone. Export JSON backup weekly."
+  },
+  "count": {
+    "linked": true,
+    "mode": "count_then_bill",
+    "note": "Count bottles / boxes via Count ROI, then Tap to add counted qty to bill."
+  },
+  "shop": {
+    "enabled": true,
+    "features": ["bill", "count_sessions", "bill_pdf", "price_db"],
+    "note": "Bill + Count only. No inventory / customer / tax / profit / xlsx / bluetooth yet."
+  },
+  "voice": ["bill", "tap bill", "shop", "total"],
+  "offline": true,
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=169"
 }
