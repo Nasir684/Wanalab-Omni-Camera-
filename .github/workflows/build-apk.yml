@@ -41,16 +41,12 @@ jobs:
       - name: Prepare Web Assets - www folder
         run: |
           mkdir -p www
-          # Copy root web files into www/ - Capacitor needs www/
           cp -r *.html www/ 2>/dev/null || true
           cp -r *.css www/ 2>/dev/null || true
           cp -r *.js www/ 2>/dev/null || true
           cp -r assets www/ 2>/dev/null || true
           cp -r js www/ 2>/dev/null || true
           cp -r css www/ 2>/dev/null || true
-          cp -r images www/ 2>/dev/null || true
-          cp -r img www/ 2>/dev/null || true
-          # If no index.html in www, use root index.html
           ls -la www/
           test -f www/index.html || cp index.html www/index.html
 
@@ -60,8 +56,28 @@ jobs:
           npm install --save-dev typescript@5.6.3
           npx cap sync android
 
+      # FIX FOR 127 - Check + Fix gradlew AFTER cap sync
+      - name: Fix Gradle Wrapper - After Cap Sync
+        run: |
+          ls -la android/
+          ls -la android/gradle/wrapper/ || echo "wrapper folder missing"
+          # If cap sync deleted gradlew, recreate it
+          if [ ! -f android/gradlew ]; then
+            echo "gradlew missing - recreating..."
+            cd android
+            curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradlew -o gradlew
+            mkdir -p gradle/wrapper
+            curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+            curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.properties -o gradle/wrapper/gradle-wrapper.properties
+            cd ..
+          fi
+          chmod +x android/gradlew
+          ls -la android/gradlew
+          cat android/gradle/wrapper/gradle-wrapper.properties
+
       - name: Build Debug APK - v1.6.9
-        run: cd android && ./gradlew clean assembleDebug --stacktrace --no-daemon
+        working-directory: android
+        run: ./gradlew clean assembleDebug --stacktrace --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
