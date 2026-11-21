@@ -1,14 +1,16 @@
 {
-  "name": "WanaLab God Eye v1.6.5 FINAL",
+  "name": "WanaLab God Eye v1.6.7 FINAL",
   "short_name": "God Eye",
-  "description": "Pro AI Counting + Advanced Scan (AUTO/MULTI) + Edit Studio + Dashboard + Voice Commands (Capture, Video, Scan, Bill, Pricing, Dashboard) + Barcode + Thermal + Export + Offline - By Nasir Khan - WanaLab - Dera Ismail Khan",
-  "version": "1.6.5",
-  "start_url": "./index.html?v=165",
+  "description": "Pro AI Face + Counting + Advanced Scan (AUTO/MULTI) + IP CAM (MJPEG/HLS/RTSP) + Edit Studio + Dashboard + Voice Commands (Capture, Video, Scan, Bill, Face, Pricing, Dashboard) + Barcode + Thermal + Export + Offline - By Nasir Khan - WanaLab - Dera Ismail Khan",
+  "version": "1.6.7",
+  "id": "./index.html",
+  "start_url": "./index.html?v=167",
   "scope": "./",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "any",
+  "categories": ["utilities", "productivity", "photo"],
   "icons": [
     {
       "src": "wanalab-god-eye-v1-1-icon.png",
