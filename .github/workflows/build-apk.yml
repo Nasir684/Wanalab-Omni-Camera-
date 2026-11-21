@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 22 - Capacitor needs >=22
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # NO android-actions/setup-android - was asking for 'tools'
+      # DO NOT use android-actions/setup-android - it asks for obsolete 'tools' and fails
       - name: Setup Android SDK Manually
         run: |
           echo "ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
@@ -39,9 +39,10 @@ jobs:
           yes | $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses
           $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Install Capacitor + Sync
+      - name: Install Capacitor 7 + TypeScript + Sync
         run: |
-          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+          npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+          npm install --save-dev typescript@5.6.3
           npx cap sync android
 
       - name: Build Debug APK - v1.6.9
