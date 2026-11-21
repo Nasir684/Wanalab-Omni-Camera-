@@ -10,8 +10,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
     }
 }
-rootProject.name = "God Eye"
+rootProject.name = "app"
 include(":app")
+include(":capacitor-android")
+project(":capacitor-android").projectDir = File("capacitor-android")
