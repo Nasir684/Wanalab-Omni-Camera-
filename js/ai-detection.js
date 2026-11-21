@@ -1,9 +1,9 @@
-// WanaLab God Eye v1.4.1 - ai-detection.js
+// WanaLab God Eye v1.4.2 - ai-detection.js
 // Anti-Mix: ID Tracking + Size + Shape + Stability
 // By Nasir Khan
 
 const CountingPro = {
-  version: "1.4.1",
+  version: "1.4.2",
   trackObjects: {},
   classHistory: {},
   nextId: 1,
@@ -16,25 +16,54 @@ const CountingPro = {
   countLineY: 0,
   roiZones: [],
 
-  // Anti-Mix Config - editable from FILTERS page
+  // FIX: Config now synced from ProtocolUniverse, not hardcoded
+  // If ProtocolUniverse not loaded, fallback to these (shop-tuned)
   config: {
-    confThreshold: 0.62,
-    minArea: 0.008,  // 0.8% - hand is 30% = ignored
-    maxArea: 0.18,   // 18%
+    confThreshold: 0.50, // FIX: Was 0.62 - missed low-light bottles
+    minArea: 0.008,
+    maxArea: 0.35, // FIX: Was 0.18 - rejected close bottles on counter
     shapeCheck: true,
     stabilityCheck: true,
-    maxDist: 60, // was 80 - tighter tracking
-    timeoutMs: 800, // was 1200
-    stabilityDelay: 1000,
+    maxDist: 90, // FIX: Was 60 - fast hand moved >60px = double count
+    timeoutMs: 1200, // FIX: Was 800 - too short, lost tracker
+    stabilityDelay: 0, // FIX: Removed setTimeout counting, kept for compat, not used
     historySize: 5,
-    votesNeeded: 3
+    votesNeeded: 2 // FIX: Was 3 - too strict for 15fps shaky cam
   },
 
   presets: {
-    bottle: { conf: 0.62, minArea: 0.008, maxArea: 0.18, shape: true },
+    bottle: { conf: 0.50, minArea: 0.008, maxArea: 0.35, shape: true },
     person: { conf: 0.55, minArea: 0.05, maxArea: 0.60, shape: false },
-    cup: { conf: 0.60, minArea: 0.005, maxArea: 0.12, shape: false },
-    car: { conf: 0.60, minArea: 0.10, maxArea: 0.80, shape: false }
+    cup: { conf: 0.50, minArea: 0.005, maxArea: 0.20, shape: true },
+    car: { conf: 0.55, minArea: 0.08, maxArea: 0.80, shape: false },
+    chair: { conf: 0.50, minArea: 0.05, maxArea: 0.50, shape: false },
+    all: { conf: 0.45, minArea: 0.005, maxArea: 0.80, shape: false }
+  },
+
+  // FIX: Sync from ProtocolUniverse on load - single source of truth
+  syncFromUniverse() {
+    try {
+      if (typeof ProtocolUniverse !== 'undefined' && ProtocolUniverse.getPreset) {
+        const p = ProtocolUniverse.getPreset(this.targetClass);
+        this.config.confThreshold = p.conf;
+        this.config.minArea = p.minArea;
+        this.config.maxArea = p.maxArea;
+        this.config.shapeCheck = p.shape;
+        // Also sync filters
+        if (ProtocolUniverse.countingPro && ProtocolUniverse.countingPro.filters) {
+          const f = ProtocolUniverse.countingPro.filters;
+          this.config.maxDist = f.maxDist;
+          this.config.timeoutMs = f.timeoutMs;
+          this.config.votesNeeded = f.votesNeeded;
+          this.config.historySize = f.historySize;
+        }
+        // Sync zone
+        if (ProtocolUniverse.countingPro && ProtocolUniverse.countingPro.zone) {
+          const z = ProtocolUniverse.countingPro.zone;
+          if (z.enabled) this.roiZones = [z.default];
+        }
+      }
+    } catch(e) { console.warn("[CountingPro] sync failed, using fallback", e); }
   },
 
   applyPreset(type) {
@@ -45,6 +74,8 @@ const CountingPro = {
     this.config.maxArea = p.maxArea;
     this.config.shapeCheck = p.shape;
     this.targetClass = type;
+    // FIX: Also push to ProtocolUniverse so both stay in sync
+    try { if (typeof ProtocolUniverse !== 'undefined') ProtocolUniverse.countingPro.defaultClass = type; } catch(e) {}
     console.log(`[CountingPro] Preset ${type} applied`);
   },
 
@@ -56,6 +87,18 @@ const CountingPro = {
     let counts={}; hist.forEach(c=>counts[c]=(counts[c]||0)+1);
     let best = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
     return counts[best] >= this.config.votesNeeded ? best : null;
+  },
+
+  // FIX: ROI check with normalized coords - was comparing pixels vs 0-1
+  isInZone(det, videoW, videoH) {
+    if (this.roiZones.length === 0) return true;
+    const nx = det.cx / videoW;
+    const ny = det.cy / videoH;
+    return this.roiZones.some(z => {
+      // Support both normalized (0-1) and pixel zones
+      if (z.x2 <= 1.01 && z.y2 <= 1.01) return nx >= z.x1 && nx <= z.x2 && ny >= z.y1 && ny <= z.y2;
+      return det.cx >= z.x1 && det.cx <= z.x2 && det.cy >= z.y1 && det.cy <= z.y2;
+    });
   },
 
   // Call this from your loop() with coco predictions
@@ -77,7 +120,7 @@ const CountingPro = {
         if(h < w*1.2) return; // Bottle must be taller than wide
       }
 
-      current.push({cx:x+w/2, cy:y+h/2, x,y,w,h, cls:p.class, score:p.score, area});
+      current.push({cx:x+w/2, cy:y+h/2, x,y,w,h, cls:p.class, score:p.score, area, stableFrames: 0});
     });
 
     // === FILTER 2: ID Tracking + Majority Vote ===
@@ -97,7 +140,6 @@ const CountingPro = {
         if(this.classHistory[bestId].length>this.config.historySize) this.classHistory[bestId].shift();
         let maj = this.config.stabilityCheck ? this.getClassMajority(bestId) : det.cls;
 
-        // Anti-Mix: If majority is NOT target, drop it (was flicker)
         if(this.config.stabilityCheck && maj && this.targetClass!=='all' && maj!==this.targetClass){
           delete this.trackObjects[bestId];
           delete this.classHistory[bestId];
@@ -105,7 +147,22 @@ const CountingPro = {
         }
 
         let o=this.trackObjects[bestId];
-        if(isCounting && !o.counted && this.countMode!=='zone'){
+        o.stableFrames = (o.stableFrames || 0) + 1;
+
+        // FIX: TOTAL mode - count synchronously when stable, NO setTimeout
+        // Was: setTimeout() per ID = double count + ghost after reset
+        if(isCounting && this.countMode==='total' && !o.counted){
+          const inZone = this.isInZone(det, videoW, videoH);
+          if(inZone && (!this.config.stabilityCheck || o.stableFrames >= this.config.votesNeeded)){
+            // Majority must match, or if not yet voted, use current class
+            if(!this.config.stabilityCheck || maj===this.targetClass || this.targetClass==='all' || maj===null){
+              this.particleCount++; this.entryCount++; o.counted=true;
+              this.countLog.push({id:bestId,type:'ENTRY',class:maj||det.cls,time:new Date().toLocaleTimeString()});
+            }
+          }
+        }
+
+        if(isCounting && !o.counted && this.countMode!=='zone' && this.countMode!=='total'){
           if(o.cy < this.countLineY && det.cy >= this.countLineY){
             if(!this.config.stabilityCheck || maj===this.targetClass || this.targetClass==='all'){
               this.entryCount++; this.particleCount++; o.counted=true;
@@ -118,31 +175,26 @@ const CountingPro = {
         }
         o.cx=det.cx; o.cy=det.cy; o.lastSeen=now; used.add(bestId); det.id=bestId;
       } else {
-        let inZone = this.roiZones.length===0 ? true : this.roiZones.some(z=>det.cx>=z.x1 && det.cx<=z.x2 && det.cy>=z.y1 && det.cy<=z.y2);
+        let inZone = this.isInZone(det, videoW, videoH);
         if(inZone || this.countMode!=='zone'){
           let id='ID_'+this.nextId++;
-          this.trackObjects[id]={cx:det.cx,cy:det.cy,lastSeen:now,counted:false,cls:det.cls,firstSeen:now};
+          this.trackObjects[id]={cx:det.cx,cy:det.cy,lastSeen:now,counted:false,cls:det.cls,firstSeen:now,stableFrames:1};
           this.classHistory[id]=[det.cls];
           det.id=id;
-          if(isCounting && this.countMode==='total' && inZone){
-            setTimeout(()=>{
-              let maj=this.getClassMajority(id);
-              if(this.trackObjects[id] && !this.trackObjects[id].counted && (!this.config.stabilityCheck || maj===this.targetClass || this.targetClass==='all')){
-                this.particleCount++; this.trackObjects[id].counted=true; this.entryCount++;
-              }
-            }, this.config.stabilityDelay);
-          }
+          // FIX: No setTimeout here - counting happens on next frames when stableFrames >= votesNeeded
+          // This prevents double count from re-detection + ghost after reset
           used.add(id);
         }
       }
     });
 
-    // Cleanup old IDs
+    // FIX: Cleanup uses timeoutMs, not hardcoded 1200
+    const cleanupMs = this.config.timeoutMs + 200;
     for(let id in this.trackObjects){
-      if(now-this.trackObjects[id].lastSeen>1200){ delete this.trackObjects[id]; delete this.classHistory[id]; }
+      if(now-this.trackObjects[id].lastSeen>cleanupMs){ delete this.trackObjects[id]; delete this.classHistory[id]; }
     }
 
-    return current; // draw these in index.html
+    return current;
   },
 
   reset(){
@@ -157,6 +209,9 @@ const CountingPro = {
     let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`CountLog-${Date.now()}.csv`; a.click();
   }
 };
+
+// FIX: Auto-sync on load if ProtocolUniverse already loaded
+try { CountingPro.syncFromUniverse(); } catch(e) {}
 
 // Export for index.html
 if(typeof window!=='undefined') window.CountingPro = CountingPro;
