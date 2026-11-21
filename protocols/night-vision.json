@@ -1,4 +1,32 @@
 [
-  {"id":"night-vision-ir","name":"IR Night Vision Clip","type":"CLIP","mode":"night","description":"IR night vision clip with 850nm LED","status":"working"},
-  {"id":"night-god-10frame","name":"Night God 10-Frame Software","type":"SOFTWARE","mode":"night","description":"10-frame HDR fusion night mode","status":"working"}
+  {
+    "id": "night-vision-ir",
+    "name": "IR Night Vision Clip",
+    "type": "CLIP",
+    "mode": "night",
+    "description": "IR clip with 850nm LED + Night Mode in app. Clip alone does NOT give night vision - Must turn on Night filter in app. 850nm = visible red glow, 940nm = invisible.",
+    "led": "850nm IR LED",
+    "ledNote": "850nm = visible red glow. 940nm = invisible, better for animals.",
+    "needs": ["night-mode", "ir-led-on", "dark-room"],
+    "protocol": "clip + software",
+    "status": "working",
+    "use": "Night shop, animals, dark room",
+    "voice": ["night", "night vision", "ir", "dark"],
+    "price_rs": 1500,
+    "version": "1.6.9"
+  },
+  {
+    "id": "night-god-10frame",
+    "name": "Night God - Night HDR Software",
+    "type": "SOFTWARE",
+    "mode": "night",
+    "description": "Night HDR software mode - Brightness + HDR filter + Night filter in app. Not 10-frame fusion - No 10-frame code in app. Works on any camera.",
+    "features": ["night-filter", "hdr", "brightness-boost", "thermal-filter"],
+    "protocol": "software",
+    "status": "working",
+    "use": "Night shop, night doc scan, dark room",
+    "voice": ["night", "night god", "dark", "hdr"],
+    "price_rs": 0,
+    "version": "1.6.9"
+  }
 ]
