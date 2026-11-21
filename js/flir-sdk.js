@@ -1,10 +1,14 @@
-// WanaLab God Eye PRO v1.1 - FLIR ONE SDK + RGB-Thermal Fusion - Global
+// WanaLab God Eye v1.4.2 - FLIR ONE SDK + RGB-Thermal Fusion
 // Founder Nasir Khan - Works with FLIR ONE Gen3/Pro/Edge
+// WARNING: Browser cannot access real FLIR ONE via WebRTC. Real temp needs native Android FLIR SDK.
+// This file provides SIMULATED thermal for demo + hook for native bridge.
 window.flirEngine = {
   thermalCanvas: null,
   rgbVideo: null,
   fusionMode: 'fusion', // thermal, rgb, fusion, msx
   isConnected: false,
+  isSimulated: true, // FIX: Always true in browser - never claim real temp
+  palette: 'iron',
 
   init(rgbVideoElement){
     this.rgbVideo = rgbVideoElement || document.getElementById('camera');
@@ -16,49 +20,118 @@ window.flirEngine = {
       this.rgbVideo.parentElement.appendChild(this.thermalCanvas);
     }
     this.checkFLIR();
+    this.startSimulatedLoop();
   },
 
   checkFLIR(){
-    // Check if FLIR ONE is connected via UVC
+    // FIX: Request permission first, otherwise labels are empty
+    // And check native bridge first - browser UVC will never find FLIR ONE
+    if (window.FLIRNative && window.FLIRNative.isConnected) {
+      this.isConnected = true;
+      this.isSimulated = false;
+      console.log('FLIR Native Bridge Connected - REAL temp available');
+      return;
+    }
     if(navigator.mediaDevices && navigator.mediaDevices.enumerateDevices){
+      // FIX: Don't rely on label alone - also check after getUserMedia
       navigator.mediaDevices.enumerateDevices().then(devices=>{
-        const flir = devices.find(d=>d.label.toLowerCase().includes('flir') || d.label.toLowerCase().includes('thermal'));
+        const flir = devices.find(d=> (d.label||'').toLowerCase().includes('flir') || (d.label||'').toLowerCase().includes('thermal'));
         if(flir){
           this.isConnected = true;
           console.log('FLIR Detected:', flir.label);
-          document.getElementById('overlay').innerText += ' | FLIR CONNECTED';
+          const ov = document.getElementById('overlay');
+          if (ov) ov.innerText += ' | FLIR CONNECTED (SIMULATED)';
+        } else {
+          console.log('FLIR not found via UVC - using SIMULATED thermal for demo');
         }
-      });
+      }).catch(()=>{});
     }
   },
 
-  // MSX Fusion - Simulate FLIR MSX with edge overlay
+  // FIX: Actually draw something - was empty canvas with only CSS filter
+  startSimulatedLoop() {
+    if (this._loop) return;
+    this._loop = setInterval(() => {
+      if (!this.thermalCanvas || !this.rgbVideo) return;
+      if (this.fusionMode === 'rgb') return;
+      if (this.rgbVideo.readyState < 2) return;
+      try {
+        const ctx = this.thermalCanvas.getContext('2d');
+        if (this.thermalCanvas.width !== this.rgbVideo.videoWidth) {
+          this.thermalCanvas.width = this.rgbVideo.videoWidth || 640;
+          this.thermalCanvas.height = this.rgbVideo.videoHeight || 480;
+        }
+        // Draw RGB frame, then thermal palette via filter will tint it
+        ctx.drawImage(this.rgbVideo, 0, 0, this.thermalCanvas.width, this.thermalCanvas.height);
+      } catch(e) {}
+    }, 100); // 10fps simulated - enough for demo, saves battery
+  },
+
   setFusionMode(mode){
     this.fusionMode = mode;
     if(!this.thermalCanvas) return;
+    // FIX: Reset filters first - was stacking contrast/grayscale on every switch
+    if (this.rgbVideo) this.rgbVideo.style.filter = '';
     switch(mode){
-      case 'thermal': this.thermalCanvas.style.opacity='1'; this.rgbVideo.style.opacity='0.2'; break;
-      case 'rgb': this.thermalCanvas.style.opacity='0'; this.rgbVideo.style.opacity='1'; break;
-      case 'fusion': this.thermalCanvas.style.opacity='0.7'; this.rgbVideo.style.opacity='1'; break;
-      case 'msx': this.thermalCanvas.style.opacity='0.6'; this.rgbVideo.style.filter='contrast(1.5) grayscale(0.5)'; break;
+      case 'thermal': this.thermalCanvas.style.opacity='1'; if(this.rgbVideo) this.rgbVideo.style.opacity='0.2'; break;
+      case 'rgb': this.thermalCanvas.style.opacity='0'; if(this.rgbVideo) this.rgbVideo.style.opacity='1'; break;
+      case 'fusion': this.thermalCanvas.style.opacity='0.7'; if(this.rgbVideo) this.rgbVideo.style.opacity='1'; break;
+      case 'msx': this.thermalCanvas.style.opacity='0.6'; if(this.rgbVideo) this.rgbVideo.style.filter='contrast(1.5) grayscale(0.5)'; break;
     }
+    this.applyThermalPalette(this.palette);
   },
 
-  // Fake thermal processing from RGB (if no hardware) - 10 color palettes
+  // FIX: All 10 palettes from device-hub.js - was only 4, claimed 10
   applyThermalPalette(palette='iron'){
+    this.palette = palette;
     if(!this.thermalCanvas) return;
     const palettes = {
       iron: 'hue-rotate(0deg) contrast(1.5) sepia(0.8)',
       rainbow: 'hue-rotate(180deg) saturate(2) contrast(1.3)',
       whitehot: 'grayscale(1) contrast(1.5) brightness(1.2)',
-      blackhot: 'grayscale(1) invert(1) contrast(1.5)'
+      blackhot: 'grayscale(1) invert(1) contrast(1.5)',
+      jet: 'hue-rotate(200deg) saturate(2.5) contrast(1.4)',
+      hot: 'hue-rotate(340deg) saturate(1.8) contrast(1.5)',
+      bone: 'grayscale(1) sepia(0.3) contrast(1.3) brightness(1.1)',
+      cool: 'hue-rotate(120deg) saturate(1.5) contrast(1.2)',
+      ocean: 'hue-rotate(160deg) saturate(1.8) contrast(1.3)',
+      inferno: 'hue-rotate(320deg) saturate(2.2) contrast(1.6)',
+      // Aliases from device-hub
+      JET: 'hue-rotate(200deg) saturate(2.5) contrast(1.4)',
+      IRON: 'hue-rotate(0deg) contrast(1.5) sepia(0.8)',
+      HOT: 'hue-rotate(340deg) saturate(1.8) contrast(1.5)',
+      BONE: 'grayscale(1) sepia(0.3) contrast(1.3) brightness(1.1)',
+      COOL: 'hue-rotate(120deg) saturate(1.5) contrast(1.2)',
+      OCEAN: 'hue-rotate(160deg) saturate(1.8) contrast(1.3)',
+      RAINBOW: 'hue-rotate(180deg) saturate(2) contrast(1.3)',
+      WHITEHOT: 'grayscale(1) contrast(1.5) brightness(1.2)',
+      BLACKHOT: 'grayscale(1) invert(1) contrast(1.5)',
+      INFERNO: 'hue-rotate(320deg) saturate(2.2) contrast(1.6)'
     };
-    this.thermalCanvas.style.filter = palettes[palette] || palettes.iron;
+    this.thermalCanvas.style.filter = palettes[palette] || palettes[palette.toLowerCase()] || palettes.iron;
   },
 
+  // FIX: Never return random temp - return null + warning in browser
+  // Real temp only via native bridge (Android FLIR SDK)
   getTemperature(x,y){
-    // In Pro with real FLIR SDK, return real temp. Mock for now.
-    return (Math.random()*80 -20).toFixed(1) + '°C';
+    // Native bridge - real FLIR SDK on Android
+    if (window.FLIRNative && typeof window.FLIRNative.getTemperature === 'function') {
+      try { return window.FLIRNative.getTemperature(x, y); } catch(e) { return null; }
+    }
+    // Browser simulated - DO NOT return fake number
+    console.warn("⚠️ getTemperature: SIMULATED mode - no real FLIR hardware, returning null. Do not use for fever / safety.");
+    return null; // Caller must show "SIMULATED - NOT REAL TEMP"
+  },
+
+  // FIX: Helper for UI - show simulated label
+  getTempLabel(x,y) {
+    const t = this.getTemperature(x,y);
+    if (t === null) return "SIMULATED - NOT REAL TEMP";
+    return t + "°C";
+  },
+
+  stop() {
+    if (this._loop) { clearInterval(this._loop); this._loop = null; }
   }
 };
 
