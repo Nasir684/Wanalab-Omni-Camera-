@@ -3,6 +3,7 @@ package com.godeye.app.face
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -27,6 +28,10 @@ class HomeCameraViewerActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
             setPadding(16, 16, 16, 16)
         }
 
@@ -97,10 +102,17 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         if (input3.text.toString() != saved[2]) input3.setText(saved[2])
     }
 
+    override fun onPause() {
+        super.onPause()
+        player1.pause()
+        player2.pause()
+        player3.pause()
+    }
+
     private fun connectAll() {
-        connectOne(player1, input1.text.toString(), "Camera 1")
-        connectOne(player2, input2.text.toString(), "Camera 2")
-        connectOne(player3, input3.text.toString(), "Camera 3")
+        connectOne(player1, input1.text.toString().trim(), "Camera 1")
+        connectOne(player2, input2.text.toString().trim(), "Camera 2")
+        connectOne(player3, input3.text.toString().trim(), "Camera 3")
     }
 
     private fun connectOne(player: ExoPlayer, url: String, name: String) {
@@ -109,6 +121,8 @@ class HomeCameraViewerActivity : AppCompatActivity() {
             return
         }
         try {
+            player.stop()
+            player.clearMediaItems()
             player.setMediaItem(MediaItem.fromUri(Uri.parse(url)))
             player.prepare()
             player.play()
@@ -121,6 +135,9 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         player1.stop()
         player2.stop()
         player3.stop()
+        player1.clearMediaItems()
+        player2.clearMediaItems()
+        player3.clearMediaItems()
     }
 
     override fun onDestroy() {
