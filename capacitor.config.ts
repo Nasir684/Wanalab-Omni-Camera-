@@ -1,8 +1,13 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+
 const config: CapacitorConfig = {
   appId: 'com.wanalab.godeye',
-  appName: 'WanaLab God Eye',
+  appName: 'God Eye - WanaLab',
   webDir: '.',
-  server: { androidScheme: 'https' }
+  server: {
+    androidScheme: 'https',
+    cleartext: true
+  }
 };
+
 export default config;
