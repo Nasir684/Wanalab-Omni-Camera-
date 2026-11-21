@@ -11,11 +11,10 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
-    <!-- USB OTG - UVC Microscope + UVC Endoscope - CRITICAL -->
-    <uses-permission android:name="android.permission.USB_PERMISSION" />
+    <!-- USB OTG - UVC Microscope + UVC Endoscope -->
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
 
-    <!-- Bluetooth - Future Thermal / BT - Harmless now -->
+    <!-- Bluetooth - Future Thermal / BT -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
