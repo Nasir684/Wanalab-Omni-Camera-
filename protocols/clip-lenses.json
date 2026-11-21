@@ -1,4 +1,68 @@
 [
-  {"id":"macro-clip-100x","name":"Macro Clip 100x Mobile","type":"CLIP","mode":"macro","description":"Universal clip macro lens","status":"working"},
-  {"id":"wide-clip-0.45x","name":"Wide Clip 0.45x","type":"CLIP","mode":"wide","description":"Wide angle clip","status":"working"}
+  {
+    "id": "macro-clip-100x",
+    "name": "Macro Clip 100x Mobile",
+    "type": "CLIP",
+    "mode": "macro",
+    "description": "Universal clip macro lens - For seeds, insects, skin, PCB, microscope view. Clip on phone camera, 2-4cm distance.",
+    "status": "working",
+    "zoom": "100x",
+    "distance_cm": 3,
+    "use": "Count ROI + Macro Photo",
+    "voice": ["macro", "clip", "lens"],
+    "price_rs": 1500,
+    "version": "1.6.9"
+  },
+  {
+    "id": "wide-clip-0.45x",
+    "name": "Wide Clip 0.45x",
+    "type": "CLIP",
+    "mode": "wide",
+    "description": "Wide angle clip - For shop, room, field, group photo. 0.45x wide.",
+    "status": "working",
+    "zoom": "0.45x",
+    "use": "Shop Wide Photo + Dashboard",
+    "voice": ["wide", "clip", "lens"],
+    "price_rs": 1200,
+    "version": "1.6.9"
+  },
+  {
+    "id": "telephoto-clip-12x",
+    "name": "Telephoto Clip 12x",
+    "type": "CLIP",
+    "mode": "telephoto",
+    "description": "Telephoto clip - For distance, bird, number plate, board. Use tripod, tap to focus.",
+    "status": "working",
+    "zoom": "12x",
+    "distance_m": 10,
+    "use": "Telephoto + Tracking",
+    "voice": ["telephoto", "zoom", "clip"],
+    "price_rs": 2500,
+    "version": "1.6.9"
+  },
+  {
+    "id": "fisheye-clip-180",
+    "name": "Fisheye Clip 180°",
+    "type": "CLIP",
+    "mode": "fisheye",
+    "description": "180° fisheye clip - For fun, room 360, shop interior.",
+    "status": "working",
+    "zoom": "180°",
+    "use": "Fisheye Photo",
+    "voice": ["fisheye", "clip"],
+    "price_rs": 1000,
+    "version": "1.6.9"
+  },
+  {
+    "id": "cpl-clip",
+    "name": "CPL Filter Clip",
+    "type": "CLIP",
+    "mode": "filter",
+    "description": "CPL polarizer clip - Removes reflection from glass, water, shop window. Rotate to reduce glare.",
+    "status": "working",
+    "use": "Doc Scan through glass + Shop window",
+    "voice": ["cpl", "filter", "clip"],
+    "price_rs": 800,
+    "version": "1.6.9"
+  }
 ]
