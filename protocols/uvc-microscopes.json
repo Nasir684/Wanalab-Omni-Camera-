@@ -38,24 +38,6 @@
     "version": "1.6.9"
   },
   {
-    "id": "wifi-microscope-1080p",
-    "name": "WiFi Microscope 1080p (Generic)",
-    "type": "WIFI",
-    "mode": "micro",
-    "description": "WiFi microscope connects via 192.168.1.1 - stream MJPEG. Real optical 40-50x, not 1000x.",
-    "ip": "192.168.1.1",
-    "url": "http://192.168.1.1:8080/?action=stream",
-    "protocol": "mjpeg",
-    "resolution": "1920x1080",
-    "zoom": "40x-50x optical, up to 1000x crop",
-    "optical": "40x-50x",
-    "status": "working",
-    "use": "Seeds, PCB, wireless microscope",
-    "voice": ["wifi microscope", "microscope", "wifi"],
-    "price_rs": 4000,
-    "version": "1.6.9"
-  },
-  {
     "id": "jiusion-microscope",
     "name": "Jiusion USB Microscope 40-1000x",
     "type": "UVC",
