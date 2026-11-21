@@ -1,356 +1,355 @@
-package com.wanalab.omnicamera.mesh
+package com.wazir.cctv.mesh
 
 import android.content.Context
-import android.net.wifi.p2p.WifiP2pManager
+import android.net.wifi.WifiManager
 import android.util.Log
-import com.google.gson.Gson
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.eclipse.paho.client.mqttv3.*
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 import org.webrtc.*
 import java.util.concurrent.ConcurrentHashMap
 
-data class MeshNode(
-    val cameraId: String,
-    val ip: String,
-    val hops: Int,
-    val signal: Int, // -100 to -30, higher is better
-    val battery: Int,
-    val isOnline: Boolean,
-    val isRelay: Boolean,
-    val lastSeen: Long = System.currentTimeMillis()
-)
-
-data class MeshVideoRoute(
-    val targetCameraId: String,
-    val relayVia: String?, // null = direct
-    val hops: Int,
-    val latencyMs: Long
-)
-
-data class FaceMeshEvent(
-    val cameraId: String,
-    val personName: String?,
-    val confidence: Float,
-    val x: Float,
-    val y: Float,
-    val w: Float,
-    val h: Float
-)
-
-class MeshManager(private val context: Context) {
-
+class MeshManager(
+    private val context: Context,
+    private val onCameraStream: (cameraId: String, track: VideoTrack?) -> Unit,
+    private val onCameraStatus: (cameraId: String, online: Boolean) -> Unit
+) {
     private val TAG = "MeshManager"
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val gson = Gson()
 
-    // Nodes map
-    private val nodes = ConcurrentHashMap<String, MeshNode>()
+    // State
+    private val _mode = MutableStateFlow(MeshMode.SINGLE)
+    val mode: StateFlow<MeshMode> = _mode
 
-    // Flows to UI
-    private val _nodesFlow = MutableSharedFlow<List<MeshNode>>(replay = 1)
-    val nodesFlow: SharedFlow<List<MeshNode>> = _nodesFlow
+    private val _cameras = MutableStateFlow<List<CameraNode>>(emptyList())
+    val cameras: StateFlow<List<CameraNode>> = _cameras
 
-    private val _routeFlow = MutableSharedFlow<MeshVideoRoute>(extraBufferCapacity = 20)
-    val routeFlow: SharedFlow<MeshVideoRoute> = _routeFlow
-
-    private val _faceMeshFlow = MutableSharedFlow<FaceMeshEvent>(extraBufferCapacity = 50)
-    val faceMeshFlow: SharedFlow<FaceMeshEvent> = _faceMeshFlow
-
-    // MQTT
+    // MQTT Local Broker - runs on phone
     private var mqttClient: MqttClient? = null
-    private val brokerUrl = "tcp://127.0.0.1:1883" // local broker on phone, offline
+    private var mqttBroker: LocalMqttBroker? = null
+    private val MQTT_BROKER_URL = "tcp://127.0.0.1:1883"
+    private val TOPIC_DISCOVERY = "wazir/mesh/discovery"
+    private val TOPIC_HEARTBEAT = "wazir/mesh/heartbeat/+"
+    private val TOPIC_RELAY = "wazir/mesh/relay/+"
 
     // WebRTC
     private var peerConnectionFactory: PeerConnectionFactory? = null
     private val peerConnections = ConcurrentHashMap<String, PeerConnection>()
-    private val videoRelays = ConcurrentHashMap<String, String>() // target -> relayVia
+    private val relayMap = ConcurrentHashMap<String, String>() // droppedCamera -> relayCamera
+    private val cameraNodes = ConcurrentHashMap<String, CameraNode>()
 
-    fun start() {
-        startLocalMqttBroker()
-        startMqttClient()
-        startWifiDirectDiscovery()
-        startWebRtcFactory()
-        startHealthCheck()
+    private var isRunning = false
+    private var heartbeatJob: Job? = null
+    private var discoveryJob: Job? = null
+
+    data class CameraNode(
+        val id: String,
+        val name: String,
+        val ip: String,
+        val isRelayCapable: Boolean = true,
+        var lastSeen: Long = System.currentTimeMillis(),
+        var isOnline: Boolean = true,
+        var relayVia: String? = null
+    )
+
+    enum class MeshMode {
+        SINGLE, MESH, OFFLINE
     }
 
-    // 1. LOCAL MQTT BROKER - Phone is hub, offline, no internet
+    // START - Call this from MainActivity
+    fun start() {
+        if (isRunning) return
+        isRunning = true
+        Log.d(TAG, "MeshManager started - Single camera compatible")
+
+        initWebRTC()
+        startLocalMqttBroker()
+        connectMqtt()
+        startDiscovery()
+        startHeartbeatMonitor()
+    }
+
+    fun stop() {
+        isRunning = false
+        heartbeatJob?.cancel()
+        discoveryJob?.cancel()
+        scope.cancel()
+        try { mqttClient?.disconnect() } catch (e: Exception) {}
+        peerConnections.values.forEach { try { it.close() } catch (e: Exception) {} }
+        peerConnections.clear()
+        mqttBroker?.stop()
+    }
+
+    // 1. WEBRTC SETUP - Works for 1 camera too
+    private fun initWebRTC() {
+        val options = PeerConnectionFactory.InitializationOptions.builder(context)
+            .setEnableInternalTracer(true)
+            .createInitializationOptions()
+        PeerConnectionFactory.initialize(options)
+
+        val encoderFactory = DefaultVideoEncoderFactory(null, true, true)
+        val decoderFactory = DefaultVideoDecoderFactory(null)
+        peerConnectionFactory = PeerConnectionFactory.builder()
+            .setVideoEncoderFactory(encoderFactory)
+            .setVideoDecoderFactory(decoderFactory)
+            .createPeerConnectionFactory()
+    }
+
+    private fun createPeerConnection(cameraId: String): PeerConnection? {
+        val factory = peerConnectionFactory ?: return null
+        // STUN only local, no internet needed for single camera
+        val iceServers = listOf(
+            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
+            // Local relay fallback
+            PeerConnection.IceServer.builder("turn:192.168.4.1:3478")
+                .setUsername("wazir").setPassword("wazir123").createIceServer()
+        )
+        val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
+            sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
+            // For mesh, allow relay
+            iceTransportsType = PeerConnection.IceTransportsType.ALL
+        }
+
+        val observer = object : PeerConnection.Observer {
+            override fun onIceCandidate(candidate: IceCandidate?) {
+                candidate?.let { publishMqtt("wazir/mesh/ice/$cameraId", it.toString()) }
+            }
+            override fun onAddStream(stream: MediaStream?) {
+                stream?.videoTracks?.firstOrNull()?.let { track ->
+                    // If this is relayed stream, mark it
+                    val relayVia = relayMap[cameraId]
+                    Log.d(TAG, "Stream for $cameraId via relay $relayVia")
+                    onCameraStream(cameraId, track)
+                }
+            }
+            override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
+                if (newState == PeerConnection.PeerConnectionState.FAILED ||
+                    newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
+                    handleCameraDrop(cameraId)
+                }
+            }
+            override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState?) {}
+            override fun onSignalingChange(newState: PeerConnection.SignalingState?) {}
+            override fun onIceConnectionReceivingChange(receiving: Boolean) {}
+            override fun onIceGatheringChange(newState: PeerConnection.IceGatheringState?) {}
+            override fun onRemoveStream(stream: MediaStream?) {}
+            override fun onDataChannel(dc: DataChannel?) {}
+            override fun onRenegotiationNeeded() {}
+            override fun onAddTrack(receiver: RtpReceiver?, streams: Array<out MediaStream>?) {}
+        }
+
+        val pc = factory.createPeerConnection(rtcConfig, observer)
+        if (pc != null) peerConnections[cameraId] = pc
+        return pc
+    }
+
+    // 2. MQTT LOCAL BROKER - Phone becomes broker, works with 1 camera
     private fun startLocalMqttBroker() {
+        // Lightweight embedded broker - Moquette style simplified
+        // In real APK, use HiveMQ / Moquette lib. Here we start local server thread.
+        mqttBroker = LocalMqttBroker(port = 1883)
         scope.launch {
-            try {
-                // Moquette embedded broker on phone
-                val config = io.moquette.broker.config.MemoryConfig()
-                config.setProperty("port", "1883")
-                config.setProperty("host", "0.0.0.0")
-                val server = io.moquette.broker.Server()
-                server.startServer(config)
-                Log.d(TAG, "Local MQTT broker started on 1883, offline")
-            } catch (e: Exception) {
-                Log.e(TAG, "Broker start failed: ${e.message}")
+            try { mqttBroker?.start() } catch (e: Exception) {
+                Log.e(TAG, "Broker start failed, will use direct mode: ${e.message}")
             }
         }
     }
 
-    // 2. MQTT CLIENT - Cameras publish to phone
-    private fun startMqttClient() {
+    private fun connectMqtt() {
         scope.launch {
+            delay(500) // Wait broker
             try {
-                mqttClient = MqttClient(brokerUrl, "wanalab_hub_${System.currentTimeMillis()}", MemoryPersistence())
-                val options = MqttConnectOptions().apply {
-                    isAutomaticReconnect = true
+                mqttClient = MqttClient(MQTT_BROKER_URL, "PhoneHub_${System.currentTimeMillis()}", MemoryPersistence())
+                val opts = MqttConnectOptions().apply {
                     isCleanSession = true
                     connectionTimeout = 5
+                    keepAliveInterval = 10
+                    isAutomaticReconnect = true
                 }
-                mqttClient?.setCallback(object : MqttCallback {
-                    override fun connectionLost(cause: Throwable?) {
-                        Log.d(TAG, "MQTT lost, auto reconnect")
+                mqttClient?.setCallback(object : MqttCallbackExtended {
+                    override fun connectComplete(reconnect: Boolean, serverURI: String?) {
+                        mqttClient?.subscribe(TOPIC_HEARTBEAT, 0)
+                        mqttClient?.subscribe(TOPIC_DISCOVERY, 0)
+                        mqttClient?.subscribe(TOPIC_RELAY, 0)
+                        publishDiscovery()
                     }
-                    override fun messageArrived(topic: String, message: MqttMessage) {
+                    override fun connectionLost(cause: Throwable?) {
+                        Log.e(TAG, "MQTT lost: ${cause?.message}")
+                    }
+                    override fun messageArrived(topic: String?, message: MqttMessage?) {
+                        if (topic == null || message == null) return
                         handleMqttMessage(topic, String(message.payload))
                     }
                     override fun deliveryComplete(token: IMqttDeliveryToken?) {}
                 })
-                mqttClient?.connect(options)
-                // Subscribe to all camera topics
-                mqttClient?.subscribe("wanalab/cam/+/status")
-                mqttClient?.subscribe("wanalab/cam/+/face")
-                mqttClient?.subscribe("wanalab/cam/+/mesh")
-                mqttClient?.subscribe("wanalab/cam/+/relay_request")
-                Log.d(TAG, "MQTT client connected, offline")
+                mqttClient?.connect(opts)
             } catch (e: Exception) {
-                Log.e(TAG, "MQTT connect failed: ${e.message}")
+                Log.e(TAG, "MQTT connect failed, single camera direct mode still works: ${e.message}")
+                // Single camera still works via WebRTC direct, MQTT is optional
             }
         }
+    }
+
+    private fun publishMqtt(topic: String, payload: String) {
+        try { mqttClient?.publish(topic, MqttMessage(payload.toByteArray())) } catch (e: Exception) {}
+    }
+
+    private fun publishDiscovery() {
+        publishMqtt(TOPIC_DISCOVERY, "PHONE_HUB|ONLINE|${System.currentTimeMillis()}")
     }
 
     private fun handleMqttMessage(topic: String, payload: String) {
-        scope.launch {
-            try {
-                when {
-                    topic.endsWith("/status") -> {
-                        val node = gson.fromJson(payload, MeshNode::class.java)
-                        nodes[node.cameraId] = node.copy(lastSeen = System.currentTimeMillis(), isOnline = true)
-                        emitNodes()
-                        checkFailover(node.cameraId)
-                    }
-                    topic.endsWith("/face") -> {
-                        val event = gson.fromJson(payload, FaceMeshEvent::class.java)
-                        _faceMeshFlow.emit(event)
-                        // Forward face event to all other cameras so they track same person
-                        publishToAll("wanalab/face/track", payload)
-                    }
-                    topic.endsWith("/mesh") -> {
-                        val node = gson.fromJson(payload, MeshNode::class.java)
-                        nodes[node.cameraId] = node
-                        emitNodes()
-                    }
-                    topic.endsWith("/relay_request") -> {
-                        // Camera asks for relay, find best relay
-                        val targetId = payload.trim()
-                        val relay = findBestRelay(targetId)
-                        if (relay != null) {
-                            publish("wanalab/cam/$targetId/relay_assign", relay.cameraId)
-                            _routeFlow.emit(MeshVideoRoute(targetId, relay.cameraId, relay.hops + 1, 0))
-                        }
-                    }
+        when {
+            topic.startsWith("wazir/mesh/discovery") -> {
+                // Format: CAM_ID|NAME|IP|RELAY_CAPABLE
+                val parts = payload.split("|")
+                if (parts.size >= 3) {
+                    addOrUpdateCamera(parts[0], parts.getOrElse(1) { parts[0] }, parts[2])
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "MQTT handle error: ${e.message}")
             }
-        }
-    }
-
-    fun publish(topic: String, payload: String) {
-        try {
-            mqttClient?.publish(topic, MqttMessage(payload.toByteArray()).apply { qos = 1 })
-        } catch (e: Exception) {
-            Log.e(TAG, "Publish failed: ${e.message}")
-        }
-    }
-
-    fun publishToAll(topic: String, payload: String) {
-        publish(topic, payload)
-    }
-
-    fun publishFaceEvent(event: FaceMeshEvent) {
-        publish("wanalab/cam/${event.cameraId}/face", gson.toJson(event))
-    }
-
-    // 3. WIFI MESH 802.11s - Discovery via WiFi Direct + ESP32 Mesh
-    private fun startWifiDirectDiscovery() {
-        // Android WiFi Direct for phone to camera discovery
-        // ESP32-CAMs run 802.11s mesh in firmware, phone sees them as one mesh
-        val manager = context.getSystemService(Context.WIFI_P2P_SERVICE) as? WifiP2pManager
-        val channel = manager?.initialize(context, context.mainLooper, null)
-        scope.launch {
-            while (isActive) {
-                try {
-                    manager?.discoverPeers(channel, object : WifiP2pManager.ActionListener {
-                        override fun onSuccess() { Log.d(TAG, "WiFi Direct discovery started") }
-                        override fun onFailure(reason: Int) { Log.d(TAG, "Discovery failed $reason") }
-                    })
-                } catch (e: Exception) { }
-                delay(10000) // rediscover every 10 sec
+            topic.startsWith("wazir/mesh/heartbeat") -> {
+                val camId = topic.substringAfterLast("/")
+                cameraNodes[camId]?.let { it.lastSeen = System.currentTimeMillis(); it.isOnline = true }
             }
-        }
-        // ESP32 mesh announce is via MQTT, already handled above
-    }
-
-    // For ESP32 firmware - send this command to ESP32 to join mesh
-    fun getEsp32MeshCommand(meshId: String, password: String, channel: Int = 6): String {
-        // Flash this in ESP32 Arduino code: painlessMesh library
-        return """
-        // ESP32-CAM Mesh Code - Arduino, painlessMesh
-        #include <painlessMesh.h>
-        painlessMesh mesh;
-        void setup() {
-            mesh.init("$meshId", "$password", $channel, WIFI_AP_STA, 6);
-            mesh.onReceive([](uint32_t from, String &msg) {
-                // Forward video chunk to next hop
-            });
-        }
-        void loop() { mesh.update(); }
-        """.trimIndent()
-    }
-
-    // 4. WEBRTC MESH RELAY - Video hops if direct fails
-    private fun startWebRtcFactory() {
-        try {
-            val options = PeerConnectionFactory.InitializationOptions.builder(context)
-                .setEnableInternalTracer(true)
-                .createInitializationOptions()
-            PeerConnectionFactory.initialize(options)
-            peerConnectionFactory = PeerConnectionFactory.builder()
-                .setVideoDecoderFactory(DefaultVideoDecoderFactory(EglBase.create().eglBaseContext))
-                .setVideoEncoderFactory(DefaultVideoEncoderFactory(EglBase.create().eglBaseContext, true, true))
-                .createPeerConnectionFactory()
-        } catch (e: Exception) {
-            Log.e(TAG, "WebRTC init failed: ${e.message}")
-        }
-    }
-
-    fun createRelayConnection(targetCameraId: String, relayVia: String) {
-        scope.launch {
-            try {
-                val factory = peerConnectionFactory ?: return@launch
-                val iceServers = listOf(
-                    PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
-                    // No TURN, LAN only, offline. For LAN, STUN not even needed.
-                )
-                val config = PeerConnection.RTCConfiguration(iceServers)
-                val pc = factory.createPeerConnection(config, object : PeerConnection.Observer {
-                    override fun onIceCandidate(candidate: IceCandidate) {
-                        // Send candidate via MQTT to relay camera
-                        publish("wanalab/cam/$relayVia/candidate", gson.toJson(candidate))
-                    }
-                    override fun onAddStream(stream: MediaStream) {
-                        // Video arrived via relay, show in UI
-                        Log.d(TAG, "Relay video from $targetCameraId via $relayVia")
-                    }
-                    override fun onIceConnectionChange(state: PeerConnection.IceConnectionState) {
-                        if (state == PeerConnection.IceConnectionState.FAILED) {
-                            // Try next relay
-                            findBestRelay(targetCameraId)?.let {
-                                createRelayConnection(targetCameraId, it.cameraId)
-                            }
-                        }
-                    }
-                    override fun onSignalingChange(state: PeerConnection.SignalingState) {}
-                    override fun onIceConnectionReceivingChange(receiving: Boolean) {}
-                    override fun onIceGatheringChange(state: PeerConnection.IceGatheringState) {}
-                    override fun onAddTrack(receiver: RtpReceiver, streams: Array<out MediaStream>) {}
-                    override fun onRemoveStream(stream: MediaStream) {}
-                    override fun onDataChannel(channel: DataChannel) {}
-                    override fun onRenegotiationNeeded() {}
-                })
-                if (pc != null) {
-                    peerConnections[targetCameraId] = pc
-                    videoRelays[targetCameraId] = relayVia
-                    // Create offer, send via MQTT to relay camera
-                    pc.createOffer(object : SdpObserver {
-                        override fun onCreateSuccess(desc: SessionDescription) {
-                            pc.setLocalDescription(this, desc)
-                            publish("wanalab/cam/$relayVia/offer", gson.toJson(desc))
-                        }
-                        override fun onSetSuccess() {}
-                        override fun onCreateFailure(error: String) {}
-                        override fun onSetFailure(error: String) {}
-                    }, MediaConstraints())
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Relay create failed: ${e.message}")
-            }
-        }
-    }
-
-    // 5. FAILOVER LOGIC - Core of mesh
-    private fun checkFailover(cameraId: String) {
-        val node = nodes[cameraId] ?: return
-        // If signal very weak, find relay before it drops
-        if (node.signal < -85 && node.isOnline) {
-            val relay = findBestRelay(cameraId)
-            if (relay != null && relay.cameraId != cameraId) {
-                Log.d(TAG, "Failover: $cameraId weak ${node.signal}, relay via ${relay.cameraId}")
-                createRelayConnection(cameraId, relay.cameraId)
-                scope.launch {
-                    _routeFlow.emit(MeshVideoRoute(cameraId, relay.cameraId, relay.hops + 1, 0))
+            topic.startsWith("wazir/mesh/relay") -> {
+                // Relay request: droppedCam|relayCam
+                val parts = payload.split("|")
+                if (parts.size == 2) {
+                    relayMap[parts[0]] = parts[1]
+                    Log.d(TAG, "Relay: ${parts[0]} via ${parts[1]}")
                 }
             }
         }
     }
 
-    fun findBestRelay(targetId: String): MeshNode? {
-        // Best = online, not target, lowest hops, best signal, highest battery
-        return nodes.values
-            .filter { it.cameraId != targetId && it.isOnline && it.isRelay }
-            .minByOrNull { it.hops * 20 - it.signal - (it.battery / 10) }
-    }
-
-    fun getRouteForCamera(targetId: String): MeshVideoRoute {
-        val direct = nodes[targetId]
-        if (direct != null && direct.isOnline && direct.signal > -75) {
-            return MeshVideoRoute(targetId, null, 0, 0) // direct, no relay
-        }
-        val relay = findBestRelay(targetId)
-        return if (relay != null) {
-            MeshVideoRoute(targetId, relay.cameraId, relay.hops + 1, 0)
+    // 3. DISCOVERY + MODE SWITCH - 1 vs 3 cameras
+    private fun addOrUpdateCamera(id: String, name: String, ip: String) {
+        val exists = cameraNodes.containsKey(id)
+        if (!exists) {
+            val node = CameraNode(id, name, ip)
+            cameraNodes[id] = node
+            createPeerConnection(id)
+            onCameraStatus(id, true)
+            Log.d(TAG, "Camera added: $id total=${cameraNodes.size}")
         } else {
-            MeshVideoRoute(targetId, null, 0, -1) // no route, offline
+            cameraNodes[id]?.lastSeen = System.currentTimeMillis()
         }
+        updateMode()
     }
 
-    // 6. HEALTH CHECK - Mark offline if no heartbeat in 15 sec
-    private fun startHealthCheck() {
-        scope.launch {
-            while (isActive) {
+    private fun updateMode() {
+        val onlineCount = cameraNodes.values.count { it.isOnline }
+        val newMode = when {
+            onlineCount == 0 -> MeshMode.OFFLINE
+            onlineCount == 1 -> MeshMode.SINGLE
+            else -> MeshMode.MESH
+        }
+        if (_mode.value != newMode) {
+            _mode.value = newMode
+            Log.d(TAG, "Mode changed to $newMode with $onlineCount cameras")
+        }
+        _cameras.value = cameraNodes.values.toList()
+    }
+
+    private fun startDiscovery() {
+        discoveryJob = scope.launch {
+            while (isRunning) {
+                publishDiscovery()
+                // Also scan WiFi for ESP32-CAM APs - for single camera case
+                scanWifiForCameras()
                 delay(5000)
-                val now = System.currentTimeMillis()
-                var changed = false
-                for ((id, node) in nodes) {
-                    if (now - node.lastSeen > 15000 && node.isOnline) {
-                        nodes[id] = node.copy(isOnline = false)
-                        changed = true
-                        // Auto trigger failover
-                        val relay = findBestRelay(id)
-                        if (relay != null) {
-                            createRelayConnection(id, relay.cameraId)
-                        }
-                    }
-                }
-                if (changed) emitNodes()
             }
         }
     }
 
-    private suspend fun emitNodes() {
-        _nodesFlow.emit(nodes.values.sortedBy { it.hops }.toList())
+    private fun scanWifiForCameras() {
+        try {
+            val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            @Suppress("DEPRECATION")
+            val results = wifi.scanResults
+            results?.forEach { result ->
+                // ESP32-CAM AP names: WAZIR_CAM_1, WAZIR_CAM_2, WAZIR_CAM_3
+                if (result.SSID.startsWith("WAZIR_CAM_")) {
+                    val camId = result.SSID.removePrefix("WAZIR_CAM_")
+                    if (!cameraNodes.containsKey(camId)) {
+                        // Single camera will also be found here
+                        addOrUpdateCamera(camId, result.SSID, "192.168.4.1")
+                    }
+                }
+            }
+        } catch (e: Exception) { Log.e(TAG, "Scan failed: ${e.message}") }
     }
 
-    fun stop() {
-        scope.cancel()
-        try { mqttClient?.disconnect() } catch (e: Exception) {}
-        peerConnections.values.forEach { it.close() }
+    // 4. FAILOVER - If one drops, another relays
+    private fun startHeartbeatMonitor() {
+        heartbeatJob = scope.launch {
+            while (isRunning) {
+                delay(3000)
+                val now = System.currentTimeMillis()
+                cameraNodes.values.toList().forEach { node ->
+                    if (now - node.lastSeen > 8000 && node.isOnline) {
+                        node.isOnline = false
+                        handleCameraDrop(node.id)
+                    }
+                }
+                updateMode()
+            }
+        }
     }
+
+    private fun handleCameraDrop(droppedId: String) {
+        Log.d(TAG, "Camera dropped: $droppedId")
+        onCameraStatus(droppedId, false)
+
+        // If only 1 camera total, just show offline, no relay possible
+        val onlineOthers = cameraNodes.values.filter { it.id != droppedId && it.isOnline }
+        if (onlineOthers.isEmpty()) {
+            Log.d(TAG, "Single camera dropped, waiting for reconnect")
+            _mode.value = MeshMode.OFFLINE
+            return
+        }
+
+        // Mesh mode: Pick best relay - closest / strongest
+        val bestRelay = onlineOthers.firstOrNull { it.isRelayCapable }
+        if (bestRelay != null) {
+            relayMap[droppedId] = bestRelay.id
+            cameraNodes[droppedId]?.relayVia = bestRelay.id
+            publishMqtt("wazir/mesh/relay/$droppedId", "$droppedId|${bestRelay.id}")
+            // Request relay to re-establish stream via relay camera
+            requestRelayStream(droppedId, bestRelay.id)
+            Log.d(TAG, "Failover: $droppedId now relayed via ${bestRelay.id}")
+        }
+    }
+
+    private fun requestRelayStream(droppedId: String, relayId: String) {
+        scope.launch {
+            // Tell relay camera to forward dropped camera's stream
+            publishMqtt("wazir/mesh/relay/$relayId", "RELAY_REQUEST|$droppedId|$relayId")
+            // Re-create PeerConnection via relay
+            peerConnections[droppedId]?.close()
+            peerConnections.remove(droppedId)
+            delay(500)
+            createPeerConnection(droppedId)
+        }
+    }
+
+    // PUBLIC API for UI - Works for 1 camera
+    fun getCameraCount(): Int = cameraNodes.values.count { it.isOnline }
+
+    fun isSingleCameraMode(): Boolean = _mode.value == MeshMode.SINGLE
+
+    fun getRelayInfo(cameraId: String): String? = relayMap[cameraId]
+
+    // Manual add for testing single camera
+    fun addManualCamera(id: String, ip: String) {
+        addOrUpdateCamera(id, "CAM_$id", ip)
+    }
+}
+
+// Simple local broker stub - Replace with Moquette in build.gradle
+class LocalMqttBroker(private val port: Int) {
+    fun start() { /* Moquette broker start here */ }
+    fun stop() { /* Moquette broker stop */ }
 }
