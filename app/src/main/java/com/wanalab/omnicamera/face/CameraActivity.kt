@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.Gravity
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -32,7 +33,12 @@ class CameraActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val root = FrameLayout(this)
-        previewView = PreviewView(this)
+        previewView = PreviewView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        }
         root.addView(previewView)
 
         val viewerBtn = Button(this).apply {
@@ -46,10 +52,8 @@ class CameraActivity : AppCompatActivity() {
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.WRAP_CONTENT
         ).apply {
-            bottomMargin = 40
-            leftMargin = 24
-            rightMargin = 24
-            gravity = android.view.Gravity.BOTTOM
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            setMargins(24, 0, 24, 40)
         }
 
         root.addView(viewerBtn, params)
@@ -84,8 +88,12 @@ class CameraActivity : AppCompatActivity() {
     private fun startSingleCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
-            cameraProvider = cameraProviderFuture.get()
-            bindCamera(CameraSelector.DEFAULT_BACK_CAMERA)
+            try {
+                cameraProvider = cameraProviderFuture.get()
+                bindCamera(CameraSelector.DEFAULT_BACK_CAMERA)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Camera init failed", Toast.LENGTH_SHORT).show()
+            }
         }, ContextCompat.getMainExecutor(this))
     }
 
