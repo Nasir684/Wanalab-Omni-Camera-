@@ -1,4 +1,4 @@
-name: Build God Eye APK v1.6.7
+name: Build God Eye APK v1.6.9
 
 on:
   push:
@@ -17,28 +17,53 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Make Gradlew Executable
-        run: chmod +x gradlew
-
-      - name: Build Debug APK - v1.6.7
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Build Release APK - v1.6.7
-        run: ./gradlew assembleRelease --stacktrace
-
-      - name: Rename APKs to God Eye v1.6.7
+      - name: Install Capacitor + Sync
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk God-Eye-v1.6.7-Debug.apk
-          cp app/build/outputs/apk/release/app-release-unsigned.apk God-Eye-v1.6.7-Release.apk || true
+          npm init -y || true
+          npm install @capacitor/core @capacitor/cli @capacitor/android || true
+          npx cap sync android || true
 
-      - name: Upload APKs
+      - name: Make Icons From Your PNG v1.6.9
+        run: |
+          python3 -c "
+          from PIL import Image
+          import os
+          src = 'wanalab-god-eye-v1-1-icon.png'
+          img = Image.open(src).convert('RGBA')
+          img2 = img.resize((432, 432), Image.LANCZOS)
+          for d in ['mipmap-mdpi','mipmap-hdpi','mipmap-xhdpi','mipmap-xxhdpi','mipmap-xxxhdpi']:
+              p = f'android/app/src/main/res/{d}'
+              os.makedirs(p, exist_ok=True)
+              img2.save(f'{p}/ic_launcher_foreground.png')
+              img2.save(f'{p}/ic_launcher.png')
+              img2.save(f'{p}/ic_launcher_round.png')
+          print('Icons done - God Eye 432x432')
+          "
+
+      - name: Make Gradlew Executable
+        run: chmod +x android/gradlew
+
+      - name: Build Debug APK - v1.6.9
+        run: cd android && ./gradlew assembleDebug --stacktrace
+
+      - name: Rename APK to God Eye v1.6.9
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk God-Eye-v1.6.9-Debug.apk
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: God-Eye-v1.6.7-APKs
-          path: |
-            God-Eye-v1.6.7-Debug.apk
-            God-Eye-v1.6.7-Release.apk
+          name: God-Eye-v1.6.9-APK
+          path: God-Eye-v1.6.9-Debug.apk
           retention-days: 30
