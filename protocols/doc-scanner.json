@@ -1,7 +1,47 @@
 {
   "id": "doc-scanner-v1",
-  "crop": { "points": 4, "handleRadius": 28, "lineColor": "#00ff88" },
-  "filters": ["original", "magic", "bw", "thermal", "night"],
-  "ocr": { "languages": ["eng", "urd"], "roiOnly": true },
-  "export": ["JPG", "IMG_PDF", "SEARCHABLE_PDF", "TXT", "DOC", "DOCX_IMG"]
+  "name": "Doc Scanner - Manual Crop + ROI + Edit Studio",
+  "version": "1.6.9",
+  "description": "Manual 4-corner crop drag + COUNT ROI + OCR ROI + BARCODE ROI + Magic / BW / Gray / Thermal / Night filters + Perspective Warp + Searchable PDF + DOCX+IMG + Edit Studio",
+  "status": "active",
+  "protocol": "canvas-camscan",
+  "engine": "canvas 2d + tesseract.js v5 + jspdf + docx.js",
+  "crop": {
+    "points": 4,
+    "handleRadius": 28,
+    "lineColor": "#00ff88",
+    "dragAdjust": true,
+    "autoEdge": true,
+    "warpPerspective": true
+  },
+  "filters": ["original", "magic", "bw", "gray", "thermal", "night", "light", "hd+", "warm", "cool", "sharp"],
+  "ocr": {
+    "languages": ["eng", "urd", "eng+urd"],
+    "roiOnly": false,
+    "modes": ["roi-ocr", "full-ocr", "auto-crop-ocr"],
+    "engine": "tesseract.js v5",
+    "note": "Best with good light, flat doc. No 95% claim."
+  },
+  "roi": {
+    "count": true,
+    "ocr": true,
+    "barcode": true
+  },
+  "edit": {
+    "rotate": true,
+    "flip": true,
+    "crop": true,
+    "brightness": true,
+    "contrast": true,
+    "saturation": true,
+    "addText": true,
+    "dateStamp": true,
+    "drawMode": true
+  },
+  "export": ["JPG", "IMG_PDF", "SEARCHABLE_PDF", "TXT", "DOCX_IMG"],
+  "exportNote": "DOC deleted - No .doc export, only DOCX with Images.",
+  "voice": ["doc", "scan", "document", "scanner", "pdf"],
+  "offline": true,
+  "needsOnlineFirst": ["ocr-model", "docx-lib"],
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=169"
 }
