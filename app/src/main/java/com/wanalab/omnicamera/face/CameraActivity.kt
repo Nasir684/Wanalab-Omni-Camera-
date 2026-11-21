@@ -1,9 +1,11 @@
 package com.godeye.app.face
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
+import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -12,39 +14,49 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
-import com.godeye.app.face.mesh.MeshManager
-import kotlinx.coroutines.launch
 
 class CameraActivity : AppCompatActivity() {
 
     private lateinit var previewView: PreviewView
-    private lateinit var meshManager: MeshManager
     private var cameraProvider: ProcessCameraProvider? = null
-    private var currentMode: String = "SINGLE"
 
     companion object {
-        private const val TAG = "CameraActivity"
         private const val REQUEST_CODE = 1001
         private val PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.NEARBY_WIFI_DEVICES,
-            Manifest.permission.ACCESS_WIFI_STATE,
-            Manifest.permission.CHANGE_WIFI_STATE
+            Manifest.permission.RECORD_AUDIO
         )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        previewView = PreviewView(this)
-        setContentView(previewView)
 
-        meshManager = MeshManager(this)
+        val root = FrameLayout(this)
+        previewView = PreviewView(this)
+        root.addView(previewView)
+
+        val viewerBtn = Button(this).apply {
+            text = "View Home / Workplace Cameras"
+            setOnClickListener {
+                startActivity(Intent(this@CameraActivity, HomeCameraViewerActivity::class.java))
+            }
+        }
+
+        val params = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            bottomMargin = 40
+            leftMargin = 24
+            rightMargin = 24
+            gravity = android.view.Gravity.BOTTOM
+        }
+
+        root.addView(viewerBtn, params)
+        setContentView(root)
 
         if (allPermissionsGranted()) {
-            startCameraSystem()
+            startSingleCamera()
         } else {
             ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_CODE)
         }
@@ -63,61 +75,18 @@ class CameraActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE && allPermissionsGranted()) {
-            startCameraSystem()
+            startSingleCamera()
         } else {
             Toast.makeText(this, "Camera permission needed", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun startCameraSystem() {
-        startSingleCamera()
-
-        lifecycleScope.launch {
-            meshManager.startMesh(
-                onPeerFound = { peerCount ->
-                    if (peerCount >= 2 && currentMode == "SINGLE") {
-                        switchToMeshMode()
-                    }
-                },
-                onPeerLost = { peerCount ->
-                    if (peerCount < 2 && currentMode == "MESH") {
-                        switchToSingleMode()
-                    }
-                },
-                onMessage = { topic, payload ->
-                    Log.d(TAG, "Mesh msg: $topic -> $payload")
-                }
-            )
-        }
-    }
-
     private fun startSingleCamera() {
-        currentMode = "SINGLE"
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
             bindCamera(CameraSelector.DEFAULT_BACK_CAMERA)
         }, ContextCompat.getMainExecutor(this))
-    }
-
-    private fun switchToMeshMode() {
-        currentMode = "MESH"
-        Log.d(TAG, "Switching to 3 Camera Mesh Mode")
-        runOnUiThread {
-            Toast.makeText(this, "3 Camera Mesh Active", Toast.LENGTH_SHORT).show()
-        }
-        meshManager.setRole(MeshManager.Role.MESH_NODE)
-        meshManager.publishStatus("mesh_active")
-    }
-
-    private fun switchToSingleMode() {
-        currentMode = "SINGLE"
-        Log.d(TAG, "Mesh lost, fallback to Single Camera")
-        runOnUiThread {
-            Toast.makeText(this, "Back to Single Camera", Toast.LENGTH_SHORT).show()
-        }
-        meshManager.setRole(MeshManager.Role.SINGLE_NODE)
-        bindCamera(CameraSelector.DEFAULT_BACK_CAMERA)
     }
 
     private fun bindCamera(selector: CameraSelector) {
@@ -129,7 +98,6 @@ class CameraActivity : AppCompatActivity() {
             }
             provider.bindToLifecycle(this, selector, preview)
         } catch (e: Exception) {
-            Log.e(TAG, "Bind failed: ${e.message}")
             try {
                 val provider = cameraProvider ?: return
                 provider.unbindAll()
@@ -138,14 +106,13 @@ class CameraActivity : AppCompatActivity() {
                 }
                 provider.bindToLifecycle(this, CameraSelector.DEFAULT_FRONT_CAMERA, preview)
             } catch (e2: Exception) {
-                Log.e(TAG, "Front camera also failed")
+                Toast.makeText(this, "No camera available", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        meshManager.stopMesh()
         cameraProvider?.unbindAll()
     }
 }
