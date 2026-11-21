@@ -1,11 +1,3 @@
-val info = TextView(this).apply {
-    text = "OFFLINE ALWAYS: RTSP (192.168.x.x) | ONVIF Discovery | MJPEG (ESP32) | Local MQTT\n" +
-           "ONLINE AUTO: HLS (.m3u8) | DASH (.mpd) | RTMP Cloud | SRT Remote | WebRTC Cloud\n" +
-           "No internet? Offline cameras keep working. Internet back? Online auto-starts."
-    textSize = 13f
-    setPadding(0, 16, 0, 16)
-}
-root.addView(info)
 package com.godeye.app.face
 
 import android.content.Context
@@ -15,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
@@ -34,11 +27,29 @@ class CameraSettingsActivity : AppCompatActivity() {
                 prefs.getString(KEY_3, "")?.trim() ?: ""
             )
         }
+
+        // FIX: Auto-fix user typing - "192.168.1.10" -> "rtsp://192.168.1.10:554/stream"
+        fun normalizeUrl(raw: String): String {
+            var u = raw.trim()
+            if (u.isBlank()) return ""
+            if (!u.contains("://")) {
+                // User typed just IP - assume RTSP
+                if (u.matches(Regex("[0-9.]+(:[0-9]+)?(/.*)?"))) {
+                    u = "rtsp://$u"
+                } else {
+                    u = "http://$u"
+                }
+            }
+            return u
+        }
     }
 
     private lateinit var input1: EditText
     private lateinit var input2: EditText
     private lateinit var input3: EditText
+    private lateinit var hint1: TextView
+    private lateinit var hint2: TextView
+    private lateinit var hint3: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,26 +63,53 @@ class CameraSettingsActivity : AppCompatActivity() {
             setPadding(32, 32, 32, 32)
         }
 
+        // FIX: Info view now INSIDE onCreate, not floating outside file
+        val info = TextView(this).apply {
+            text = "OFFLINE ALWAYS: RTSP (192.168.x.x) | ONVIF Discovery | MJPEG (ESP32) | Local MQTT\n" +
+                   "ONLINE AUTO: HLS (.m3u8) | DASH (.mpd) | RTMP Cloud | SRT Remote | WebRTC Cloud\n" +
+                   "No internet? Offline cameras keep working. Internet back? Online auto-starts."
+            textSize = 13f
+            setPadding(0, 0, 0, 16)
+        }
+        root.addView(info)
+
         input1 = EditText(this).apply {
-            hint = "Camera 1 URL - Home / Office"
+            hint = "Camera 1 URL - Home / Office - e.g. rtsp://192.168.1.10:554/stream"
             isSingleLine = true
             inputType = InputType.TYPE_TEXT_VARIATION_URI
         }
+        hint1 = TextView(this).apply { textSize = 12f; setPadding(0, 4, 0, 16) }
+
         input2 = EditText(this).apply {
             hint = "Camera 2 URL - Home / Office"
             isSingleLine = true
             inputType = InputType.TYPE_TEXT_VARIATION_URI
         }
+        hint2 = TextView(this).apply { textSize = 12f; setPadding(0, 4, 0, 16) }
+
         input3 = EditText(this).apply {
             hint = "Camera 3 URL - Home / Office"
             isSingleLine = true
             inputType = InputType.TYPE_TEXT_VARIATION_URI
         }
+        hint3 = TextView(this).apply { textSize = 12f; setPadding(0, 4, 0, 16) }
 
         val saved = getSavedUrls(this)
         input1.setText(saved[0])
         input2.setText(saved[1])
         input3.setText(saved[2])
+
+        // FIX: Live protocol hint - user knows if URL is offline/online before saving
+        fun updateHints() {
+            hint1.text = if (input1.text.isBlank()) "" else CameraProtocolManager.getProtocolHint(input1.text.toString())
+            hint2.text = if (input2.text.isBlank()) "" else CameraProtocolManager.getProtocolHint(input2.text.toString())
+            hint3.text = if (input3.text.isBlank()) "" else CameraProtocolManager.getProtocolHint(input3.text.toString())
+        }
+        updateHints()
+        // Update on focus loss - simple, no TextWatcher needed for v1
+        input1.setOnFocusChangeListener { _, _ -> updateHints() }
+        input2.setOnFocusChangeListener { _, _ -> updateHints() }
+        input3.setOnFocusChangeListener { _, _ -> updateHints() }
 
         val saveBtn = Button(this).apply {
             text = "Save Cameras"
@@ -84,21 +122,34 @@ class CameraSettingsActivity : AppCompatActivity() {
         }
 
         root.addView(input1)
+        root.addView(hint1)
         root.addView(input2)
+        root.addView(hint2)
         root.addView(input3)
+        root.addView(hint3)
         root.addView(saveBtn)
         root.addView(clearBtn)
         setContentView(root)
     }
 
     private fun save() {
+        // FIX: Normalize URLs - auto-add rtsp:// if missing
+        val u1 = normalizeUrl(input1.text.toString())
+        val u2 = normalizeUrl(input2.text.toString())
+        val u3 = normalizeUrl(input3.text.toString())
+
+        // Show normalized back to user if changed
+        if (u1 != input1.text.toString()) input1.setText(u1)
+        if (u2 != input2.text.toString()) input2.setText(u2)
+        if (u3 != input3.text.toString()) input3.setText(u3)
+
         val prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         prefs.edit()
-            .putString(KEY_1, input1.text.toString().trim())
-            .putString(KEY_2, input2.text.toString().trim())
-            .putString(KEY_3, input3.text.toString().trim())
+            .putString(KEY_1, u1)
+            .putString(KEY_2, u2)
+            .putString(KEY_3, u3)
             .apply()
-        Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Saved - Returning to Viewer", Toast.LENGTH_SHORT).show()
         finish()
     }
 
@@ -106,6 +157,7 @@ class CameraSettingsActivity : AppCompatActivity() {
         input1.setText("")
         input2.setText("")
         input3.setText("")
+        hint1.text = ""; hint2.text = ""; hint3.text = ""
         getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply()
         Toast.makeText(this, "Cleared", Toast.LENGTH_SHORT).show()
     }
