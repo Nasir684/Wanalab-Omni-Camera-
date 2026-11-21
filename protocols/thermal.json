@@ -1,25 +1,26 @@
 {
-  "_comment": "WanaLab God Eye v1.9 FINAL v99 - Thermal + Night + HDR - Nasir Khan",
+  "_comment": "WanaLab God Eye v1.6.9 - Thermal + Night + HDR - Nasir Khan - SIMULATED in browser, Real Temp needs Native FLIR App",
   "id": "thermal-v1",
-  "version": "1.9.99-nasir684",
-  "name": "Thermal + Night HDR - FLIR Style",
-  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=19&force=99",
-  "modes": ["thermal", "night", "hdr", "thermal-roi"],
+  "version": "1.6.9",
+  "name": "Thermal + Night HDR - FLIR Style (Simulated)",
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=169",
+  "modes": ["thermal", "night", "hdr"],
+  "note": "SIMULATED: Canvas filter over phone camera. Not real temperature. Real temp needs FLIR ONE + Native App. No OpenCV.",
   "thermal": {
     "enabled": true,
     "defaultMap": "JET",
     "maps": [
-      { "id": "JET", "name": "JET - Rainbow", "opencv": "COLORMAP_JET", "color": "rainbow" },
-      { "id": "HOT", "name": "WhiteHot - FLIR White", "opencv": "COLORMAP_HOT", "color": "whitehot" },
-      { "id": "IRON", "name": "Iron - Red Hot", "opencv": "COLORMAP_INFERNO", "color": "iron" },
-      { "id": "BONE", "name": "BlackHot", "opencv": "COLORMAP_BONE", "color": "blackhot" },
-      { "id": "COOL", "name": "Cool Blue", "opencv": "COLORMAP_COOL", "color": "cool" },
-      { "id": "OCEAN", "name": "Ocean Thermal", "opencv": "COLORMAP_OCEAN", "color": "ocean" }
+      { "id": "JET", "name": "JET - Rainbow", "engine": "canvas-filter", "color": "rainbow" },
+      { "id": "HOT", "name": "WhiteHot - FLIR White", "engine": "canvas-filter", "color": "whitehot" },
+      { "id": "IRON", "name": "Iron - Red Hot", "engine": "canvas-filter", "color": "iron" },
+      { "id": "BONE", "name": "BlackHot", "engine": "canvas-filter", "color": "blackhot" },
+      { "id": "COOL", "name": "Cool Blue", "engine": "canvas-filter", "color": "cool" },
+      { "id": "OCEAN", "name": "Ocean Thermal", "engine": "canvas-filter", "color": "ocean" }
     ],
     "opacity": { "min": 0, "max": 100, "default": 0, "step": 5 },
     "blending": "screen",
     "canvas": "thermalCanvas",
-    "roiSupported": true
+    "roiSupported": false
   },
   "night": {
     "enabled": true,
@@ -28,9 +29,10 @@
     "default": 0,
     "filters": {
       "brightnessBoost": 50,
-      "contrastBoost": 30,
-      "denoise": true
-    }
+      "contrastBoost": 30
+    },
+    "engine": "canvas-filter + night-hdr-fusion.js",
+    "note": "Night HDR 5-frame in night-hdr-fusion.js, not denoise."
   },
   "hdr": {
     "enabled": true,
@@ -41,7 +43,8 @@
       "contrast": 25,
       "saturation": 15,
       "exposure": 0
-    }
+    },
+    "engine": "canvas-filter"
   },
   "sliders": {
     "exp": { "label": "☀️ EXP", "min": -100, "max": 100, "default": 0 },
@@ -49,5 +52,11 @@
     "thermal": { "label": "🔥 THERMAL", "min": 0, "max": 100, "default": 0 },
     "hdr": { "label": "📸 HDR", "min": 0, "max": 100, "default": 0 }
   },
-  "export": ["JPG", "THERMAL_JPG", "IMG_PDF"]
+  "voice": ["thermal", "garam", "garmi", "temp", "night", "raat", "hdr"],
+  "export": ["JPG", "IMG_PDF"],
+  "hardware": {
+    "flir_one_pro": "Real temp - Use Native FLIR App, not browser",
+    "seek": "Real temp - Use Native Seek App",
+    "infiray": "Real temp - Use Native InfiRay App"
+  }
 }
