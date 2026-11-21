@@ -1,4 +1,40 @@
 [
-  {"id":"wifi-microscope-1080p","name":"WiFi Microscope 1080p 50x-1000x","type":"WIFI","mode":"micro","ip":"192.168.10.123","url":"http://192.168.10.123:8080/video","description":"Generic WiFi microscope 50x-1000x","status":"working"},
-  {"id":"wifi-microscope-4k","name":"WiFi 4K Microscope 2MP","type":"WIFI","mode":"micro","ip":"192.168.1.1","description":"4K WiFi microscope","status":"working"}
+  {
+    "id": "wifi-microscope-1080p",
+    "name": "WiFi Microscope 1080p 50x",
+    "type": "WIFI",
+    "mode": "micro",
+    "ip": "192.168.1.1",
+    "ipNote": "Default IP 192.168.1.1 - Some models use 192.168.10.123 - Check WiFi name on box",
+    "url": "http://192.168.1.1:8080/?action=stream",
+    "urlAlt": "http://192.168.10.123:8080/video",
+    "protocol": "mjpeg",
+    "description": "Generic WiFi microscope. Real optical 50x, crop to 1000x. Connect phone to microscope WiFi first, then open stream.",
+    "resolution": "1920x1080",
+    "zoom": "50x optical, up to 1000x crop",
+    "optical": "50x",
+    "status": "working",
+    "use": "Seeds, PCB, wireless microscope",
+    "voice": ["wifi microscope", "microscope", "wifi"],
+    "price_rs": 4000,
+    "version": "1.6.9"
+  },
+  {
+    "id": "wifi-microscope-2mp",
+    "name": "WiFi Microscope 1080p 2MP",
+    "type": "WIFI",
+    "mode": "micro",
+    "ip": "192.168.1.1",
+    "url": "http://192.168.1.1:8080/?action=stream",
+    "protocol": "mjpeg",
+    "description": "WiFi microscope 2MP = 1080p, NOT 4K. 4K needs 8MP sensor. Good for seeds, PCB.",
+    "resolution": "1920x1080",
+    "zoom": "50x optical, up to 1000x crop",
+    "optical": "50x",
+    "status": "working",
+    "use": "Seeds, PCB, wireless microscope",
+    "voice": ["wifi microscope", "microscope"],
+    "price_rs": 3500,
+    "version": "1.6.9"
+  }
 ]
