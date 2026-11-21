@@ -1,3 +1,9 @@
+// Offline + Online Protocols
+implementation("androidx.media3:media3-exoplayer-rtsp:1.3.0")
+implementation("androidx.media3:media3-exoplayer-rtmp:1.3.0")
+implementation("androidx.media3:media3-exoplayer-hls:1.3.0")
+implementation("androidx.media3:media3-exoplayer-dash:1.3.0")
+implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
