@@ -1,10 +1,13 @@
 {
   "app": "WanaLab God Eye",
-  "version": "1.5",
-  "codename": "Anti-Mix + Advanced Scan + Edit Studio",
-  "author": "Nasir Khan",
-  "last_updated": "2026-11-20",
-  "build": "PRO Counting Anti-Mix + Advanced Scan + Edit Studio",
+  "version": "1.6.7",
+  "export_version": "2.0",
+  "shop_version": "2.0",
+  "codename": "God Eye v1.6.7 + Export v2.0 + Shop v2.0 - Face + Barcode 4 Engines + Count 3 Methods + All Protocols",
+  "author": "Nasir Khan - WanaLab",
+  "city": "Dera Ismail Khan, KPK, Pakistan",
+  "last_updated": "2026-11-21",
+  "build": "God Eye v1.6.7 FINAL - Face + IP CAM + Shop POS + Export Ultimate",
   "modules": [
     "clip-lenses.json",
     "custom.json",
@@ -21,27 +24,58 @@
     "wifi-microscopes.json",
     "scan-advanced.json",
     "edit-studio.json",
-    "barcode-multi.json"
+    "barcode-multi.json",
+    "face.json",
+    "shop.json",
+    "export.json"
   ],
   "counting": {
     "enabled": true,
     "mode": "total",
+    "methods": ["camera_ai_blob", "camera_ai_edge", "barcode_scan_count", "manual_plus_minus"],
     "default_class": "bottle",
-    "version": "1.5"
+    "version": "2.0",
+    "confidence": true
   },
   "scan": {
     "enabled": true,
     "mode": "advanced",
-    "features": ["barcode", "qr", "auto_scan", "multi_scan", "beep", "scan_light", "sensitivity", "scan_zoom", "history"],
-    "version": "1.5"
+    "engines": ["native_barcode_detector", "zxing", "quagga2", "manual"],
+    "features": ["barcode", "qr", "auto_scan", "multi_scan", "beep", "vibrate", "scan_light", "sensitivity", "scan_zoom", "history", "torch", "front_back_switch"],
+    "version": "2.0"
   },
   "editing": {
     "enabled": true,
-    "features": ["rotate", "flip", "crop", "brightness", "contrast", "saturation", "filters_bw_warm_cool_sharp", "add_text", "date_stamp", "draw"],
-    "version": "1.5"
+    "features": ["rotate", "flip", "crop", "brightness", "contrast", "saturation", "filters_bw_warm_cool_sharp", "add_text", "date_stamp", "draw", "enhance_grayscale_contrast"],
+    "version": "1.6.7"
+  },
+  "face": {
+    "enabled": true,
+    "mode": "detection_enroll",
+    "features": ["face_detector", "enroll", "known_green", "unknown_yellow", "alert_history", "face_log", "snapshot"],
+    "version": "1.6.7"
+  },
+  "shop": {
+    "enabled": true,
+    "features": ["inventory", "bill", "customer", "discount", "tax", "profit", "low_stock_alert", "count_sessions", "xlsx_export", "print_bluetooth"],
+    "version": "2.0"
+  },
+  "export": {
+    "enabled": true,
+    "pwa": false,
+    "formats": ["pdf", "searchable_pdf", "docx", "xlsx", "csv", "json", "txt", "html", "zip", "full_report"],
+    "ocr_languages": ["eng", "urd", "ara", "hin", "eng+urd", "eng+ara"],
+    "toggles": ["ocr", "enhance", "compress", "face", "bill", "alert", "timestamp", "auto_share"],
+    "version": "2.0"
+  },
+  "protocols": {
+    "enabled": true,
+    "free": ["mqtt", "websocket", "http_post", "webrtc", "web_share", "whatsapp", "email", "clipboard", "print_bluetooth", "rtsp", "onvif", "mjpeg", "hls"],
+    "mqtt_broker": "wss://broker.emqx.io:8084/mqtt",
+    "version": "2.0"
   },
   "pricing": {
-    "enabled": false,
-    "note": "Removed for testing phase - app is FREE"
+    "enabled": true,
+    "note": "FREE Trial + PRO Rs. 2500/Year + SHOP PRO Rs. 5000/Year + Hardware Bundle Rs. 18500 - JazzCash / EasyPaisa"
   }
 }
