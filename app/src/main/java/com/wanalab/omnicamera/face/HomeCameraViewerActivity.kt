@@ -1,5 +1,6 @@
 package com.godeye.app.face
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
@@ -26,15 +27,28 @@ class HomeCameraViewerActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
+            setPadding(16, 16, 16, 16)
         }
 
         input1 = EditText(this).apply { hint = "Camera 1 URL - Home / Office" }
         input2 = EditText(this).apply { hint = "Camera 2 URL - Home / Office" }
         input3 = EditText(this).apply { hint = "Camera 3 URL - Home / Office" }
 
-        val view1 = PlayerView(this).apply { layoutParams = LinearLayout.LayoutParams(-1, 0, 1f) }
-        val view2 = PlayerView(this).apply { layoutParams = LinearLayout.LayoutParams(-1, 0, 1f) }
-        val view3 = PlayerView(this).apply { layoutParams = LinearLayout.LayoutParams(-1, 0, 1f) }
+        // Auto-load saved URLs from Settings
+        val saved = CameraSettingsActivity.getSavedUrls(this)
+        input1.setText(saved[0])
+        input2.setText(saved[1])
+        input3.setText(saved[2])
+
+        val view1 = PlayerView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(-1, 0, 1f)
+        }
+        val view2 = PlayerView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(-1, 0, 1f)
+        }
+        val view3 = PlayerView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(-1, 0, 1f)
+        }
 
         val connectBtn = Button(this).apply {
             text = "Connect All 3"
@@ -46,6 +60,13 @@ class HomeCameraViewerActivity : AppCompatActivity() {
             setOnClickListener { stopAll() }
         }
 
+        val settingsBtn = Button(this).apply {
+            text = "Settings - Save URLs"
+            setOnClickListener {
+                startActivity(Intent(this@HomeCameraViewerActivity, CameraSettingsActivity::class.java))
+            }
+        }
+
         root.addView(input1)
         root.addView(view1)
         root.addView(input2)
@@ -54,6 +75,7 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         root.addView(view3)
         root.addView(connectBtn)
         root.addView(stopBtn)
+        root.addView(settingsBtn)
 
         setContentView(root)
 
@@ -64,6 +86,15 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         view1.player = player1
         view2.player = player2
         view3.player = player3
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reload after coming back from Settings
+        val saved = CameraSettingsActivity.getSavedUrls(this)
+        if (input1.text.toString() != saved[0]) input1.setText(saved[0])
+        if (input2.text.toString() != saved[1]) input2.setText(saved[1])
+        if (input3.text.toString() != saved[2]) input3.setText(saved[2])
     }
 
     private fun connectAll() {
