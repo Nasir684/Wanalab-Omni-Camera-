@@ -1,0 +1,3 @@
+-keep class com.getcapacitor.** { *; }
+-keep class com.wanalab.godeye.** { *; }
+-dontwarn org.apache.**
