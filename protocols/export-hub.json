@@ -3,24 +3,33 @@
   "version": "1.6.9",
   "codename": "God Eye v1.6.9 - All Protocols + Voice 38 + Dashboard 6 Categories",
   "author": "Nasir Khan - WanaLab",
-  "city": "wana, South Waziristan, KPK, Pakistan",
+  "city": "Wana, South Waziristan, KPK, Pakistan",
   "last_updated": "2026-11-21",
   "build": "God Eye v1.6.9 FINAL - No PWA - Chrome Only",
   "pwa": false,
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=169",
   "modules": [
+    "devices.json",
     "clip-lenses.json",
-    "custom.json",
     "dji-tracking.json",
     "doc-scanner.json",
     "endoscopes.json",
+    "export-hub.json",
     "ip-cameras.json",
     "night-vision.json",
     "tap-bill.json",
     "telephoto.json",
     "thermal.json",
     "uvc-microscopes.json",
-    "wifi-microscopes.json"
+    "wifi-microscopes.json",
+    "voice.json"
   ],
+  "dashboard": {
+    "enabled": true,
+    "categories": 6,
+    "categories_list": ["Shop", "Doc", "Count", "Track", "Thermal", "Devices"],
+    "version": "1.6.9"
+  },
   "counting": {
     "enabled": true,
     "mode": "total",
@@ -39,9 +48,9 @@
   },
   "editing": {
     "enabled": true,
-    "features": ["rotate", "flip", "crop", "brightness", "contrast", "filters_bw_warm_cool"],
+    "features": ["rotate", "flip", "crop", "brightness", "contrast", "filters_bw_warm_cool", "draw", "date_stamp", "add_text"],
     "version": "1.6.9",
-    "note": "In camscan-engine.js. No draw / date_stamp yet."
+    "note": "In camscan-engine.js + doc-scanner.json. Draw + DateStamp + AddText added in v1.6.9."
   },
   "face": {
     "enabled": true,
@@ -59,11 +68,11 @@
   "export": {
     "enabled": true,
     "pwa": false,
-    "formats": ["pdf", "searchable_pdf", "docx", "json", "txt", "bill_pdf"],
+    "formats": ["pdf", "searchable_pdf", "docx_img", "json", "txt", "bill_pdf", "jpg"],
     "ocr_languages": ["eng", "urd", "eng+urd"],
     "toggles": ["ocr", "enhance", "compress", "timestamp"],
     "version": "1.6.9",
-    "note": "No xlsx / csv / html / zip / full_report - not implemented."
+    "note": "No xlsx / csv / html / zip / full_report - not implemented. DOCX is DOCX_IMG only."
   },
   "protocols": {
     "enabled": true,
