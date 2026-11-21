@@ -1,4 +1,4 @@
-package com.wanalab.omnicamera.face
+package com.godeye.app.face
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -13,7 +13,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.wanalab.omnicamera.face.mesh.MeshManager
+import com.godeye.app.face.mesh.MeshManager
 import kotlinx.coroutines.launch
 
 class CameraActivity : AppCompatActivity() {
