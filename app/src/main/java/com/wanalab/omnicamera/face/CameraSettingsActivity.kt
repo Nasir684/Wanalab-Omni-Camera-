@@ -2,6 +2,8 @@ package com.godeye.app.face
 
 import android.content.Context
 import android.os.Bundle
+import android.text.InputType
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -19,9 +21,9 @@ class CameraSettingsActivity : AppCompatActivity() {
         fun getSavedUrls(context: Context): List<String> {
             val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             return listOf(
-                prefs.getString(KEY_1, "") ?: "",
-                prefs.getString(KEY_2, "") ?: "",
-                prefs.getString(KEY_3, "") ?: ""
+                prefs.getString(KEY_1, "")?.trim() ?: "",
+                prefs.getString(KEY_2, "")?.trim() ?: "",
+                prefs.getString(KEY_3, "")?.trim() ?: ""
             )
         }
     }
@@ -35,12 +37,28 @@ class CameraSettingsActivity : AppCompatActivity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
             setPadding(32, 32, 32, 32)
         }
 
-        input1 = EditText(this).apply { hint = "Camera 1 URL - Home / Office" }
-        input2 = EditText(this).apply { hint = "Camera 2 URL - Home / Office" }
-        input3 = EditText(this).apply { hint = "Camera 3 URL - Home / Office" }
+        input1 = EditText(this).apply {
+            hint = "Camera 1 URL - Home / Office"
+            isSingleLine = true
+            inputType = InputType.TYPE_TEXT_VARIATION_URI
+        }
+        input2 = EditText(this).apply {
+            hint = "Camera 2 URL - Home / Office"
+            isSingleLine = true
+            inputType = InputType.TYPE_TEXT_VARIATION_URI
+        }
+        input3 = EditText(this).apply {
+            hint = "Camera 3 URL - Home / Office"
+            isSingleLine = true
+            inputType = InputType.TYPE_TEXT_VARIATION_URI
+        }
 
         val saved = getSavedUrls(this)
         input1.setText(saved[0])
