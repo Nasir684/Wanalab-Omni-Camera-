@@ -44,28 +44,19 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
-    // Lifecycle - Needed for CameraActivity + MeshManager
+    // Lifecycle - Needed for CameraActivity
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
 
-    // CameraX - Single Camera + 3 Camera Mesh Preview
+    // CameraX - Single Mobile Camera Only, No Mesh
     implementation("androidx.camera:camera-core:1.3.1")
     implementation("androidx.camera:camera-camera2:1.3.1")
     implementation("androidx.camera:camera-lifecycle:1.3.1")
     implementation("androidx.camera:camera-view:1.3.1")
-    implementation("androidx.camera:camera-extensions:1.3.1")
 
-    // Coroutines - MeshManager background scan
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
-    // MQTT - Local Broker for Mesh Messages, WiFi Mesh 802.11s
-    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
-
-    // WebRTC - Mesh Video Relay Between 3 Cameras
-    implementation("org.webrtc:google-webrtc:1.0.32006")
-
-    // Nearby + Wifi - Peer Discovery for Mesh
-    implementation("com.google.android.gms:play-services-nearby:18.7.0")
+    // Media3 - Home / Workplace Viewer, 3 Independent Players
+    implementation("androidx.media3:media3-exoplayer:1.3.0")
+    implementation("androidx.media3:media3-ui:1.3.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
