@@ -1,4 +1,4 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -49,7 +49,6 @@ class FaceEnrollActivity : AppCompatActivity() {
             setPadding(0, 16, 0, 16)
         }
 
-        // NEW: Show 0/3, 1/3, 2/3
         countText = TextView(this).apply {
             text = "Photos: 0 / 3 - Need Front + Left + Right"
             textSize = 14f
@@ -60,7 +59,6 @@ class FaceEnrollActivity : AppCompatActivity() {
             isSingleLine = true
         }
 
-        // NEW: Add current photo to list, don't save yet
         val addPhotoBtn = Button(this).apply {
             text = "Add This Photo (1/3)"
             setOnClickListener { addPhoto() }
@@ -101,12 +99,17 @@ class FaceEnrollActivity : AppCompatActivity() {
         root.addView(scroll)
         setContentView(root)
 
-        // If coming from Camera, add first photo automatically
-        pendingBitmap?.let { capturedPhotos.add(it) ; updateCount() }
+        // FIXED: Copy pendingBitmap, don't hold same reference - prevents double-recycle
+        pendingBitmap?.let {
+            capturedPhotos.add(it.copy(Bitmap.Config.ARGB_8888, false))
+            pendingBitmap = null
+            pendingFaceBox = null
+            updateCount()
+        }
 
         faceEngine = FaceEngine(this)
         scope.launch(Dispatchers.Default) {
-            try { faceEngine.init() ; faceEngine.refreshCache() } catch (e: Exception) {}
+            try { faceEngine.init(); faceEngine.refreshCache() } catch (e: Exception) {}
             withContext(Dispatchers.Main) { loadKnownFaces() }
         }
     }
@@ -133,6 +136,7 @@ class FaceEnrollActivity : AppCompatActivity() {
         }
         capturedPhotos.add(bmp.copy(Bitmap.Config.ARGB_8888, false))
         pendingBitmap = null
+        pendingFaceBox = null
         updateCount()
         Toast.makeText(this, "Photo ${capturedPhotos.size}/3 added", Toast.LENGTH_SHORT).show()
     }
@@ -150,7 +154,6 @@ class FaceEnrollActivity : AppCompatActivity() {
         statusText.text = "Saving $name..."
         scope.launch(Dispatchers.Default) {
             val personId = "person_${System.currentTimeMillis()}"
-            // FIX: Use new enrollPerson(name, id, List<Bitmap>) - averages 3 embeddings
             val ok = try {
                 faceEngine.enrollPerson(name, personId, capturedPhotos)
             } catch (e: Exception) { false }
@@ -159,10 +162,10 @@ class FaceEnrollActivity : AppCompatActivity() {
                     Toast.makeText(this@FaceEnrollActivity, "Saved $name - Offline", Toast.LENGTH_SHORT).show()
                     statusText.text = "Saved $name"
                     nameInput.setText("")
-                    // FIX: Clear all bitmaps, no leak
                     for (b in capturedPhotos) { try { b.recycle() } catch (e: Exception) {} }
                     capturedPhotos.clear()
                     pendingBitmap = null
+                    pendingFaceBox = null
                     updateCount()
                     loadKnownFaces()
                     if (NetworkAutoManager.isOnline) {
@@ -202,7 +205,7 @@ class FaceEnrollActivity : AppCompatActivity() {
                         setOnClickListener {
                             scope.launch(Dispatchers.Default) {
                                 db.dao().delete(person.personId)
-                                faceEngine.refreshCache() // FIX: Refresh cache after delete
+                                faceEngine.refreshCache()
                                 withContext(Dispatchers.Main) { loadKnownFaces() }
                             }
                             Toast.makeText(this@FaceEnrollActivity, "Deleted ${person.name}", Toast.LENGTH_SHORT).show()
@@ -219,9 +222,9 @@ class FaceEnrollActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         try { faceEngine.close() } catch (e: Exception) {}
-        // FIX: Clear static + list, no leak
-        try { pendingBitmap?.recycle() } catch (e: Exception) {}
+        // FIXED: Only recycle capturedPhotos. Do NOT recycle pendingBitmap here - CameraActivity owns it.
         pendingBitmap = null
+        pendingFaceBox = null
         for (b in capturedPhotos) { try { b.recycle() } catch (e: Exception) {} }
         capturedPhotos.clear()
         try { scope.cancel() } catch (e: Exception) {}
