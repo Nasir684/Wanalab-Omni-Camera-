@@ -17,21 +17,17 @@ jobs:
           echo "=== ROOT ==="
           ls -la
           echo "=== WWW ==="
-          ls -la www/ || echo "www/ NOT FOUND - will create it"
-          echo "=== GITHUB ==="
-          ls -la .github/workflows/ || true
+          ls -la www/ || echo "www/ NOT FOUND"
+          ls -lh www/index.html || echo "www/index.html MISSING"
 
       - name: Ensure web assets exist
         run: |
           if [ ! -f www/index.html ]; then
-            echo "WARNING: www/index.html missing in repo!"
-            echo "Creating placeholder so build does not crash."
-            echo "You MUST commit your real www/index.html for the real app."
+            echo "WARNING: www/index.html missing - creating placeholder"
             mkdir -p www
             echo '<html><body><h1>God Eye - Please commit www/index.html</h1></body></html>' > www/index.html
           else
             echo "OK: www/index.html found"
-            ls -lh www/index.html
           fi
 
       - name: Setup Node 22
@@ -45,8 +41,8 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # FIXED: No setup-android@v3 here - it was trying to install obsolete 'tools' package
+      # Gradle + Android Gradle Plugin will download SDK itself
 
       - name: Install deps
         run: npm install
@@ -59,6 +55,9 @@ jobs:
           npx cap sync android
 
       - name: Build APK
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
         run: |
           cd android
           chmod +x gradlew
