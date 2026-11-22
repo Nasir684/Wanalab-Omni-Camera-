@@ -159,9 +159,7 @@ function closePanel(){ document.getElementById('panel').style.display='none'; }
 var currentGPS=null, gpsFake=false, gpsFakeReason='';
 function gpsDistance(lat1, lon1, lat2, lon2){ var R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180; var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
 function checkFakeGPS(pos){
-  // Check 1: isFromMockProvider - GPS Emulator / Fake GPS sets this flag
   if(pos.coords && pos.coords.isFromMockProvider) return {fake:true, reason:'Mock Provider ON - isFromMockProvider - Fake GPS App / GPS Emulator Detected'};
-  // Check 2: GPS Jump - >5km in <10 sec = Impossible = Fake
   var last = JSON.parse(localStorage.getItem('godeye_last_gps')||'null');
   if(last){
     var dist = gpsDistance(last.lat, last.lng, pos.coords.latitude, pos.coords.longitude);
@@ -199,7 +197,6 @@ function getGPSLine(){
   return 'GPS: '+currentGPS.lat+','+currentGPS.lng+' - Accuracy '+Math.round(currentGPS.acc)+'m - Time: '+currentGPS.time+' - Map: '+currentGPS.map+' - ✅ Real GPS - GPS Timestamp';
 }
 function gpsShare(){
-  // v23-A: GPS Share - Capture + GPS Stamp + Share In 1 Tap From Camera
   if(gpsFake && isPro){ showToast('❌ Fake GPS Blocked - Cannot Share - '+gpsFakeReason); openAntiFake(); return; }
   if(!currentGPS){ refreshGPS(); showToast('Getting GPS - Tap GPS Share Again'); return; }
   var cred = JSON.parse(localStorage.getItem('godeye_cred')||'{"header":"Wana General Store - Nasir Khan - 0300-1234567"}');
@@ -223,7 +220,6 @@ function openAntiFake(){
 }
 refreshGPS();
 
-// v22-A: Credentials Block - On Every Feature Page - Universal - Now With GPS Line
 function credentialsBlock(feature){
   return '<div class="credBox"><b>🏛️ Credentials For This Page - Optional</b><br><span>Profile Type: Shop / Office / Department / School / Hospital / Factory / Personal</span><br><span id="credLabel-'+feature+'">Profile: Personal - Nasir Khan - Shop / Office / Department</span><br><button onclick="openCredentials(\''+feature+'\')">✏️ Edit Credentials For This Page</button> <button onclick="previewExport()">👁️ Preview Export</button><br><small>FREE: Shows Name + Phone + Made By WanaLab Watermark • PRO: No Watermark + Logo + Signature</small><div style="color:#8A94A3;font-size:11px;margin-top:4px">Made By WanaLab - GodEye FREE - Watermark on FREE exports</div></div><div class="gpsBox"><b>📍 GPS Timestamp For This Page</b><br>'+getGPSLine()+'<br><button onclick="gpsShare()">📍 GPS Share This Page</button></div>';
 }
@@ -286,4 +282,4 @@ function updateLimits(){
 updateProBadge(); updateLimits();
 </script>
 </body>
-</html>
+                                                                                                                                 </html>
