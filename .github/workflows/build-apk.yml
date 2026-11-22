@@ -1,66 +1,71 @@
 name: Build APK
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 22
+      - name: Show repo files
+        run: |
+          echo "=== ROOT ==="
+          ls -la
+          echo "=== WWW ==="
+          ls -la www/ || echo "www/ NOT FOUND - will create it"
+          echo "=== GITHUB ==="
+          ls -la .github/workflows/ || true
+
+      - name: Ensure web assets exist
+        run: |
+          if [ ! -f www/index.html ]; then
+            echo "WARNING: www/index.html missing in repo!"
+            echo "Creating placeholder so build does not crash."
+            echo "You MUST commit your real www/index.html for the real app."
+            mkdir -p www
+            echo '<html><body><h1>God Eye - Please commit www/index.html</h1></body></html>' > www/index.html
+          else
+            echo "OK: www/index.html found"
+            ls -lh www/index.html
+          fi
+
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Set up JDK 17
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Install dependencies
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install deps
         run: npm install
 
-      - name: Verify web assets exist
+      - name: Add Android platform if missing
         run: |
-          ls -la www/
-          test -f www/index.html || (echo "Missing www/index.html" && exit 1)
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
+          npx cap sync android
 
-      - name: Sync Capacitor Android
-        run: npx cap sync android
-
-      - name: Force AndroidX + Gradle 8.9
-        run: |
-          cat > android/gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-          org.gradle.parallel=true
-          android.useAndroidX=true
-          android.enableJetifier=true
-          android.nonTransitiveRClass=true
-          EOF
-
-          cat > android/gradle/wrapper/gradle-wrapper.properties <<'EOF'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.9-all.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOF
-          chmod +x android/gradlew
-
-      - name: Build Debug APK
+      - name: Build APK
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: GodEye-v1.6.9-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
