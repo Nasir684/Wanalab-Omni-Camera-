@@ -18,7 +18,8 @@ jobs:
           ls -la
           echo "=== WWW ==="
           ls -la www/ || echo "www/ NOT FOUND"
-          ls -lh www/index.html || echo "www/index.html MISSING"
+          echo "=== ANDROID ==="
+          ls -la android/ || echo "android/ NOT FOUND - will be created by cap add"
 
       - name: Ensure web assets exist
         run: |
@@ -28,6 +29,7 @@ jobs:
             echo '<html><body><h1>God Eye - Please commit www/index.html</h1></body></html>' > www/index.html
           else
             echo "OK: www/index.html found"
+            ls -lh www/index.html
           fi
 
       - name: Setup Node 22
@@ -41,26 +43,34 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # FIXED: No setup-android@v3 here - it was trying to install obsolete 'tools' package
-      # Gradle + Android Gradle Plugin will download SDK itself
-
       - name: Install deps
         run: npm install
 
-      - name: Add Android platform if missing
+      - name: Create Android project
         run: |
-          if [ ! -d android ]; then
-            npx cap add android
+          # Always create fresh android/ on runner - do NOT rely on committed android/
+          # Your .gitignore probably ignores android/ - that is normal
+          if [ -d android ]; then
+            echo "android/ exists, removing to recreate clean"
+            rm -rf android
           fi
-          npx cap sync android
+          npx cap add android
+          echo "=== AFTER cap add ==="
+          ls -la android/
+          ls -lh android/gradlew || echo "ERROR: gradlew still missing after cap add"
+
+      - name: Sync web assets
+        run: npx cap sync android
 
       - name: Build APK
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
         run: |
+          # FIXED: chmod from repo root with correct path, then cd
+          ls -la android/gradlew
+          chmod +x android/gradlew
           cd android
-          chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
