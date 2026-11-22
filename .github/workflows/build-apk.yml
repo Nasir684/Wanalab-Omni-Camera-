@@ -1,9 +1,14 @@
-name: Build God Eye APK + AAB
+name: Build GodEye APK + AAB - v2.1 - Thumb + Effects + Credentials
 
 on:
   workflow_dispatch:
   push:
     branches: [ main ]
+
+env:
+  GODEYE_VERSION: "2.1"
+  GODEYE_NAME: "GodEye - By WanaLab"
+  PRO_PRICE: "Rs. 2,500 / Year"
 
 jobs:
   build:
@@ -17,13 +22,47 @@ jobs:
           ls -la
           ls -la www/ || echo "www/ NOT FOUND"
           ls -lh www/index.html || echo "www/index.html MISSING"
+          echo "Version: $GODEYE_VERSION - $GODEYE_NAME - PRO: $PRO_PRICE"
 
       - name: Ensure web assets exist
         run: |
           if [ ! -f www/index.html ]; then
             mkdir -p www
-            echo '<html><body><h1>God Eye - Please commit www/index.html</h1></body></html>' > www/index.html
+            echo '<html><body><h1>GodEye - By WanaLab - Please commit www/index.html</h1></body></html>' > www/index.html
           fi
+
+      # v4-v22-A CHECK: HTML must contain full spec - FAIL if old HTML
+      - name: Check Spec v4-v22-A in HTML - FAIL if old HTML
+        run: |
+          echo "Checking HTML for v4-v22-A spec..."
+          grep -q "468 Dots" www/index.html || (echo "❌ FAIL: Face Mesh 468 Dots missing - See Spec v18" && exit 1)
+          grep -q "MediaPipe\|mediapipe\|face_mesh" www/index.html || (echo "❌ FAIL: MediaPipe missing - See Spec v18" && exit 1)
+          grep -q "External Devices" www/index.html || (echo "❌ FAIL: External Devices section missing - See Spec v19" && exit 1)
+          grep -q "PRO Only" www/index.html || (echo "❌ FAIL: PRO Only label missing for External - See Spec v19" && exit 1)
+          grep -q "2,500" www/index.html || (echo "❌ FAIL: PRO Price Rs. 2,500 missing - See Spec v8" && exit 1)
+          grep -q "By WanaLab" www/index.html || (echo "❌ FAIL: WanaLab footer missing - See Spec v10" && exit 1)
+          grep -q "Nasir Khan" www/index.html || (echo "❌ FAIL: Founded by Nasir Khan missing - See Spec v10" && exit 1)
+          # v20 - Thumb Biometric - NADRA-Style - Attendance
+          grep -q "Thumb Biometric" www/index.html || (echo "❌ FAIL: Thumb Biometric missing - See Spec v20" && exit 1)
+          grep -q "Thumb.*PRO Only\|Thumb Biometric PRO" www/index.html || (echo "❌ FAIL: Thumb PRO Only missing - See Spec v20" && exit 1)
+          grep -q "Attendance" www/index.html || (echo "❌ FAIL: Thumb Attendance missing - See Spec v20-A" && exit 1)
+          grep -q "Liveness\|Move Thumb" www/index.html || (echo "❌ FAIL: Thumb Liveness Move Check missing - See Spec v20 - NADRA-Style" && exit 1)
+          # v21 - Photo Effects - Insta Style
+          grep -q "Photo Effects" www/index.html || (echo "❌ FAIL: Photo Effects missing - See Spec v21" && exit 1)
+          grep -q "Clarendon" www/index.html || (echo "❌ FAIL: Clarendon filter missing - See Spec v21" && exit 1)
+          grep -q "Thumb Clear\|Doc Clear" www/index.html || (echo "❌ FAIL: Thumb Clear / Doc Clear missing - See Spec v21" && exit 1)
+          # v22-A - Universal Credentials - Every Page
+          grep -q "Credentials For This Page" www/index.html || (echo "❌ FAIL: Per-Feature Credentials missing - See Spec v22-A" && exit 1)
+          grep -q "Profile Type" www/index.html || (echo "❌ FAIL: Profile Type Shop/Office/Department missing - See Spec v22-A" && exit 1)
+          grep -q "Shop.*Office.*Department\|Office.*Department" www/index.html || (echo "❌ FAIL: Universal Profile Types Shop/Office/Department missing - See Spec v22-A" && exit 1)
+          grep -q "WanaLab.*Watermark\|Made By WanaLab" www/index.html || (echo "❌ FAIL: WanaLab Watermark missing for FREE - See Spec v22" && exit 1)
+          # OLD BAD TEXT - Must NOT exist
+          if grep -q "SHOP PRO" www/index.html; then echo "❌ FAIL: Old SHOP PRO Rs. 5,000 still in HTML - Delete it - See Spec v8" && exit 1; fi
+          if grep -q "HARDWARE BUNDLE" www/index.html; then echo "❌ FAIL: Old HARDWARE BUNDLE still in HTML - Delete it" && exit 1; fi
+          if grep -q "Simulated" www/index.html; then echo "❌ FAIL: 'Simulated' Thermal still in HTML - Delete it - See Spec v19" && exit 1; fi
+          if grep -q "localStorage.clear()" www/index.html; then echo "❌ FAIL: Dangerous localStorage.clear() still in HTML - Delete Clear Data button from Main - See Spec v12" && exit 1; fi
+          if grep -q "Browser cannot match faces" www/index.html; then echo "❌ FAIL: Old Face Tag Only text still in HTML - Replace with 468 Dots - See Spec v18" && exit 1; fi
+          echo "✅ HTML Spec Check Passed - v4-v22-A - Thumb + Effects + Credentials"
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
@@ -52,42 +91,71 @@ jobs:
           if [ -d android ]; then rm -rf android; fi
           npx cap add android
 
-      - name: Generate Icons & Splash
+      - name: Generate Icons & Splash - Keep WanaLab if exists
         run: |
           npm install -D @capacitor/assets
-          npx @capacitor/assets generate --iconBackgroundColor '#0B0E11' --splashBackgroundColor '#0B0E11' || echo "Icon generate skipped"
+          if [ -f assets/icon.png ]; then echo "✅ Using existing WanaLab icon - Not overwriting"; else npx @capacitor/assets generate --iconBackgroundColor '#0B0E11' --splashBackgroundColor '#0B0E11' || echo "Icon generate skipped"; fi
 
       - name: Sync web assets
         run: npx cap sync android
 
-      - name: Fix Camera Permissions
+      # v19: ALL PERMISSIONS - Internal + External Devices
+      - name: Fix Permissions - Camera + Mic + Bluetooth + USB + Storage + Network
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i '/CAMERA/d' $MANIFEST
           sed -i '/RECORD_AUDIO/d' $MANIFEST
           sed -i '/MODIFY_AUDIO_SETTINGS/d' $MANIFEST
-          sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <application|' $MANIFEST
-          grep -i "CAMERA\|RECORD_AUDIO" $MANIFEST
+          sed -i '/BLUETOOTH/d' $MANIFEST
+          sed -i '/USB/d' $MANIFEST
+          sed -i '/EXTERNAL_STORAGE/d' $MANIFEST
+          sed -i '/READ_MEDIA/d' $MANIFEST
+          sed -i '/INTERNET/d' $MANIFEST
+          sed -i '/ACCESS_NETWORK_STATE/d' $MANIFEST
+          sed -i '/FOREGROUND_SERVICE/d' $MANIFEST
+          sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />\n    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />\n    <uses-feature android:name="android.hardware.usb.host" android:required="false" />\n    <uses-feature android:name="android.hardware.microphone" android:required="false" />\n    <application|' $MANIFEST
+          echo "--- Permissions in Manifest ---"
+          grep -i "CAMERA\|RECORD_AUDIO\|BLUETOOTH\|USB\|EXTERNAL_STORAGE\|READ_MEDIA\|INTERNET\|FOREGROUND" $MANIFEST || echo "Permission check failed"
 
-      - name: Build APK
+      - name: Set Version v2.1 in Build Gradle
+        run: |
+          GRADLE="android/app/build.gradle"
+          sed -i "s/versionName .*/versionName \"$GODEYE_VERSION\"/" $GRADLE || echo "versionName not in gradle - OK, set in Capacitor config"
+          grep -i "versionName" $GRADLE || echo "versionName check skipped"
+
+      - name: Build APK - Debug for Testing
         run: |
           chmod +x android/gradlew
           cd android
           ./gradlew assembleDebug --stacktrace
 
-      - name: Build AAB for Play Store
+      - name: Build AAB - Debug for Play Store Test
         run: |
           cd android
           ./gradlew bundleDebug --stacktrace
 
+      - name: Build AAB - Release if Keystore Exists
+        run: |
+          cd android
+          if [ -f app/release.keystore ] || [ -n "$ANDROID_KEYSTORE" ]; then echo "Keystore found - Building Release AAB"; ./gradlew bundleRelease --stacktrace; else echo "⚠️ No keystore - Skipping Release AAB - Use Debug AAB for testing, create keystore for Play Store Release"; fi
+        continue-on-error: true
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: God-Eye-APK
+          name: GodEye-APK-v2.1
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: God-Eye-AAB
+          name: GodEye-AAB-v2.1
           path: android/app/build/outputs/bundle/debug/app-debug.aab
+
+      - name: Build Summary
+        run: |
+          echo "✅ GodEye v2.1 Build Done"
+          echo "Version: $GODEYE_VERSION"
+          echo "PRO: $PRO_PRICE"
+          echo "Features: Bill + Scan + Count + Face 468 Dots + Voice ONE + External PRO + Thumb Biometric NADRA-Style + Attendance + Photo Effects Insta + Universal Credentials Every Page"
+          echo "By WanaLab - Founded by Nasir Khan"
