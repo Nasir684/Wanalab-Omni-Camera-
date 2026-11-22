@@ -17,15 +17,12 @@ jobs:
           ls -la
           ls -la www/ || echo "www/ NOT FOUND"
           ls -lh www/index.html || echo "www/index.html MISSING"
-          ls -lh assets/icon.png || echo "assets/icon.png MISSING - Add icon!"
 
       - name: Ensure web assets exist
         run: |
           if [ ! -f www/index.html ]; then
             mkdir -p www
             echo '<html><body><h1>God Eye - Please commit www/index.html</h1></body></html>' > www/index.html
-          else
-            echo "OK: www/index.html found"
           fi
 
       - name: Setup Node 22
@@ -39,13 +36,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Check Java version
+      - name: Setup Android SDK - Use Preinstalled
         run: |
-          java -version
-          echo "JAVA_HOME=$JAVA_HOME"
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
+          ls /usr/local/lib/android/sdk/
 
       - name: Install deps
         run: npm install
@@ -54,18 +51,15 @@ jobs:
         run: |
           if [ -d android ]; then rm -rf android; fi
           npx cap add android
-          ls -la android/
-          ls -lh android/gradlew
 
       - name: Generate Icons & Splash
         run: |
           npm install -D @capacitor/assets
-          npx @capacitor/assets generate --iconBackgroundColor '#0B0E11' --splashBackgroundColor '#0B0E11' || echo "Icon generate skipped - check assets/icon.png"
+          npx @capacitor/assets generate --iconBackgroundColor '#0B0E11' --splashBackgroundColor '#0B0E11' || echo "Icon generate skipped"
 
       - name: Sync web assets
         run: npx cap sync android
 
-      # --- B FIX: CAMERA PERMISSIONS ---
       - name: Fix Camera Permissions
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
@@ -73,24 +67,15 @@ jobs:
           sed -i '/RECORD_AUDIO/d' $MANIFEST
           sed -i '/MODIFY_AUDIO_SETTINGS/d' $MANIFEST
           sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <application|' $MANIFEST
-          echo "--- Manifest Check ---"
-          grep -i "CAMERA\|RECORD_AUDIO" $MANIFEST || echo "PERMISSION FAILED"
+          grep -i "CAMERA\|RECORD_AUDIO" $MANIFEST
 
       - name: Build APK
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
         run: |
           chmod +x android/gradlew
           cd android
           ./gradlew assembleDebug --stacktrace
 
       - name: Build AAB for Play Store
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
         run: |
           cd android
           ./gradlew bundleDebug --stacktrace
