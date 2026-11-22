@@ -1,4 +1,4 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.content.Intent
 import android.os.Bundle
@@ -22,7 +22,6 @@ class HomeCameraViewerActivity : AppCompatActivity() {
     private lateinit var input3: EditText
     private lateinit var statusText: TextView
 
-    // FIX: Track last connected URLs, don't reconnect if same
     private var lastConnectedUrls: List<String> = emptyList()
     private var isFirstResume = true
 
@@ -83,8 +82,6 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         player3 = ExoPlayer.Builder(this).build()
         view1.player = player1; view2.player = player2; view3.player = player3
 
-        // FIX: Network listener - only auto-start if URLs already connected
-        // Don't call autoStartAll blindly, it will double-connect
         NetworkAutoManager.start(this) { online, wifi ->
             runOnUiThread {
                 statusText.text = if (online) {
@@ -92,7 +89,6 @@ class HomeCameraViewerActivity : AppCompatActivity() {
                 } else {
                     "OFFLINE - LAN Only - RTSP / ONVIF / MJPEG ON, HLS / Cloud Paused"
                 }
-                // Only re-connect if we were already connected before
                 if (lastConnectedUrls.isNotEmpty()) {
                     connectAll(force = true)
                 }
@@ -102,27 +98,27 @@ class HomeCameraViewerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (!::input1.isInitialized) return
         val saved = CameraSettingsActivity.getSavedUrls(this)
         if (input1.text.toString() != saved[0]) input1.setText(saved[0])
         if (input2.text.toString() != saved[1]) input2.setText(saved[1])
         if (input3.text.toString() != saved[2]) input3.setText(saved[2])
 
-        // FIX: Don't reconnect on every resume / rotate
-        // Only connect on first resume, or if URLs changed
         val current = listOf(input1.text.toString().trim(), input2.text.toString().trim(), input3.text.toString().trim())
         if (isFirstResume || current != lastConnectedUrls) {
             isFirstResume = false
             connectAll(force = false)
         }
-        // Resume playback if paused
-        if (player1.playbackState != ExoPlayer.STATE_IDLE) player1.play()
-        if (player2.playbackState != ExoPlayer.STATE_IDLE) player2.play()
-        if (player3.playbackState != ExoPlayer.STATE_IDLE) player3.play()
+        if (::player1.isInitialized && player1.playbackState != ExoPlayer.STATE_IDLE) player1.play()
+        if (::player2.isInitialized && player2.playbackState != ExoPlayer.STATE_IDLE) player2.play()
+        if (::player3.isInitialized && player3.playbackState != ExoPlayer.STATE_IDLE) player3.play()
     }
 
     override fun onPause() {
         super.onPause()
-        player1.pause(); player2.pause(); player3.pause()
+        if (::player1.isInitialized) player1.pause()
+        if (::player2.isInitialized) player2.pause()
+        if (::player3.isInitialized) player3.pause()
     }
 
     private fun connectAll(force: Boolean = false) {
@@ -131,9 +127,7 @@ class HomeCameraViewerActivity : AppCompatActivity() {
         val u3 = input3.text.toString().trim()
         val current = listOf(u1, u2, u3)
 
-        // FIX: Skip if same URLs and not forced - prevents RTSP ban
         if (!force && current == lastConnectedUrls) return
-        // FIX: Don't connect empty URLs - ExoPlayer will crash / spam errors
         if (u1.isBlank() && u2.isBlank() && u3.isBlank()) {
             statusText.text = "No camera URLs - Go to Settings or Discover ONVIF"
             return
@@ -164,16 +158,18 @@ class HomeCameraViewerActivity : AppCompatActivity() {
     }
 
     private fun stopAll() {
-        player1.stop(); player2.stop(); player3.stop()
-        player1.clearMediaItems(); player2.clearMediaItems(); player3.clearMediaItems()
+        if (::player1.isInitialized) { player1.stop(); player1.clearMediaItems() }
+        if (::player2.isInitialized) { player2.stop(); player2.clearMediaItems() }
+        if (::player3.isInitialized) { player3.stop(); player3.clearMediaItems() }
         lastConnectedUrls = emptyList()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // FIX: Stop network listener, no leak
         try { NetworkAutoManager.stop() } catch (e: Exception) {}
         try { AutoProtocolEngine.clear() } catch (e: Exception) {}
-        player1.release(); player2.release(); player3.release()
+        try { if (::player1.isInitialized) player1.release() } catch (e: Exception) {}
+        try { if (::player2.isInitialized) player2.release() } catch (e: Exception) {}
+        try { if (::player3.isInitialized) player3.release() } catch (e: Exception) {}
     }
 }
