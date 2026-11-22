@@ -1,4 +1,4 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.content.Context
 import androidx.media3.exoplayer.ExoPlayer
