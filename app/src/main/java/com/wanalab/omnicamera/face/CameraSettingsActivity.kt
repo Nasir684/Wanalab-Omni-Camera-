@@ -1,4 +1,4 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.content.Context
 import android.os.Bundle
@@ -28,14 +28,19 @@ class CameraSettingsActivity : AppCompatActivity() {
             )
         }
 
-        // FIX: Auto-fix user typing - "192.168.1.10" -> "rtsp://192.168.1.10:554/stream"
+        // FIX v2.2: Auto-fix user typing - "192.168.1.10" -> "rtsp://192.168.1.10:554/stream"
         fun normalizeUrl(raw: String): String {
             var u = raw.trim()
             if (u.isBlank()) return ""
             if (!u.contains("://")) {
-                // User typed just IP - assume RTSP
                 if (u.matches(Regex("[0-9.]+(:[0-9]+)?(/.*)?"))) {
                     u = "rtsp://$u"
+                    // FIX v2.2: Bare IP only - add default DVR port + path
+                    if (u.matches(Regex("rtsp://[0-9.]+"))) {
+                        u = "$u:554/stream"
+                    } else if (u.matches(Regex("rtsp://[0-9.]+:[0-9]+"))) {
+                        u = "$u/stream"
+                    }
                 } else {
                     u = "http://$u"
                 }
@@ -63,10 +68,10 @@ class CameraSettingsActivity : AppCompatActivity() {
             setPadding(32, 32, 32, 32)
         }
 
-        // FIX: Info view now INSIDE onCreate, not floating outside file
         val info = TextView(this).apply {
-            text = "OFFLINE ALWAYS: RTSP (192.168.x.x) | ONVIF Discovery | MJPEG (ESP32) | Local MQTT\n" +
-                   "ONLINE AUTO: HLS (.m3u8) | DASH (.mpd) | RTMP Cloud | SRT Remote | WebRTC Cloud\n" +
+            // FIX v2.2: Removed SRT / WebRTC - NOT supported yet, don't promise
+            text = "OFFLINE ALWAYS: RTSP (192.168.x.x) | MJPEG (ESP32) | Local MQTT\n" +
+                   "ONLINE AUTO: HLS (.m3u8) | DASH (.mpd) | RTMP Cloud\n" +
                    "No internet? Offline cameras keep working. Internet back? Online auto-starts."
             textSize = 13f
             setPadding(0, 0, 0, 16)
@@ -99,14 +104,12 @@ class CameraSettingsActivity : AppCompatActivity() {
         input2.setText(saved[1])
         input3.setText(saved[2])
 
-        // FIX: Live protocol hint - user knows if URL is offline/online before saving
         fun updateHints() {
             hint1.text = if (input1.text.isBlank()) "" else CameraProtocolManager.getProtocolHint(input1.text.toString())
             hint2.text = if (input2.text.isBlank()) "" else CameraProtocolManager.getProtocolHint(input2.text.toString())
             hint3.text = if (input3.text.isBlank()) "" else CameraProtocolManager.getProtocolHint(input3.text.toString())
         }
         updateHints()
-        // Update on focus loss - simple, no TextWatcher needed for v1
         input1.setOnFocusChangeListener { _, _ -> updateHints() }
         input2.setOnFocusChangeListener { _, _ -> updateHints() }
         input3.setOnFocusChangeListener { _, _ -> updateHints() }
@@ -133,12 +136,10 @@ class CameraSettingsActivity : AppCompatActivity() {
     }
 
     private fun save() {
-        // FIX: Normalize URLs - auto-add rtsp:// if missing
         val u1 = normalizeUrl(input1.text.toString())
         val u2 = normalizeUrl(input2.text.toString())
         val u3 = normalizeUrl(input3.text.toString())
 
-        // Show normalized back to user if changed
         if (u1 != input1.text.toString()) input1.setText(u1)
         if (u2 != input2.text.toString()) input2.setText(u2)
         if (u3 != input3.text.toString()) input3.setText(u3)
