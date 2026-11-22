@@ -1,7 +1,7 @@
 {
-  "name": "wanalab-god-eye",
-  "version": "1.7.2",
-  "description": "God Eye - Professional Security Suite",
+  "name": "godeye-by-wanalab",
+  "version": "2.2.0",
+  "description": "GodEye - By WanaLab - Camera + Bill + Scan + Count + Face 468 Dots + Thumb Biometric + GPS Timestamp + GPS Share + Anti-Fake GPS + Credentials",
   "private": true,
   "scripts": {
     "build": "echo \"www already exists, skipping web build\"",
