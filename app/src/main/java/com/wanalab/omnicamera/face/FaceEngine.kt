@@ -1,10 +1,9 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.util.Log
-import androidx.room.*
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
@@ -18,67 +17,8 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.sqrt
 
-// --- ROOM DB - Offline, Local Only ---
-
-@Entity(tableName = "known_faces")
-data class KnownFaceEntity(
-    @PrimaryKey val personId: String,
-    val name: String,
-    val embedding: FloatArray,
-    val createdAt: Long
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is KnownFaceEntity) return false
-        return personId == other.personId
-    }
-    override fun hashCode(): Int = personId.hashCode()
-}
-
-class Converters {
-    @TypeConverter
-    fun fromFloatArray(value: FloatArray): String {
-        return value.joinToString(",")
-    }
-    @TypeConverter
-    fun toFloatArray(value: String): FloatArray {
-        if (value.isBlank()) return FloatArray(0)
-        return value.split(",").mapNotNull { it.toFloatOrNull() }.toFloatArray()
-    }
-}
-
-@Dao
-interface FaceDao {
-    @Query("SELECT * FROM known_faces")
-    suspend fun getAll(): List<KnownFaceEntity>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(face: KnownFaceEntity)
-
-    @Query("DELETE FROM known_faces WHERE personId = :id")
-    suspend fun delete(id: String)
-}
-
-@Database(entities = [KnownFaceEntity::class], version = 1, exportSchema = false)
-@TypeConverters(Converters::class)
-abstract class FaceDatabase : RoomDatabase() {
-    abstract fun dao(): FaceDao
-    companion object {
-        @Volatile private var INSTANCE: FaceDatabase? = null
-        fun get(context: Context): FaceDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    FaceDatabase::class.java, "face_db"
-                ).fallbackToDestructiveMigration().build()
-                INSTANCE = instance
-                instance
-            }
-        }
-    }
-}
-
 // --- FACE RESULT ---
+// NOTE v2.2: KnownFaceEntity / FaceDatabase / FaceDao / Converters are in FaceDatabase.kt ONLY - Do NOT redefine here
 
 data class FaceResult(
     val cameraId: String,
@@ -99,10 +39,8 @@ class FaceEngine(private val context: Context) {
     private var recognizer: Interpreter? = null
     private val db = FaceDatabase.get(context)
 
-    // FIX 1: 0.75 not 0.60 - No false alert for stranger with beard/glasses
     private val matchThreshold = 0.75f
 
-    // FIX 2: Cache - Don't query DB every frame (30 queries/sec -> lag)
     @Volatile
     private var cachedFaces: List<KnownFaceEntity> = emptyList()
 
@@ -110,7 +48,6 @@ class FaceEngine(private val context: Context) {
         private const val TAG = "FaceEngine"
     }
 
-    // FIX 2: Call this in CameraActivity + Enroll after init / enroll / delete
     suspend fun refreshCache() = withContext(Dispatchers.IO) {
         try {
             cachedFaces = db.dao().getAll()
@@ -123,7 +60,6 @@ class FaceEngine(private val context: Context) {
     fun getCachedCount(): Int = cachedFaces.size
 
     fun init() {
-        // 1. Face Detector - Try GPU, Fallback CPU if fails
         try {
             val detectorOptions = FaceDetector.FaceDetectorOptions.builder()
                 .setBaseOptions(BaseOptions.builder().setDelegate(Delegate.GPU).setModelAssetPath("blaze_face_short_range.tflite").build())
@@ -147,7 +83,6 @@ class FaceEngine(private val context: Context) {
             }
         }
 
-        // 2. Face Mesh - 468 landmarks - Optional, app works without it
         try {
             val meshOptions = FaceMesh.FaceMeshOptions.builder()
                 .setBaseOptions(BaseOptions.builder().setDelegate(Delegate.GPU).setModelAssetPath("face_landmarker.task").build())
@@ -179,7 +114,6 @@ class FaceEngine(private val context: Context) {
             }
         }
 
-        // 3. MobileFaceNet - 112x112 -> 192 embedding
         try {
             val model = context.assets.open("mobilefacenet.tflite").readBytes()
             val buffer = ByteBuffer.allocateDirect(model.size).order(ByteOrder.nativeOrder())
@@ -198,13 +132,11 @@ class FaceEngine(private val context: Context) {
         val mpImage = BitmapImageBuilder(bitmap).build()
         try {
             val detectionResult = detector.detect(mpImage)
-            // Mesh is optional - Only run if detector found face, saves CPU
             val meshResult = if (detectionResult.detections().isNotEmpty()) {
                 try { faceMesh?.detect(mpImage) } catch (e: Exception) { null }
             } else null
 
             val results = mutableListOf<FaceResult>()
-            // FIX 2: Use cache, NOT db.dao().getAll() every frame
             val knownFaces = cachedFaces
 
             for (i in detectionResult.detections().indices) {
@@ -214,7 +146,6 @@ class FaceEngine(private val context: Context) {
 
                 val faceCrop = cropAndResize(bitmap, rect, 112, 112) ?: continue
                 val embedding = getEmbedding(faceCrop)
-                // FIX: Recycle crop, don't leak
                 try { if (faceCrop != bitmap) faceCrop.recycle() } catch (e: Exception) {}
                 if (embedding.isEmpty()) continue
 
@@ -264,8 +195,6 @@ class FaceEngine(private val context: Context) {
         }
     }
 
-    // FIX 3: 3-Photo Enroll - Front + Left + Right, averaged
-    // Called from new FaceEnrollActivity: enrollPerson(name, id, List<Bitmap>)
     suspend fun enrollPerson(name: String, personId: String, bitmaps: List<Bitmap>): Boolean = withContext(Dispatchers.Default) {
         if (bitmaps.isEmpty()) return@withContext false
         val embeddings = mutableListOf<FloatArray>()
@@ -276,7 +205,6 @@ class FaceEngine(private val context: Context) {
             }
         }
         if (embeddings.isEmpty()) return@withContext false
-        // Average all embeddings, then normalize - Works in bright + night + glasses
         val avg = FloatArray(192) { 0f }
         for (emb in embeddings) {
             for (i in 0 until 192) {
@@ -285,14 +213,13 @@ class FaceEngine(private val context: Context) {
         }
         for (i in avg.indices) avg[i] /= embeddings.size.toFloat()
         val finalEmbedding = normalize(avg)
-        db.dao().insert(KnownFaceEntity(personId = personId, name = name, embedding = finalEmbedding, createdAt = System.currentTimeMillis()))
-        // Refresh cache so Camera sees new face without restart
+        // FIX v2.2: FaceDatabase.kt version has photoPath - pass null, keep signature compatible
+        db.dao().insert(KnownFaceEntity(personId = personId, name = name, embedding = finalEmbedding, createdAt = System.currentTimeMillis(), photoPath = null))
         refreshCache()
         Log.d(TAG, "Enrolled $name with ${embeddings.size} photos")
         return@withContext true
     }
 
-    // Old single-photo enroll - Kept for backward compat, calls 3-photo version
     suspend fun enrollPerson(name: String, personId: String, bitmap: Bitmap): Boolean {
         return enrollPerson(name, personId, listOf(bitmap))
     }
@@ -333,7 +260,6 @@ class FaceEngine(private val context: Context) {
     }
 
     private fun cropAndResize(bitmap: Bitmap, rect: RectF, w: Int, h: Int): Bitmap? {
-        // FIXED: Clamp to bitmap bounds, never 0 or negative
         val left = (rect.left - rect.width() * 0.2f).coerceIn(0f, (bitmap.width - 1).toFloat()).toInt()
         val top = (rect.top - rect.height() * 0.2f).coerceIn(0f, (bitmap.height - 1).toFloat()).toInt()
         val right = (rect.right + rect.width() * 0.2f).coerceIn((left + 1).toFloat(), bitmap.width.toFloat()).toInt()
