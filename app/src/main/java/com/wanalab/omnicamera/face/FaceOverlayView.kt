@@ -1,4 +1,4 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.content.Context
 import android.graphics.Canvas
@@ -7,21 +7,28 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import java.util.Locale
 
 class FaceOverlayView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : View(context, attrs) {
 
     private var faces: List<FaceResult> = emptyList()
+    private var previewWidth = 720
+    private var previewHeight = 1280
+    private var isFrontCamera = false
+
     private val boxPaint = Paint().apply {
         color = Color.GREEN
         style = Paint.Style.STROKE
         strokeWidth = 5f
+        isAntiAlias = true
     }
     private val textPaint = Paint().apply {
         color = Color.WHITE
         textSize = 48f
         style = Paint.Style.FILL
+        isAntiAlias = true
     }
     private val bgPaint = Paint().apply {
         color = Color.parseColor("#80000000")
@@ -33,29 +40,53 @@ class FaceOverlayView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun setPreviewSize(width: Int, height: Int, frontCamera: Boolean = false) {
+        if (width > 0) previewWidth = width
+        if (height > 0) previewHeight = height
+        isFrontCamera = frontCamera
+    }
+
+    fun clear() {
+        faces = emptyList()
+        invalidate()
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (faces.isEmpty()) return
+        if (width == 0 || height == 0) return
 
-        val scaleX = width.toFloat() / 720f
-        val scaleY = height.toFloat() / 1280f
+        // FIXED: Use real preview size, not hardcoded 720x1280
+        val scaleX = width.toFloat() / previewWidth.toFloat()
+        val scaleY = height.toFloat() / previewHeight.toFloat()
 
         for (face in faces) {
+            var left = face.box.left * scaleX
+            var right = face.box.right * scaleX
+            // FIXED: Mirror box for front camera, otherwise box is on wrong side
+            if (isFrontCamera) {
+                val mirroredLeft = width - right
+                val mirroredRight = width - left
+                left = mirroredLeft
+                right = mirroredRight
+            }
             val box = RectF(
-                face.box.left * scaleX,
+                left,
                 face.box.top * scaleY,
-                face.box.right * scaleX,
+                right,
                 face.box.bottom * scaleY
             )
             boxPaint.color = if (face.isKnown) Color.GREEN else Color.YELLOW
             canvas.drawRect(box, boxPaint)
 
             val label = if (face.isKnown) {
-                "${face.personName} ${String.format("%.0f%%", face.confidence * 100)}"
+                "${face.personName} ${String.format(Locale.US, "%.0f%%", face.confidence * 100)}"
             } else {
-                "Unknown ${String.format("%.0f%%", face.confidence * 100)}"
+                "Unknown ${String.format(Locale.US, "%.0f%%", face.confidence * 100)}"
             }
-            canvas.drawRect(box.left, box.bottom, box.left + textPaint.measureText(label) + 20, box.bottom + 60, bgPaint)
+            val labelWidth = textPaint.measureText(label) + 20
+            val bgRight = (box.left + labelWidth).coerceAtMost(width.toFloat())
+            canvas.drawRect(box.left, box.bottom, bgRight, box.bottom + 60, bgPaint)
             canvas.drawText(label, box.left + 10, box.bottom + 45, textPaint)
         }
     }
