@@ -58,5 +58,6 @@
 ### Voice Commands - Voice ONE
 
 `Capture / Photo / Tasveer, Video, Stop, Torch / Batti, Night / Raat, Count / Gintee / Ginti / Shumar, Scan / Barcode / QR, Bill / Hisab, Doc / CNIC, OCR / Parho, PDF, DOCX, Export, Face / Chehra, Enroll, Alert, Log, IP Cam / CCTV, Dashboard, Pricing, Settings, About, Voice, Language, Close, Thumb, GPS Share`
+Keywords: GodEye, God Eye, WanaLab, Nasir Khan, Camera App Pakistan, Bill Maker, Bill Banana, Shop Bill, Hisab Kitab, Document Scanner, CNIC Scan, OCR Urdu Pashto, Object Counter, Bottle Count, Gintee, Shumar, Face Attendance, Thumb Attendance, Thumb Biometric, NADRA Thumb, GPS Camera, GPS Photo, GPS Timestamp, GPS Share, Anti-Fake GPS, Photo Effects, Clarendon Filter, Thumb Clear, Doc Clear, IP Camera, CCTV Viewer, RTSP, ONVIF, WiFi Microscope, USB Microscope, Barcode Scanner, QR Scanner, Bill PDF, PDF Maker, Voice Commands Urdu, Offline App Pakistan, Dera Ismail Khan, DI Khan, Wana, Peshawar, Lahore, Karachi, Islamabad
 
 ### Files - v2.2 Structure
