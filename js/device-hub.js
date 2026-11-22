@@ -1,5 +1,9 @@
 // WanaLab God Eye v1.4.2 - Device Hub - Nasir Khan 2026-11-21
 // Live: https://nasir684.github.io/Wanalab-Omni-Camera-/
+
+function safeGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+function safeSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
 window.WanaDevices = {};
 window.WanaDeviceHub = {
   version: '1.4.2',
@@ -7,10 +11,6 @@ window.WanaDeviceHub = {
   devices: [],
   loaded: false
 };
-
-// FIX: Safe localStorage - Safari Private / WebView throws, was crashing whole file
-function safeGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
-function safeSet(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
 
 const DEVICE_LIST = {
   version: '1.4.2',
@@ -82,45 +82,47 @@ const DEVICE_LIST = {
   ]
 };
 
-async function loadDeviceHub(){
-  try{
+async function loadDeviceHub() {
+  try {
     let data = { ...DEVICE_LIST, devices: [...DEVICE_LIST.devices] };
-    // FIX: Fetch devices.json without cache-busting spam - was ?v=994&force=99
-    try{
-      const res = await fetch('./devices.json', {cache:'no-store'});
-      if(res.ok) {
+    try {
+      const res = await fetch('./devices.json', { cache: 'no-store' });
+      if (res.ok) {
         const j = await res.json();
-        // FIX: Handle both formats: {devices: [...]} and [...]
         const remoteList = Array.isArray(j) ? j : (j.devices || []);
-        if(remoteList.length) {
-          // FIX: Merge by ID, not by index - was crashing if remote had 6 devices
-          // Server caps now win, not overwritten by local
+        if (remoteList.length) {
           const localById = {};
           DEVICE_LIST.devices.forEach(d => localById[d.id] = d);
           data.devices = remoteList.map(dev => {
             const local = localById[dev.id];
-            if (!local) return dev; // New device from server, keep as-is
+            if (!local) return dev;
             return { ...local, ...dev, caps: dev.caps || local.caps, features: dev.features || local.features };
           });
           console.log('✅ devices.json v1.4.2 loaded');
         }
       }
-    }catch(e){ console.warn('devices.json not found, using built-in list'); }
+    } catch (e) { console.warn('devices.json not found, using built-in list'); }
 
     window.WanaDevices = data;
     window.WanaDeviceHub.devices = data.devices;
     window.WanaDeviceHub.loaded = true;
     safeSet('wanaDevices', JSON.stringify(data));
 
+    // FIXED: If saved device no longer exists, fall back to default instead of crashing
+    if (!data.devices.find(d => d.id === window.WanaDeviceHub.currentDeviceId)) {
+      window.WanaDeviceHub.currentDeviceId = data.devices[0].id;
+      safeSet('wanaCurrentDevice', window.WanaDeviceHub.currentDeviceId);
+    }
+
     console.log('✅ Device Hub loaded v1.4.2', data.devices.length, 'devices - Current:', window.WanaDeviceHub.currentDeviceId);
 
     const stat = document.getElementById('statText') || document.getElementById('stat');
-    if(stat) stat.innerText = `Ready v1.4.2 - ${data.devices.length} devices - ${getCurrentDevice().name}`;
+    if (stat) stat.innerText = `Ready v1.4.2 - ${data.devices.length} devices - ${getCurrentDevice().name}`;
 
     renderDeviceSelector();
     verifyButtons();
     return data;
-  }catch(e){
+  } catch (e) {
     console.warn('Device Hub offline', e);
     window.WanaDeviceHub.devices = DEVICE_LIST.devices;
     window.WanaDevices = DEVICE_LIST;
@@ -129,34 +131,33 @@ async function loadDeviceHub(){
   }
 }
 
-function getCurrentDevice(){
+function getCurrentDevice() {
   const id = window.WanaDeviceHub.currentDeviceId;
-  return window.WanaDeviceHub.devices.find(d=>d.id===id) || window.WanaDeviceHub.devices[0];
+  return window.WanaDeviceHub.devices.find(d => d.id === id) || window.WanaDeviceHub.devices[0] || DEVICE_LIST.devices[0];
 }
 
-function switchDevice(deviceId){
-  if(!deviceId || typeof deviceId !== 'string' || deviceId.length < 3){
-    let idx = window.WanaDeviceHub.devices.findIndex(d=>d.id===window.WanaDeviceHub.currentDeviceId);
-    idx = (idx+1)%window.WanaDeviceHub.devices.length;
+function switchDevice(deviceId) {
+  if (!deviceId || typeof deviceId !== 'string' || deviceId.length < 3) {
+    let idx = window.WanaDeviceHub.devices.findIndex(d => d.id === window.WanaDeviceHub.currentDeviceId);
+    idx = (idx + 1) % window.WanaDeviceHub.devices.length;
     deviceId = window.WanaDeviceHub.devices[idx].id;
   }
-  const dev = window.WanaDeviceHub.devices.find(d=>d.id===deviceId);
-  if(!dev) return;
+  const dev = window.WanaDeviceHub.devices.find(d => d.id === deviceId);
+  if (!dev) return;
   window.WanaDeviceHub.currentDeviceId = deviceId;
   safeSet('wanaCurrentDevice', deviceId);
   console.log('🔄 Switched to', dev.name);
 
   const statText = document.getElementById('statText');
-  if(statText) statText.innerText = `Switched: ${dev.name} - ${dev.caps.length} caps active`;
+  if (statText) statText.innerText = `Switched: ${dev.name} - ${(dev.caps || []).length} caps active`;
 
   const devInfo = document.getElementById('deviceInfo');
-  if(devInfo) devInfo.innerText = dev.name;
+  if (devInfo) devInfo.innerText = dev.name;
 
   const see = document.getElementById('see');
-  if(see) see.innerText = `${dev.icon} ${dev.name} — Active — ${dev.features.slice(0,4).join(', ')}`;
+  if (see) see.innerText = `${dev.icon} ${dev.name} — Active — ${(dev.features || []).slice(0, 4).join(', ')}`;
 
-  // FIX: Null-check - was crashing if thermal slider not on page
-  if(dev.id==='flir-one-pro'){
+  if (dev.id === 'flir-one-pro') {
     const th = document.getElementById('thermal');
     const thV = document.getElementById('thermalV');
     if (th) th.value = 60;
@@ -165,11 +166,9 @@ function switchDevice(deviceId){
   hideDeviceHub();
 }
 
-// FIX: Real button check - was hardcoded true for all, lied about working
-function verifyButtons(){
-  // Map: label -> real check (element exists + function exists)
+function verifyButtons() {
   const checks = {
-    'DEVICES (5)': DEVICE_LIST.devices.length===5,
+    'DEVICES (5)': DEVICE_LIST.devices.length === 5,
     'DOC SCAN': typeof window.GodEye !== 'undefined' && typeof window.GodEye.applyQuickFilter === 'function',
     'COUNT ROI': typeof window.CountingPro !== 'undefined',
     'OCR ROI': document.getElementById('ocrBtn') !== null || document.querySelector('[data-action="ocr"]') !== null,
@@ -183,41 +182,41 @@ function verifyButtons(){
     'EXPORT': typeof window.CountingPro !== 'undefined' && typeof window.CountingPro.exportLog === 'function',
     'VOICE': 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
   };
-  const allOk = Object.values(checks).every(v=>v);
+  const allOk = Object.values(checks).every(v => v);
   console.log('🔍 v1.4.2 Button Check:', checks, 'ALL WORKING:', allOk);
-  const see=document.getElementById('see');
-  // FIX: Only show ✅ if actually all pass, otherwise show which failed
-  if(see) {
-    if (allOk) see.innerText='✅ v1.4.2 - All 13 buttons working - Ready to draw ROI';
+  const see = document.getElementById('see');
+  if (see) {
+    if (allOk) see.innerText = '✅ v1.4.2 - All 13 buttons working - Ready to draw ROI';
     else {
       const failed = Object.keys(checks).filter(k => !checks[k]);
-      see.innerText=`⚠️ v1.4.2 - ${failed.length} missing: ${failed.join(', ')}`;
+      see.innerText = `⚠️ v1.4.2 - ${failed.length} missing: ${failed.join(', ')}`;
     }
   }
   return checks;
 }
 
-function renderDeviceSelector(){
-  let existing = document.getElementById('deviceHubPage');
-  if(existing) existing.remove();
+function renderDeviceSelector() {
+  const existing = document.getElementById('deviceHubPage');
+  if (existing) existing.remove();
 
   let html = `<div id="deviceHubPage" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:9997;padding:14px;overflow-y:auto"><div style="max-width:440px;margin:20px auto;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:20px;padding:16px"><h2 style="color:#00ff88;text-align:center">📱 Device Hub v1.4.2</h2><p style="color:#aaa;font-size:10px;text-align:center;margin:6px 0">All protocols active + positioned • ${DEVICE_LIST.live_url}</p><div style="margin:12px 0">`;
 
-  window.WanaDeviceHub.devices.forEach(d=>{
-    const active = d.id===window.WanaDeviceHub.currentDeviceId;
-    html+=`<div onclick="switchDevice('${d.id}')" style="background:${active?'#00ff88':'#111'};color:${active?'#000':'#fff'};border:1px solid ${active?'#00ff88':'#333'};border-radius:12px;padding:10px;margin:6px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">${d.icon} ${d.name}</div><div style="font-size:8px;opacity:0.8">${d.type} • ${d.caps.slice(0,3).join(', ')} • ${d.status} • ${d.position}</div></div><div style="font-size:10px;font-weight:800">${active?'✅ ACTIVE':'➡️'}</div></div>`;
+  window.WanaDeviceHub.devices.forEach(d => {
+    const active = d.id === window.WanaDeviceHub.currentDeviceId;
+    const caps = d.caps || [];
+    html += `<div onclick="switchDevice('${d.id}')" style="background:${active ? '#00ff88' : '#111'};color:${active ? '#000' : '#fff'};border:1px solid ${active ? '#00ff88' : '#333'};border-radius:12px;padding:10px;margin:6px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">${d.icon} ${d.name}</div><div style="font-size:8px;opacity:0.8">${d.type} • ${caps.slice(0, 3).join(', ')} • ${d.status} • ${d.position}</div></div><div style="font-size:10px;font-weight:800">${active ? '✅ ACTIVE' : '➡️'}</div></div>`;
   });
 
-  html+=`</div><button onclick="hideDeviceHub()" style="width:100%;padding:12px;background:#333;color:#fff;border:none;border-radius:10px;font-weight:800">❌ CLOSE</button><div style="text-align:center;margin-top:10px;color:#00ff88;font-size:10px">✅ v1.4.2 - Buttons verified</div></div></div>`;
+  html += `</div><button onclick="hideDeviceHub()" style="width:100%;padding:12px;background:#333;color:#fff;border:none;border-radius:10px;font-weight:800">❌ CLOSE</button><div style="text-align:center;margin-top:10px;color:#00ff88;font-size:10px">✅ v1.4.2 - Buttons verified</div></div></div>`;
 
   document.body.insertAdjacentHTML('beforeend', html);
 }
 
-function showDeviceHub(){
-  if(!window.WanaDeviceHub.loaded) loadDeviceHub().then(()=>{const el=document.getElementById('deviceHubPage'); if(el) el.style.display='block';});
-  else { const el=document.getElementById('deviceHubPage'); if(el) el.style.display='block'; }
+function showDeviceHub() {
+  if (!window.WanaDeviceHub.loaded) loadDeviceHub().then(() => { const el = document.getElementById('deviceHubPage'); if (el) el.style.display = 'block'; });
+  else { const el = document.getElementById('deviceHubPage'); if (el) el.style.display = 'block'; }
 }
-function hideDeviceHub(){ const el=document.getElementById('deviceHubPage'); if(el) el.style.display='none'; }
+function hideDeviceHub() { const el = document.getElementById('deviceHubPage'); if (el) el.style.display = 'none'; }
 
 window.loadDeviceHub = loadDeviceHub;
 window.getCurrentDevice = getCurrentDevice;
@@ -227,4 +226,4 @@ window.hideDeviceHub = hideDeviceHub;
 window.verifyButtons = verifyButtons;
 
 document.addEventListener('DOMContentLoaded', loadDeviceHub);
-if(document.readyState!=='loading') loadDeviceHub();
+if (document.readyState !== 'loading') loadDeviceHub();
