@@ -1,4 +1,4 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -27,7 +27,15 @@ object FaceAlertManager {
     private var mqttClient: MqttClient? = null
     private val scope = CoroutineScope(Dispatchers.Default)
 
+    // FIX v2.2: No hard-coded broker - User sets in Settings, empty = skip MQTT, snapshot still saves
+    // Save with: prefs.edit().putString("mqtt_broker", "tcp://192.168.1.100:1883").apply()
+    private fun getLocalBroker(context: Context): String {
+        val prefs = context.getSharedPreferences("godeye_settings", Context.MODE_PRIVATE)
+        return prefs.getString("mqtt_broker", "")?.trim() ?: ""
+    }
+
     fun onFaceDetected(context: Context, results: List<FaceResult>, frameBitmap: Bitmap?) {
+        val appContext = context.applicationContext
         val unknown = results.filter { !it.isKnown }
         if (unknown.isEmpty()) return
 
@@ -38,13 +46,16 @@ object FaceAlertManager {
         val first = unknown[0]
 
         // 1. Vibrate - Offline, always works
-        vibrate(context)
+        vibrate(appContext)
 
         // 2. Save Snapshot - Offline, to phone storage
         scope.launch {
-            val path = saveSnapshot(context, frameBitmap, first)
-            // 3. MQTT Local - Offline LAN broker
-            sendMqttLocal(context, first, path)
+            val path = saveSnapshot(appContext, frameBitmap, first)
+            // 3. MQTT Local - Only if user set broker in Settings
+            val broker = getLocalBroker(appContext)
+            if (broker.isNotBlank()) {
+                sendMqttLocal(broker, first, path)
+            }
             // 4. Online Only - Auto-send if internet
             if (NetworkAutoManager.isOnline) {
                 sendMqttCloud(first, path)
@@ -86,11 +97,8 @@ object FaceAlertManager {
         }
     }
 
-    private fun sendMqttLocal(context: Context, face: FaceResult, snapshotPath: String) {
+    private fun sendMqttLocal(broker: String, face: FaceResult, snapshotPath: String) {
         try {
-            // Local broker - Use your LAN broker IP, default 192.168.1.100
-            // If no broker, this fails silently, snapshot still saved
-            val broker = "tcp://192.168.1.100:1883"
             if (mqttClient == null || !mqttClient!!.isConnected) {
                 mqttClient = MqttClient(broker, "godeye_${System.currentTimeMillis()}", MemoryPersistence())
                 val opts = MqttConnectOptions().apply {
@@ -109,12 +117,6 @@ object FaceAlertManager {
 
     private fun sendMqttCloud(face: FaceResult, snapshotPath: String) {
         try {
-            // Online only - Replace with your cloud MQTT / Firebase
-            // Example: HiveMQ Cloud, EMQX Cloud, or your server
-            // This auto-runs only when NetworkAutoManager.isOnline == true
-            val cloudBroker = "ssl://your-cloud-broker:8883"
-            // TODO: Add your cloud broker credentials here
-            // For now, log - snapshot is already saved locally
             android.util.Log.d("FaceAlert", "Online - Would send to cloud: ${face.cameraId} $snapshotPath")
         } catch (e: Exception) {}
     }
@@ -122,6 +124,6 @@ object FaceAlertManager {
     fun getAlertHistory(context: Context): List<File> {
         val dir = File(context.getExternalFilesDir(null), "GodEye_Alerts")
         if (!dir.exists()) return emptyList()
-        return dir.listFiles()?.sortedByDescending { it.lastModified() } ?: emptyList()
+        return dir.listFiles()?.filter { it.isFile && it.name.endsWith(".jpg") }?.sortedByDescending { it.lastModified() } ?: emptyList()
     }
 }
