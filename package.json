@@ -4,7 +4,8 @@
   "description": "God Eye - WanaLab Omni Camera",
   "private": true,
   "scripts": {
-    "build": "echo \"www already exists, skipping web build\""
+    "build": "node -e \"if(!require('fs').existsSync('www/index.html')){console.error('Missing www/index.html');process.exit(1)} else {console.log('www OK')}\"",
+    "sync": "npx cap sync android"
   },
   "dependencies": {
     "@capacitor/android": "latest",
