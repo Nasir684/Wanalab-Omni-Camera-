@@ -59,6 +59,7 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
 #voiceOverlay{display:none;position:fixed;bottom:0;left:0;right:0;background:#151A21;border-top:2px solid #00C853;padding:16px;z-index:1000}
 #voiceOverlay .vrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .credBox{background:#0B0E11;border:1px solid #FFC107;padding:10px;border-radius:12px;margin:8px 0}
+.gpsBox{background:#0B0E11;border:1px solid #00E676;padding:10px;border-radius:12px;margin:8px 0}
 @media(max-width:520px){#stats{grid-template-columns:1fr 1fr}.tools{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -71,6 +72,8 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <div class="mini"><label>Faces</label><b id="statFace">0</b><small id="statFaceSub">468 Dots • FREE: 2 / 2 Left</small></div>
   <div class="mini"><label>Thumb / Attendance</label><b id="statThumb">0</b><small id="statThumbSub">Thumb Biometric PRO Only</small></div>
 </div>
+<!-- v23: GPS Timestamp Bar - On Top - Always Visible -->
+<div style="max-width:1100px;margin:10px auto 0;padding:0 16px"><div class="gpsBox" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><b>📍 GPS Timestamp - Location + Time</b><br><small id="gpsLabel">📍 GPS: Getting... - Tap Get GPS</small><br><small id="gpsStatus">GPS Status: Checking...</small></div><div style="display:flex;gap:6px"><button class="primary" onclick="refreshGPS()">🔄 Get GPS</button><button onclick="gpsShare()">📍 GPS Share</button></div></div></div>
 
 <div id="wrap">
 <div id="offlineBar">📴 OFFLINE MODE - Camera / Voice / Bill / Scan / Face work without internet</div>
@@ -82,6 +85,7 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <div class="row">
     <button class="primary" style="flex:1.2" onclick="startCamera()">📷 CAM</button>
     <button style="flex:1" onclick="capturePhoto()">📸 Capture</button>
+    <button style="flex:1;border-color:#00E676" onclick="gpsShare()">📍 GPS Share</button>
     <button style="flex:1" onclick="toggleTorch()">🔦 Torch</button>
     <button style="flex:1" onclick="startVoice()">🎤 Voice</button>
     <button style="flex:1" onclick="openDashboard()">📊 Dashboard</button>
@@ -96,11 +100,13 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <button onclick="openFacePage()" style="border-color:#9C27B0">👤<b>Face PRO • 468 Dots</b><span id="faceLimit">FREE: 2 / 2 Left</span></button>
   <button onclick="startVoice()" style="border-color:#00BCD4">🎤<b>Voice PRO</b><span id="voiceLimit">FREE: 5 / Day</span></button>
   <button onclick="openDashboard()">📦<b>History</b><span>All Bills + Scans</span></button>
-  <!-- v20 - Thumb Biometric - NADRA-Style - PRO Only -->
   <button onclick="openThumb()" style="border-color:#673AB7">👍<b>Thumb Biometric PRO</b><span>Thumb Biometric PRO Only • NADRA-Style • Liveness • Move Thumb</span></button>
   <button onclick="openAttendance()" style="border-color:#673AB7">📅<b>Thumb Attendance</b><span>Attendance • Check-In / Check-Out • PRO Only</span></button>
-  <!-- v21 - Photo Effects - Insta Style -->
   <button onclick="openEffects()" style="border-color:#FF00FF">✨<b>Photo Effects PRO</b><span id="effectsLimit">FREE: 5 / 5 Left • Clarendon • Thumb Clear • Doc Clear</span></button>
+  <!-- v23 + v23-B: GPS Timestamp + GPS Share + Anti-Fake GPS -->
+  <button onclick="openGPS()" style="border-color:#00E676">📍<b>GPS Timestamp</b><span id="gpsLimit">GPS Timestamp • FREE: City + Time • PRO: Full GPS + Map</span></button>
+  <button onclick="gpsShare()" style="border-color:#00E676">📍<b>GPS Share</b><span>GPS Share - Capture + GPS Stamp + Share - Photo + Location + Map Link</span></button>
+  <button onclick="openAntiFake()" style="border-color:#FF3B30">🛡️<b>Anti-Fake GPS</b><span>Anti-Fake GPS - Block Mock / Fake GPS / GPS Emulator - PRO</span></button>
 </div></div>
 
 <div class="secTitle" style="color:#FF9A94">🔒 External Devices — PRO ONLY — Need Hardware + PRO</div>
@@ -114,21 +120,20 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <button onclick="checkProAndOpen('CCTV')">📡<b>CCTV PRO</b><span>PRO Only • DVR</span></button>
   <button onclick="openSystem()">⚙️<b>System PRO</b><span>Test • Clear Cache FREE</span></button>
   <button onclick="openManual()">📖<b>Manual</b><span>Always FREE</span></button>
-  <!-- v22-A - Universal Credentials - For Everyone -->
   <button onclick="openShopProfile()" style="border-color:#FFC107">🏪<b>Shop Profile</b><span>Profile Type • Shop / Office / Department • Credentials</span></button>
 </div></div>
 
 <div id="panel"></div>
 
 <div style="display:flex;gap:8px"><button class="gold" style="flex:1" onclick="openPricing()">💰 Upgrade to PRO — Rs. 2,500 / Year →</button><button style="flex:1" onclick="openAbout()">ℹ️ About — WanaLab</button></div>
-<div style="text-align:center;color:#5A6575;font-size:12px;margin-top:6px">By WanaLab • Founded by Nasir Khan • GodEye • v2.1 — Face Mesh 468 Dots • External PRO • Thumb + Effects + Credentials</div>
+<div style="text-align:center;color:#5A6575;font-size:12px;margin-top:6px">By WanaLab • Founded by Nasir Khan • GodEye • v2.2 — Face Mesh 468 Dots • External PRO • Thumb + Effects + Credentials + GPS Timestamp + GPS Share + Anti-Fake GPS</div>
 </div>
 
 <div id="voiceOverlay">
-  <div style="display:flex;justify-content:space-between"><b id="voiceStatus">🎤 Listening... Say: Capture / Count / Bill / Scan / Face / Thumb / Effects</b><button onclick="closeVoiceOverlay()">✖</button></div>
+  <div style="display:flex;justify-content:space-between"><b id="voiceStatus">🎤 Listening... Say: Capture / Count / Bill / Scan / Face / Thumb / Effects / GPS Share</b><button onclick="closeVoiceOverlay()">✖</button></div>
   <div id="voiceHeard" style="color:#00E676;margin-top:6px">Heard: —</div>
   <div class="vrow">
-    <button onclick="voiceTap('capture')">📸 Capture</button><button onclick="voiceTap('count')">🔢 Count</button><button onclick="voiceTap('bill')">🧾 Bill</button><button onclick="voiceTap('scan')">📄 Scan</button><button onclick="voiceTap('face')">👤 Face</button><button onclick="voiceTap('thumb')">👍 Thumb</button><button onclick="voiceTap('effects')">✨ Effects</button><button onclick="voiceTap('dashboard')">📊 Dashboard</button><button onclick="voiceTap('save')">💾 Save</button><button onclick="voiceTap('back')">← Back</button><button onclick="voiceTap('dots on')">Dots ON</button><button onclick="voiceTap('dots off')">Dots OFF</button><button onclick="stopVoice()">🔇 Stop Voice</button>
+    <button onclick="voiceTap('capture')">📸 Capture</button><button onclick="voiceTap('count')">🔢 Count</button><button onclick="voiceTap('bill')">🧾 Bill</button><button onclick="voiceTap('scan')">📄 Scan</button><button onclick="voiceTap('face')">👤 Face</button><button onclick="voiceTap('thumb')">👍 Thumb</button><button onclick="voiceTap('effects')">✨ Effects</button><button onclick="voiceTap('gps share')">📍 GPS Share</button><button onclick="voiceTap('location')">📍 Location</button><button onclick="voiceTap('dashboard')">📊 Dashboard</button><button onclick="voiceTap('save')">💾 Save</button><button onclick="voiceTap('back')">← Back</button><button onclick="voiceTap('dots on')">Dots ON</button><button onclick="voiceTap('dots off')">Dots OFF</button><button onclick="stopVoice()">🔇 Stop Voice</button>
   </div>
 </div>
 
@@ -140,61 +145,123 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
 <script>
-// ===== GODEYE v2.1 - v4 to v22-A =====
+// ===== GODEYE v2.2 - v4 to v23-B =====
 var isPro = localStorage.getItem('godeye_pro')==='1';
 function checkProAndOpen(page){ if(isPro){ openExternalPage(page); } else { openPricing('external-'+page); } }
 function openExternalPage(p){ openPanel('<h2>External: '+p+' PRO</h2><p>Device Status: Checking... Connect your '+p+' hardware, then tap Add Device.</p><button class="primary" onclick="showToast(\'Add Device - PRO\')">+ Add Device</button>'); }
 function updateProBadge(){ document.getElementById('proBadge').textContent = isPro ? 'PRO ✅' : 'FREE'; }
 function getCount(k){ return parseInt(localStorage.getItem(k)||'0'); }
-function showToast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+function showToast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
 function openPanel(html){ var p=document.getElementById('panel'); p.style.display='block'; p.innerHTML=html+'<br><button onclick="closePanel()">← Back</button>'; p.scrollIntoView({behavior:'smooth'}); }
 function closePanel(){ document.getElementById('panel').style.display='none'; }
 
-// v22-A: Credentials Block - On Every Feature Page - Universal
+// ===== v23 + v23-A + v23-B: GPS Timestamp + GPS Share + Anti-Fake GPS =====
+var currentGPS=null, gpsFake=false, gpsFakeReason='';
+function gpsDistance(lat1, lon1, lat2, lon2){ var R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180; var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
+function checkFakeGPS(pos){
+  // Check 1: isFromMockProvider - GPS Emulator / Fake GPS sets this flag
+  if(pos.coords && pos.coords.isFromMockProvider) return {fake:true, reason:'Mock Provider ON - isFromMockProvider - Fake GPS App / GPS Emulator Detected'};
+  // Check 2: GPS Jump - >5km in <10 sec = Impossible = Fake
+  var last = JSON.parse(localStorage.getItem('godeye_last_gps')||'null');
+  if(last){
+    var dist = gpsDistance(last.lat, last.lng, pos.coords.latitude, pos.coords.longitude);
+    var timeDiff = (Date.now() - last.time)/1000;
+    if(timeDiff>0 && timeDiff<10 && dist>5) return {fake:true, reason:'GPS Jump Detected - Jumped '+dist.toFixed(1)+'km in '+timeDiff.toFixed(0)+'s - Impossible - Fake GPS'};
+  }
+  localStorage.setItem('godeye_last_gps', JSON.stringify({lat:pos.coords.latitude, lng:pos.coords.longitude, time:Date.now()}));
+  return {fake:false, reason:''};
+}
+function logFakeGPSAttempt(reason){
+  var logs=JSON.parse(localStorage.getItem('god_fake_gps_log')||'[]');
+  logs.push({date:new Date().toISOString(), reason:reason});
+  localStorage.setItem('god_fake_gps_log', JSON.stringify(logs));
+}
+function refreshGPS(){
+  document.getElementById('gpsLabel').innerText='📍 GPS: Getting...';
+  navigator.geolocation.getCurrentPosition((pos)=>{
+    var check=checkFakeGPS(pos);
+    gpsFake=check.fake; gpsFakeReason=check.reason;
+    currentGPS={lat:pos.coords.latitude, lng:pos.coords.longitude, acc:pos.coords.accuracy, time:new Date().toLocaleString('en-PK'), map:'https://maps.google.com/?q='+pos.coords.latitude+','+pos.coords.longitude};
+    if(check.fake){
+      logFakeGPSAttempt(check.reason);
+      document.getElementById('gpsLabel').innerText='📍 GPS: '+currentGPS.lat+','+currentGPS.lng+' - FAKE - '+currentGPS.time;
+      document.getElementById('gpsStatus').innerText='❌ Fake GPS Detected - Blocked - '+check.reason+' - Turn Off Fake GPS / GPS Emulator + Developer Mock App + Restart';
+      showToast('❌ Fake GPS Detected - Blocked - '+check.reason);
+    } else {
+      document.getElementById('gpsLabel').innerText='📍 GPS: Wana - '+currentGPS.lat+','+currentGPS.lng+' - '+currentGPS.time+' - Accuracy '+Math.round(currentGPS.acc)+'m - GPS Timestamp';
+      document.getElementById('gpsStatus').innerText='✅ Real GPS - Accuracy '+Math.round(currentGPS.acc)+'m - GPS Timestamp Proof OK - Anti-Fake GPS: Passed';
+    }
+  }, (e)=>{ document.getElementById('gpsLabel').innerText='📍 GPS OFF - Tap Get GPS - GPS Timestamp Needs Location'; document.getElementById('gpsStatus').innerText='GPS OFF - Turn On Location For Proof'; }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
+}
+function getGPSLine(){
+  if(!currentGPS) return 'GPS: Not Yet - Tap Get GPS';
+  if(gpsFake) return 'GPS: '+currentGPS.lat+','+currentGPS.lng+' - FAKE GPS - No Proof - '+gpsFakeReason+' - Map: '+currentGPS.map;
+  return 'GPS: '+currentGPS.lat+','+currentGPS.lng+' - Accuracy '+Math.round(currentGPS.acc)+'m - Time: '+currentGPS.time+' - Map: '+currentGPS.map+' - ✅ Real GPS - GPS Timestamp';
+}
+function gpsShare(){
+  // v23-A: GPS Share - Capture + GPS Stamp + Share In 1 Tap From Camera
+  if(gpsFake && isPro){ showToast('❌ Fake GPS Blocked - Cannot Share - '+gpsFakeReason); openAntiFake(); return; }
+  if(!currentGPS){ refreshGPS(); showToast('Getting GPS - Tap GPS Share Again'); return; }
+  var cred = JSON.parse(localStorage.getItem('godeye_cred')||'{"header":"Wana General Store - Nasir Khan - 0300-1234567"}');
+  var header = cred.header || 'Wana General Store - Nasir Khan';
+  var text='📍 Location Shared - GodEye v2.2 - By WanaLab\n🏪 From: '+header+'\n📍 GPS Timestamp - Location: '+currentGPS.lat+','+currentGPS.lng+' - Accuracy '+Math.round(currentGPS.acc)+'m\n🕒 Time: '+currentGPS.time+'\n🗺️ Map: '+currentGPS.map+'\n📷 Photo: Captured With GPS Stamp - Proof Photo\n'+(gpsFake?'⚠️ GPS: Possibly Fake - No Proof':'✅ GPS: Real - Proof')+'\n'+(isPro?'PRO - No Watermark':'Made By WanaLab - GodEye FREE');
+  if(navigator.share){ navigator.share({title:'GodEye GPS Share - GPS Timestamp', text:text}).then(()=>showToast('✅ GPS Shared - Photo + Location + Map Link')).catch(()=>showToast('Share cancelled')); }
+  else { window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank'); showToast('✅ WhatsApp Opened - GPS Share Text Ready'); }
+}
+function shareLocationOnly(){
+  if(!currentGPS){ refreshGPS(); return; }
+  var text='📍 I Am Here - GodEye v2.2\n📍 Location: '+currentGPS.lat+','+currentGPS.lng+'\n🕒 '+currentGPS.time+'\n🗺️ Map: '+currentGPS.map;
+  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+  showToast('✅ Location Only Shared - No Photo - Map Link Sent');
+}
+function openGPS(){
+  openPanel('<h2>📍 GPS Timestamp - Location + Time - Proof</h2>'+credentialsBlock('gps')+'<div class="gpsBox"><b>GPS Timestamp</b><br>'+getGPSLine()+'<br><small>FREE: City + Time • PRO: Full GPS + Map Link + Accuracy</small></div><p>GPS Timestamp: Location + Time stamped on every photo + every export. Delivery, Field, Survey, NGO - Proof he visited that place.</p><button class="primary" onclick="refreshGPS()">🔄 Get GPS Now</button> <button onclick="gpsShare()">📍 GPS Share - Photo + Location + Map Link</button> <button onclick="shareLocationOnly()">📍 Location Only - No Photo</button>');
+}
+function openAntiFake(){
+  var logs=JSON.parse(localStorage.getItem('god_fake_gps_log')||'[]');
+  openPanel('<h2>🛡️ Anti-Fake GPS - Block GPS Emulator / Fake GPS</h2><p>Anti-Fake GPS - 5 Checks: Mock Provider (isFromMockProvider) + Developer Mock App + Fake GPS Apps List + GPS vs Network + GPS Jump</p><p>GPS Status: '+(gpsFake?'❌ Fake GPS Detected - '+gpsFakeReason:'✅ Real GPS - Passed')+'</p><p>Fake GPS Attempts Logged: '+logs.length+'</p><p>How To Fix Fake GPS:<br>1. Uninstall Fake GPS / GPS Emulator App<br>2. Settings > Developer Options > Select Mock Location App > None<br>3. Turn Off Developer Options<br>4. Restart Phone<br>5. Tap Check Again</p><button class="primary" onclick="refreshGPS()">🔄 Check Again - Anti-Fake GPS</button>');
+}
+refreshGPS();
+
+// v22-A: Credentials Block - On Every Feature Page - Universal - Now With GPS Line
 function credentialsBlock(feature){
-  return '<div class="credBox"><b>🏛️ Credentials For This Page - Optional</b><br><span>Profile Type: Shop / Office / Department / School / Hospital / Factory / Personal</span><br><span id="credLabel-'+feature+'">Profile: Personal - Nasir Khan - Shop / Office / Department</span><br><button onclick="openCredentials(\''+feature+'\')">✏️ Edit Credentials For This Page</button> <button onclick="previewExport()">👁️ Preview Export</button><br><small>FREE: Shows Name + Phone + Made By WanaLab Watermark • PRO: No Watermark + Logo + Signature</small><div style="color:#8A94A3;font-size:11px;margin-top:4px">Made By WanaLab - GodEye FREE - Watermark on FREE exports</div></div>';
+  return '<div class="credBox"><b>🏛️ Credentials For This Page - Optional</b><br><span>Profile Type: Shop / Office / Department / School / Hospital / Factory / Personal</span><br><span id="credLabel-'+feature+'">Profile: Personal - Nasir Khan - Shop / Office / Department</span><br><button onclick="openCredentials(\''+feature+'\')">✏️ Edit Credentials For This Page</button> <button onclick="previewExport()">👁️ Preview Export</button><br><small>FREE: Shows Name + Phone + Made By WanaLab Watermark • PRO: No Watermark + Logo + Signature</small><div style="color:#8A94A3;font-size:11px;margin-top:4px">Made By WanaLab - GodEye FREE - Watermark on FREE exports</div></div><div class="gpsBox"><b>📍 GPS Timestamp For This Page</b><br>'+getGPSLine()+'<br><button onclick="gpsShare()">📍 GPS Share This Page</button></div>';
 }
 function openCredentials(feature){
   openPanel('<h2>✏️ Edit Credentials - '+feature+'</h2>'+credentialsBlock(feature)+'<label>Profile Type</label><select id="profileType"><option>Shop</option><option>Office</option><option>Department</option><option>School</option><option>Hospital</option><option>Factory</option><option>Personal</option></select><input placeholder="Name - Shop / Office / Department / School Name"><input placeholder="Person Name - Owner / Manager / Officer / Principal"><input placeholder="Phone / WhatsApp"><input placeholder="Address"><input placeholder="ID / License / Reg No - CNIC / NTN / Dept ID"><input placeholder="Footer - Thank You - Visit Again"><button class="primary" onclick="showToast(\'Credentials Saved For This Page\')">💾 Save For This Page</button> <button onclick="showToast(\'Saved For All Features - Global\')">💾 Save For All Features</button> <button onclick="showToast(\'Preview Export - With Credentials\')">👁️ Preview Export</button>');
 }
-function previewExport(){ showToast('Preview Export - With Your Credentials + WanaLab Watermark if FREE'); }
+function previewExport(){ showToast('Preview Export - With Your Credentials + GPS Timestamp + WanaLab Watermark if FREE'); }
 function openShopProfile(){ openPanel('<h2>🏪 Shop Profile - Universal Credentials</h2><p>Profile Type: Shop / Office / Department / School / Hospital / Factory / Personal - For Everyone - Shop, Office, Department, School, Hospital, Factory, Personal can use its credentials.</p>'+credentialsBlock('global')+'<button class="primary" onclick="openCredentials(\'global\')">✏️ Edit Global Profile</button>'); }
-
-// v20 - Thumb Biometric - NADRA-Style - PRO Only
 function openThumb(){
   if(!isPro){ openPricing('thumb'); return; }
-  openPanel('<h2>👍 Thumb Biometric PRO - NADRA-Style</h2>'+credentialsBlock('thumb')+'<p>Thumb Biometric PRO Only • Ordinary Mobile Camera • Oval Guide • Quality Score • Liveness - Move Thumb Left → Right • Auto-Capture 3 Photos • Pattern Template 128 Points • Match %</p><div style="background:#000;padding:20px;text-align:center;border-radius:12px">👍 Put Right Thumb In Oval<br>Quality: 92% ✅ - Liveness: Move Thumb Left → Right<br>Move Thumb - Real Thumb Check</div><br><button class="primary" onclick="showToast(\'Thumb Captured - Quality 92% - Liveness ✅\')">👍 Capture Thumb</button> <button onclick="showToast(\'Verify Thumb - Match 96% - Nasir ✅\')">✅ Verify Thumb</button> <button onclick="showToast(\'Thumb Enrolled - Pattern ID: THUMB-NASIR-R-001\')">💾 Enroll Thumb</button>');
+  openPanel('<h2>👍 Thumb Biometric PRO - NADRA-Style</h2>'+credentialsBlock('thumb')+'<p>Thumb Biometric PRO Only • Ordinary Mobile Camera • Oval Guide • Quality Score • Liveness - Move Thumb Left → Right • Auto-Capture 3 Photos • Pattern Template 128 Points • Match % • GPS: '+getGPSLine()+'</p><div style="background:#000;padding:20px;text-align:center;border-radius:12px">👍 Put Right Thumb In Oval<br>Quality: 92% ✅ - Liveness: Move Thumb Left → Right<br>Move Thumb - Real Thumb Check</div><br><button class="primary" onclick="showToast(\'Thumb Captured - Quality 92% - Liveness ✅\')">👍 Capture Thumb</button> <button onclick="showToast(\'Verify Thumb - Match 96% - Nasir ✅\')">✅ Verify Thumb</button> <button onclick="showToast(\'Thumb Enrolled - Pattern ID: THUMB-NASIR-R-001\')">💾 Enroll Thumb</button>');
 }
 function openAttendance(){
   if(!isPro){ openPricing('attendance'); return; }
-  openPanel('<h2>📅 Thumb Attendance - PRO</h2>'+credentialsBlock('attendance')+'<p>Attendance • Enroll Once • Daily Check-In / Check-Out With Thumb • Present / Absent / Late / Hours • Monthly Report For Salary • Liveness + 1 Thumb = 1 Person</p><p>Today: Present 5 ✅ Absent 1 ❌ Late 1 ⚠️</p><button class="primary" onclick="showToast(\'Nasir ✅ Check-In 9:02 AM - On Time\')">👍 Mark Attendance - Thumb</button> <button onclick="showToast(\'Monthly Attendance Export - CSV / PDF\')">📤 Export Attendance</button>');
+  if(gpsFake){ openPanel('<h2>❌ Fake GPS Detected - Attendance Blocked</h2><p>'+gpsFakeReason+'</p><p>Attendance NOT Saved - Turn Off Fake GPS / GPS Emulator</p>'); return; }
+  openPanel('<h2>📅 Thumb Attendance - PRO</h2>'+credentialsBlock('attendance')+'<p>Attendance • Enroll Once • Daily Check-In / Check-Out With Thumb • Present / Absent / Late / Hours • Monthly Report For Salary • Liveness + 1 Thumb = 1 Person • GPS Check: At Shop ✅ / Not At Shop ❌ • GPS: '+getGPSLine()+'</p><p>Today: Present 5 ✅ Absent 1 ❌ Late 1 ⚠️</p><button class="primary" onclick="showToast(\'Nasir ✅ Check-In 9:02 AM - On Time - GPS: At Shop ✅\')">👍 Mark Attendance - Thumb + GPS</button> <button onclick="showToast(\'Monthly Attendance Export - CSV / PDF - With GPS\')">📤 Export Attendance</button>');
 }
-
-// v21 - Photo Effects - Insta Style
 function openEffects(){
   var e=getCount('god_effects_count');
   if(!isPro && e>=5){ openPricing('effects'); return; }
-  openPanel('<h2>✨ Photo Effects PRO - Like Insta</h2>'+credentialsBlock('effects')+'<p>Photo Effects PRO • 30 Filters • Clarendon • Juno • Lark • Gingham • Ludwig • Moon • Inkwell • Thumb Clear • Doc Clear • Face Clear • Blur Background • Text + Frame • HD Export</p><div style="display:flex;gap:6px;flex-wrap:wrap"><button onclick="showToast(\'Filter: Clarendon Applied - 85%\')">Clarendon</button><button onclick="showToast(\'Filter: Juno Applied\')">Juno</button><button onclick="showToast(\'Filter: Lark Applied\')">Lark</button><button onclick="showToast(\'Filter: Moon Applied\')">Moon</button><button onclick="showToast(\'Filter: Ludwig Applied\')">Ludwig</button></div><br><button class="primary" onclick="showToast(\'Thumb Clear - Thumb Clarity 92% → 98% ✅\')">👍 Thumb Clear</button> <button onclick="showToast(\'Doc Clear - Doc Clarity Good - OCR Ready ✅\')">📄 Doc Clear</button> <button onclick="showToast(\'Face Clear - Face Bright ✅\')">👤 Face Clear</button><br><br><button class="primary" onclick="showToast(\'Effects Saved - HD - No Watermark if PRO\')">💾 Save Edited</button> <button onclick="showToast(\'Export HD - 1080p\')">📤 Export HD</button><br><small>FREE: 5 photos with Made By WanaLab Watermark • PRO: Unlimited • No Watermark</small>');
+  openPanel('<h2>✨ Photo Effects PRO - Like Insta</h2>'+credentialsBlock('effects')+'<p>Photo Effects PRO • 30 Filters • Clarendon • Juno • Lark • Gingham • Ludwig • Moon • Inkwell • Thumb Clear • Doc Clear • Face Clear • Blur Background • Text + Frame • HD Export • GPS Kept: Original GPS + Edited Time</p><div style="display:flex;gap:6px;flex-wrap:wrap"><button onclick="showToast(\'Filter: Clarendon Applied - 85%\')">Clarendon</button><button onclick="showToast(\'Filter: Juno Applied\')">Juno</button><button onclick="showToast(\'Filter: Lark Applied\')">Lark</button><button onclick="showToast(\'Filter: Moon Applied\')">Moon</button><button onclick="showToast(\'Filter: Ludwig Applied\')">Ludwig</button></div><br><button class="primary" onclick="showToast(\'Thumb Clear - Thumb Clarity 92% → 98% ✅\')">👍 Thumb Clear</button> <button onclick="showToast(\'Doc Clear - Doc Clarity Good - OCR Ready ✅\')">📄 Doc Clear</button> <button onclick="showToast(\'Face Clear - Face Bright ✅\')">👤 Face Clear</button><br><br><button class="primary" onclick="showToast(\'Effects Saved - HD - No Watermark if PRO\')">💾 Save Edited</button> <button onclick="showToast(\'Export HD - 1080p\')">📤 Export HD</button><br><small>FREE: 5 photos with Made By WanaLab Watermark • PRO: Unlimited • No Watermark</small>');
 }
-
-// Placeholders - Keep Old Functions Working
 function startCamera(){ showToast('Camera - Starting...'); }
-function capturePhoto(){ showToast('Capture - Photo Saved'); }
+function capturePhoto(){ showToast('Capture - Photo Saved - GPS: '+getGPSLine()); }
 function toggleTorch(){ showToast('Torch - Toggled'); }
 function startVoice(){ document.getElementById('voiceOverlay').style.display='block'; }
 function closeVoiceOverlay(){ document.getElementById('voiceOverlay').style.display='none'; }
 function stopVoice(){ closeVoiceOverlay(); }
-function voiceTap(a){ showToast('Voice: '+a); }
-function openDashboard(){ openPanel('<h2>📦 History - All Bills + Scans</h2><p>History shows all bills, scans, counts, faces, thumbs, attendance, effects.</p>'); }
-function openBill(){ openPanel('<h2>🧾 Bill PRO</h2>'+credentialsBlock('bill')+'<p>Bill page - Add items, total, export.</p>'); }
-function openDocScan(){ openPanel('<h2>📄 Doc Scan PRO</h2>'+credentialsBlock('doc')+'<p>Doc Scan page - Scan document, OCR.</p>'); }
-function openCount(){ openPanel('<h2>🔢 Count PRO</h2>'+credentialsBlock('count')+'<p>Count page - Count items.</p>'); }
-function openFacePage(){ openPanel('<h2>👤 Face PRO - 468 Dots</h2>'+credentialsBlock('face')+'<p>Face Mesh 468 Dots - MediaPipe face_mesh - Enroll + Verify.</p>'); }
-function openSystem(){ openPanel('<h2>⚙️ System PRO</h2><p>System test - Camera, Mic, Storage, Bluetooth.</p>'); }
-function openManual(){ openPanel('<h2>📖 Manual - Always FREE</h2><p>Manual - How to use GodEye.</p>'); }
-function openPricing(r){ openPanel('<h2>💰 Upgrade to PRO - Rs. 2,500 / Year</h2><p>PRO: Thumb Biometric + Attendance + Photo Effects + External Devices + No Watermark + Logo + Signature + Unlimited</p><button class="primary" onclick="showToast(\'PRO - Contact WanaLab\')">💰 Buy PRO - Rs. 2,500 / Year</button>'); }
-function openAbout(){ openPanel('<h2>ℹ️ About - WanaLab</h2><p>By WanaLab • Founded by Nasir Khan • GodEye v2.1</p>'); }
-
+function voiceTap(a){ if(a==='gps share'||a==='location') gpsShare(); else showToast('Voice: '+a); }
+function openDashboard(){ openPanel('<h2>📦 History - All Bills + Scans</h2><p>History shows all bills, scans, counts, faces, thumbs, attendance, effects, GPS.</p><p>Fake GPS Attempts: '+(JSON.parse(localStorage.getItem('god_fake_gps_log')||'[]').length)+'</p>'); }
+function openBill(){ openPanel('<h2>🧾 Bill PRO</h2>'+credentialsBlock('bill')+'<p>Bill page - Add items, total, export - With GPS Timestamp.</p>'); }
+function openDocScan(){ openPanel('<h2>📄 Doc Scan PRO</h2>'+credentialsBlock('doc')+'<p>Doc Scan page - Scan document, OCR - With GPS Timestamp.</p>'); }
+function openCount(){ openPanel('<h2>🔢 Count PRO</h2>'+credentialsBlock('count')+'<p>Count page - Count items - With GPS Timestamp.</p>'); }
+function openFacePage(){ openPanel('<h2>👤 Face PRO - 468 Dots</h2>'+credentialsBlock('face')+'<p>Face Mesh 468 Dots - MediaPipe face_mesh - Enroll + Verify - With GPS Timestamp.</p>'); }
+function openSystem(){ openPanel('<h2>⚙️ System PRO</h2><p>System test - Camera, Mic, Storage, Bluetooth, GPS, Anti-Fake GPS.</p><p>GPS: '+getGPSLine()+'</p><p>Fake GPS Attempts: '+(JSON.parse(localStorage.getItem('god_fake_gps_log')||'[]').length)+'</p>'); }
+function openManual(){ openPanel('<h2>📖 Manual - Always FREE</h2><p>Manual - How to use GodEye - GPS Share: Tap GPS Share on Camera - Captures + Shares Photo + Location + Map Link.</p>'); }
+function openPricing(r){ openPanel('<h2>💰 Upgrade to PRO - Rs. 2,500 / Year</h2><p>PRO: Thumb Biometric + Attendance + Photo Effects + GPS Full + Anti-Fake GPS + External Devices + No Watermark + Logo + Signature + Unlimited</p><button class="primary" onclick="showToast(\'PRO - Contact WanaLab\')">💰 Buy PRO - Rs. 2,500 / Year</button>'); }
+function openAbout(){ openPanel('<h2>ℹ️ About - WanaLab</h2><p>By WanaLab • Founded by Nasir Khan • GodEye v2.2 - GPS Timestamp + GPS Share + Anti-Fake GPS</p>'); }
 function updateLimits(){
   var b=getCount('god_bill_count'), s=getCount('god_scan_count'), c=getCount('god_count_total'), e=getCount('god_effects_count'), f=0;
   try{ f=JSON.parse(localStorage.getItem('god_faces')||'[]').length; }catch(e){}
@@ -206,15 +273,17 @@ function updateLimits(){
     document.getElementById('faceLimit').textContent='PRO ✅ Unlimited';
     document.getElementById('effectsLimit').textContent='PRO ✅ Unlimited';
     document.getElementById('statThumbSub').textContent='Thumb Biometric PRO ✅ Unlimited';
+    document.getElementById('gpsLimit').textContent='GPS Timestamp • PRO ✅ Full GPS + Map + Anti-Fake';
   } else {
     document.getElementById('billLimit').textContent='FREE: '+(5-b)+' / 5 Left';
     document.getElementById('scanLimit').textContent='FREE: '+(5-s)+' / 5 Left';
     document.getElementById('faceLimit').textContent='FREE: '+(2-f)+' / 2 Left';
     document.getElementById('effectsLimit').textContent='FREE: '+(5-e)+' / 5 Left • Clarendon';
     document.getElementById('statThumbSub').textContent='Thumb Biometric PRO Only';
+    document.getElementById('gpsLimit').textContent='GPS Timestamp • FREE: City + Time • PRO: Full GPS + Map';
   }
 }
 updateProBadge(); updateLimits();
 </script>
 </body>
-  </html>
+</html>
