@@ -1,4 +1,4 @@
-package com.wanalab.omnicamera.face
+package com.wanalab.godeye
 
 import android.content.Context
 import androidx.room.*
