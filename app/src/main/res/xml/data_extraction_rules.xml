@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<data-extraction-rules>
-    <cloud-backup>
-        <exclude domain="root" />
-        <exclude domain="database" />
-        <exclude domain="sharedpref" />
-        <exclude domain="external" />
-    </cloud-backup>
-    <device-transfer>
-        <exclude domain="root" />
-        <exclude domain="database" />
-        <exclude domain="sharedpref" />
-        <exclude domain="external" />
-    </device-transfer>
-</data-extraction-rules>
+<full-backup-content>
+    <!-- FIXED: Old file excluded root + database + sharedpref + external = excluded EVERYTHING, backup did nothing -->
+    <!-- Only exclude sensitive / cache data, keep cameras + settings backed up -->
+    <exclude domain="sharedpref" path="godeye_secure_prefs.xml" />
+    <exclude domain="sharedpref" path="godeye_tokens.xml" />
+    <exclude domain="database" path="godeye_cache.db" />
+    <exclude domain="file" path="cache/" />
+    <exclude domain="file" path="thumbnails/" />
+    <exclude domain="external" path="DCIM/GodEye/temp/" />
+</full-backup-content>
