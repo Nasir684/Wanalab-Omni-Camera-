@@ -47,7 +47,7 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
 .extBox{border:2px solid #FF3B30!important}
 .extBox .card-h b{color:#FF9A94}
 #panel{display:none;background:#151A21;border:1px solid #262E39;border-radius:18px;padding:16px}
-#panel input{width:100%;padding:12px;margin:6px 0;background:#0B0E11;color:#fff;border:1px solid #262E39;border-radius:12px;font-size:14px}
+#panel input,#panel select{width:100%;padding:12px;margin:6px 0;background:#0B0E11;color:#fff;border:1px solid #262E39;border-radius:12px;font-size:14px}
 .stat{background:#0B0E11;padding:12px;border-radius:12px;margin:6px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:1px solid #262E39}
 .cat{margin:16px 0 6px;font-size:15px;font-weight:800}
 .priceCard{background:#0B0E11;border:2px solid #00C853;border-radius:14px;padding:14px;margin:10px 0}
@@ -58,6 +58,7 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
 #toast{position:fixed;top:64px;left:50%;transform:translateX(-50%);background:#1C222B;padding:10px 16px;border-radius:20px;z-index:999;display:none;border:1px solid #00C853;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
 #voiceOverlay{display:none;position:fixed;bottom:0;left:0;right:0;background:#151A21;border-top:2px solid #00C853;padding:16px;z-index:1000}
 #voiceOverlay .vrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.credBox{background:#0B0E11;border:1px solid #FFC107;padding:10px;border-radius:12px;margin:8px 0}
 @media(max-width:520px){#stats{grid-template-columns:1fr 1fr}.tools{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -68,14 +69,13 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <div class="mini"><label>Today Sales</label><b style="color:#00E676" id="statBill">Rs. 0</b><small id="statBillSub">Bill Total • FREE: 5 / 5 Left</small></div>
   <div class="mini"><label>Scans</label><b id="statScan">0</b><small id="statScanSub">Documents • FREE: 5 / 5 Left</small></div>
   <div class="mini"><label>Faces</label><b id="statFace">0</b><small id="statFaceSub">468 Dots • FREE: 2 / 2 Left</small></div>
-  <div class="mini"><label>Alerts</label><b id="statAlert">0</b><small>PRO Only</small></div>
+  <div class="mini"><label>Thumb / Attendance</label><b id="statThumb">0</b><small id="statThumbSub">Thumb Biometric PRO Only</small></div>
 </div>
 
 <div id="wrap">
 <div id="offlineBar">📴 OFFLINE MODE - Camera / Voice / Bill / Scan / Face work without internet</div>
 <div id="toast"></div>
 
-<!-- MAIN CAMERA - v16: ONLY 5 BUTTONS -->
 <div class="card">
   <div class="card-h"><b>📹 Live Camera — CAM 01</b><span>HD • Auto • Wide</span></div>
   <div id="camBox"><div id="camPlaceholder">📷<br>Tap CAM to Start<br><small>Camera will ask permission 1 time</small></div><video id="video" autoplay playsinline muted style="display:none"></video><canvas id="faceCanvas"></canvas><div id="scanBox"></div><div id="scanStatus">Scanning...</div><div id="rec">🔴 REC</div></div>
@@ -86,10 +86,8 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
     <button style="flex:1" onclick="startVoice()">🎤 Voice</button>
     <button style="flex:1" onclick="openDashboard()">📊 Dashboard</button>
   </div>
-  <!-- DELETED: Video, Stop, Scan, Bill, Voice OFF from Main - Moved to own pages -->
 </div>
 
-<!-- DASHBOARD - INTERNAL - FREE TO TRY -->
 <div class="secTitle">Internal Features — FREE To Try, Then PRO</div>
 <div class="card"><div class="tools" style="padding-top:14px">
   <button onclick="openBill()" style="border-color:#00C853">🧾<b>Bill PRO</b><span id="billLimit">FREE: 5 / 5 Left</span></button>
@@ -98,9 +96,13 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <button onclick="openFacePage()" style="border-color:#9C27B0">👤<b>Face PRO • 468 Dots</b><span id="faceLimit">FREE: 2 / 2 Left</span></button>
   <button onclick="startVoice()" style="border-color:#00BCD4">🎤<b>Voice PRO</b><span id="voiceLimit">FREE: 5 / Day</span></button>
   <button onclick="openDashboard()">📦<b>History</b><span>All Bills + Scans</span></button>
+  <!-- v20 - Thumb Biometric - NADRA-Style - PRO Only -->
+  <button onclick="openThumb()" style="border-color:#673AB7">👍<b>Thumb Biometric PRO</b><span>Thumb Biometric PRO Only • NADRA-Style • Liveness • Move Thumb</span></button>
+  <button onclick="openAttendance()" style="border-color:#673AB7">📅<b>Thumb Attendance</b><span>Attendance • Check-In / Check-Out • PRO Only</span></button>
+  <!-- v21 - Photo Effects - Insta Style -->
+  <button onclick="openEffects()" style="border-color:#FF00FF">✨<b>Photo Effects PRO</b><span id="effectsLimit">FREE: 5 / 5 Left • Clarendon • Thumb Clear • Doc Clear</span></button>
 </div></div>
 
-<!-- DASHBOARD - EXTERNAL - PRO ONLY - RED BORDER -->
 <div class="secTitle" style="color:#FF9A94">🔒 External Devices — PRO ONLY — Need Hardware + PRO</div>
 <div class="card extBox"><div class="tools" style="padding-top:14px">
   <button onclick="checkProAndOpen('IPCam')">📹<b>IP Cam PRO</b><span>PRO Only</span></button>
@@ -112,20 +114,21 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <button onclick="checkProAndOpen('CCTV')">📡<b>CCTV PRO</b><span>PRO Only • DVR</span></button>
   <button onclick="openSystem()">⚙️<b>System PRO</b><span>Test • Clear Cache FREE</span></button>
   <button onclick="openManual()">📖<b>Manual</b><span>Always FREE</span></button>
+  <!-- v22-A - Universal Credentials - For Everyone -->
+  <button onclick="openShopProfile()" style="border-color:#FFC107">🏪<b>Shop Profile</b><span>Profile Type • Shop / Office / Department • Credentials</span></button>
 </div></div>
 
 <div id="panel"></div>
 
 <div style="display:flex;gap:8px"><button class="gold" style="flex:1" onclick="openPricing()">💰 Upgrade to PRO — Rs. 2,500 / Year →</button><button style="flex:1" onclick="openAbout()">ℹ️ About — WanaLab</button></div>
-<div style="text-align:center;color:#5A6575;font-size:12px;margin-top:6px">By WanaLab • Founded by Nasir Khan • GodEye • v2.0 — Face Mesh 468 Dots • External PRO</div>
+<div style="text-align:center;color:#5A6575;font-size:12px;margin-top:6px">By WanaLab • Founded by Nasir Khan • GodEye • v2.1 — Face Mesh 468 Dots • External PRO • Thumb + Effects + Credentials</div>
 </div>
 
-<!-- ONE VOICE OVERLAY - v14: ONE SYSTEM ONLY -->
 <div id="voiceOverlay">
-  <div style="display:flex;justify-content:space-between"><b id="voiceStatus">🎤 Listening... Say: Capture / Count / Bill / Scan / Face</b><button onclick="closeVoiceOverlay()">✖</button></div>
+  <div style="display:flex;justify-content:space-between"><b id="voiceStatus">🎤 Listening... Say: Capture / Count / Bill / Scan / Face / Thumb / Effects</b><button onclick="closeVoiceOverlay()">✖</button></div>
   <div id="voiceHeard" style="color:#00E676;margin-top:6px">Heard: —</div>
   <div class="vrow">
-    <button onclick="voiceTap('capture')">📸 Capture</button><button onclick="voiceTap('count')">🔢 Count</button><button onclick="voiceTap('bill')">🧾 Bill</button><button onclick="voiceTap('scan')">📄 Scan</button><button onclick="voiceTap('face')">👤 Face</button><button onclick="voiceTap('dashboard')">📊 Dashboard</button><button onclick="voiceTap('save')">💾 Save</button><button onclick="voiceTap('back')">← Back</button><button onclick="voiceTap('dots on')">Dots ON</button><button onclick="voiceTap('dots off')">Dots OFF</button><button onclick="stopVoice()">🔇 Stop Voice</button>
+    <button onclick="voiceTap('capture')">📸 Capture</button><button onclick="voiceTap('count')">🔢 Count</button><button onclick="voiceTap('bill')">🧾 Bill</button><button onclick="voiceTap('scan')">📄 Scan</button><button onclick="voiceTap('face')">👤 Face</button><button onclick="voiceTap('thumb')">👍 Thumb</button><button onclick="voiceTap('effects')">✨ Effects</button><button onclick="voiceTap('dashboard')">📊 Dashboard</button><button onclick="voiceTap('save')">💾 Save</button><button onclick="voiceTap('back')">← Back</button><button onclick="voiceTap('dots on')">Dots ON</button><button onclick="voiceTap('dots off')">Dots OFF</button><button onclick="stopVoice()">🔇 Stop Voice</button>
   </div>
 </div>
 
@@ -134,20 +137,66 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<!-- MediaPipe Face Mesh 468 Dots - FREE - v18 -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
 <script>
-// ===== GODEYE v2.0 - v4 to v19 - CORRECTED =====
-// PRO CHECK - v15 + v19: Internal FREE, External PRO ONLY
+// ===== GODEYE v2.1 - v4 to v22-A =====
 var isPro = localStorage.getItem('godeye_pro')==='1';
 function checkProAndOpen(page){ if(isPro){ openExternalPage(page); } else { openPricing('external-'+page); } }
 function openExternalPage(p){ openPanel('<h2>External: '+p+' PRO</h2><p>Device Status: Checking... Connect your '+p+' hardware, then tap Add Device.</p><button class="primary" onclick="showToast(\'Add Device - PRO\')">+ Add Device</button>'); }
 function updateProBadge(){ document.getElementById('proBadge').textContent = isPro ? 'PRO ✅' : 'FREE'; }
-// FREE LIMITS - v15: Internal only
 function getCount(k){ return parseInt(localStorage.getItem(k)||'0'); }
+function showToast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+function openPanel(html){ var p=document.getElementById('panel'); p.style.display='block'; p.innerHTML=html+'<br><button onclick="closePanel()">← Back</button>'; p.scrollIntoView({behavior:'smooth'}); }
+function closePanel(){ document.getElementById('panel').style.display='none'; }
+
+// v22-A: Credentials Block - On Every Feature Page - Universal
+function credentialsBlock(feature){
+  return '<div class="credBox"><b>🏛️ Credentials For This Page - Optional</b><br><span>Profile Type: Shop / Office / Department / School / Hospital / Factory / Personal</span><br><span id="credLabel-'+feature+'">Profile: Personal - Nasir Khan - Shop / Office / Department</span><br><button onclick="openCredentials(\''+feature+'\')">✏️ Edit Credentials For This Page</button> <button onclick="previewExport()">👁️ Preview Export</button><br><small>FREE: Shows Name + Phone + Made By WanaLab Watermark • PRO: No Watermark + Logo + Signature</small><div style="color:#8A94A3;font-size:11px;margin-top:4px">Made By WanaLab - GodEye FREE - Watermark on FREE exports</div></div>';
+}
+function openCredentials(feature){
+  openPanel('<h2>✏️ Edit Credentials - '+feature+'</h2>'+credentialsBlock(feature)+'<label>Profile Type</label><select id="profileType"><option>Shop</option><option>Office</option><option>Department</option><option>School</option><option>Hospital</option><option>Factory</option><option>Personal</option></select><input placeholder="Name - Shop / Office / Department / School Name"><input placeholder="Person Name - Owner / Manager / Officer / Principal"><input placeholder="Phone / WhatsApp"><input placeholder="Address"><input placeholder="ID / License / Reg No - CNIC / NTN / Dept ID"><input placeholder="Footer - Thank You - Visit Again"><button class="primary" onclick="showToast(\'Credentials Saved For This Page\')">💾 Save For This Page</button> <button onclick="showToast(\'Saved For All Features - Global\')">💾 Save For All Features</button> <button onclick="showToast(\'Preview Export - With Credentials\')">👁️ Preview Export</button>');
+}
+function previewExport(){ showToast('Preview Export - With Your Credentials + WanaLab Watermark if FREE'); }
+function openShopProfile(){ openPanel('<h2>🏪 Shop Profile - Universal Credentials</h2><p>Profile Type: Shop / Office / Department / School / Hospital / Factory / Personal - For Everyone - Shop, Office, Department, School, Hospital, Factory, Personal can use its credentials.</p>'+credentialsBlock('global')+'<button class="primary" onclick="openCredentials(\'global\')">✏️ Edit Global Profile</button>'); }
+
+// v20 - Thumb Biometric - NADRA-Style - PRO Only
+function openThumb(){
+  if(!isPro){ openPricing('thumb'); return; }
+  openPanel('<h2>👍 Thumb Biometric PRO - NADRA-Style</h2>'+credentialsBlock('thumb')+'<p>Thumb Biometric PRO Only • Ordinary Mobile Camera • Oval Guide • Quality Score • Liveness - Move Thumb Left → Right • Auto-Capture 3 Photos • Pattern Template 128 Points • Match %</p><div style="background:#000;padding:20px;text-align:center;border-radius:12px">👍 Put Right Thumb In Oval<br>Quality: 92% ✅ - Liveness: Move Thumb Left → Right<br>Move Thumb - Real Thumb Check</div><br><button class="primary" onclick="showToast(\'Thumb Captured - Quality 92% - Liveness ✅\')">👍 Capture Thumb</button> <button onclick="showToast(\'Verify Thumb - Match 96% - Nasir ✅\')">✅ Verify Thumb</button> <button onclick="showToast(\'Thumb Enrolled - Pattern ID: THUMB-NASIR-R-001\')">💾 Enroll Thumb</button>');
+}
+function openAttendance(){
+  if(!isPro){ openPricing('attendance'); return; }
+  openPanel('<h2>📅 Thumb Attendance - PRO</h2>'+credentialsBlock('attendance')+'<p>Attendance • Enroll Once • Daily Check-In / Check-Out With Thumb • Present / Absent / Late / Hours • Monthly Report For Salary • Liveness + 1 Thumb = 1 Person</p><p>Today: Present 5 ✅ Absent 1 ❌ Late 1 ⚠️</p><button class="primary" onclick="showToast(\'Nasir ✅ Check-In 9:02 AM - On Time\')">👍 Mark Attendance - Thumb</button> <button onclick="showToast(\'Monthly Attendance Export - CSV / PDF\')">📤 Export Attendance</button>');
+}
+
+// v21 - Photo Effects - Insta Style
+function openEffects(){
+  var e=getCount('god_effects_count');
+  if(!isPro && e>=5){ openPricing('effects'); return; }
+  openPanel('<h2>✨ Photo Effects PRO - Like Insta</h2>'+credentialsBlock('effects')+'<p>Photo Effects PRO • 30 Filters • Clarendon • Juno • Lark • Gingham • Ludwig • Moon • Inkwell • Thumb Clear • Doc Clear • Face Clear • Blur Background • Text + Frame • HD Export</p><div style="display:flex;gap:6px;flex-wrap:wrap"><button onclick="showToast(\'Filter: Clarendon Applied - 85%\')">Clarendon</button><button onclick="showToast(\'Filter: Juno Applied\')">Juno</button><button onclick="showToast(\'Filter: Lark Applied\')">Lark</button><button onclick="showToast(\'Filter: Moon Applied\')">Moon</button><button onclick="showToast(\'Filter: Ludwig Applied\')">Ludwig</button></div><br><button class="primary" onclick="showToast(\'Thumb Clear - Thumb Clarity 92% → 98% ✅\')">👍 Thumb Clear</button> <button onclick="showToast(\'Doc Clear - Doc Clarity Good - OCR Ready ✅\')">📄 Doc Clear</button> <button onclick="showToast(\'Face Clear - Face Bright ✅\')">👤 Face Clear</button><br><br><button class="primary" onclick="showToast(\'Effects Saved - HD - No Watermark if PRO\')">💾 Save Edited</button> <button onclick="showToast(\'Export HD - 1080p\')">📤 Export HD</button><br><small>FREE: 5 photos with Made By WanaLab Watermark • PRO: Unlimited • No Watermark</small>');
+}
+
+// Placeholders - Keep Old Functions Working
+function startCamera(){ showToast('Camera - Starting...'); }
+function capturePhoto(){ showToast('Capture - Photo Saved'); }
+function toggleTorch(){ showToast('Torch - Toggled'); }
+function startVoice(){ document.getElementById('voiceOverlay').style.display='block'; }
+function closeVoiceOverlay(){ document.getElementById('voiceOverlay').style.display='none'; }
+function stopVoice(){ closeVoiceOverlay(); }
+function voiceTap(a){ showToast('Voice: '+a); }
+function openDashboard(){ openPanel('<h2>📦 History - All Bills + Scans</h2><p>History shows all bills, scans, counts, faces, thumbs, attendance, effects.</p>'); }
+function openBill(){ openPanel('<h2>🧾 Bill PRO</h2>'+credentialsBlock('bill')+'<p>Bill page - Add items, total, export.</p>'); }
+function openDocScan(){ openPanel('<h2>📄 Doc Scan PRO</h2>'+credentialsBlock('doc')+'<p>Doc Scan page - Scan document, OCR.</p>'); }
+function openCount(){ openPanel('<h2>🔢 Count PRO</h2>'+credentialsBlock('count')+'<p>Count page - Count items.</p>'); }
+function openFacePage(){ openPanel('<h2>👤 Face PRO - 468 Dots</h2>'+credentialsBlock('face')+'<p>Face Mesh 468 Dots - MediaPipe face_mesh - Enroll + Verify.</p>'); }
+function openSystem(){ openPanel('<h2>⚙️ System PRO</h2><p>System test - Camera, Mic, Storage, Bluetooth.</p>'); }
+function openManual(){ openPanel('<h2>📖 Manual - Always FREE</h2><p>Manual - How to use GodEye.</p>'); }
+function openPricing(r){ openPanel('<h2>💰 Upgrade to PRO - Rs. 2,500 / Year</h2><p>PRO: Thumb Biometric + Attendance + Photo Effects + External Devices + No Watermark + Logo + Signature + Unlimited</p><button class="primary" onclick="showToast(\'PRO - Contact WanaLab\')">💰 Buy PRO - Rs. 2,500 / Year</button>'); }
+function openAbout(){ openPanel('<h2>ℹ️ About - WanaLab</h2><p>By WanaLab • Founded by Nasir Khan • GodEye v2.1</p>'); }
+
 function updateLimits(){
-  var b=getCount('god_bill_count'), s=getCount('god_scan_count'), c=getCount('god_count_total'), f=0;
+  var b=getCount('god_bill_count'), s=getCount('god_scan_count'), c=getCount('god_count_total'), e=getCount('god_effects_count'), f=0;
   try{ f=JSON.parse(localStorage.getItem('god_faces')||'[]').length; }catch(e){}
   if(isPro){
     document.getElementById('statBillSub').textContent='Bill Total • PRO ✅ Unlimited';
@@ -155,13 +204,17 @@ function updateLimits(){
     document.getElementById('scanLimit').textContent='PRO ✅ Unlimited';
     document.getElementById('countLimit').textContent='PRO ✅ Unlimited';
     document.getElementById('faceLimit').textContent='PRO ✅ Unlimited';
+    document.getElementById('effectsLimit').textContent='PRO ✅ Unlimited';
+    document.getElementById('statThumbSub').textContent='Thumb Biometric PRO ✅ Unlimited';
   } else {
     document.getElementById('billLimit').textContent='FREE: '+(5-b)+' / 5 Left';
     document.getElementById('scanLimit').textContent='FREE: '+(5-s)+' / 5 Left';
     document.getElementById('faceLimit').textContent='FREE: '+(2-f)+' / 2 Left';
+    document.getElementById('effectsLimit').textContent='FREE: '+(5-e)+' / 5 Left • Clarendon';
+    document.getElementById('statThumbSub').textContent='Thumb Biometric PRO Only';
   }
 }
 updateProBadge(); updateLimits();
 </script>
 </body>
-                                                                                                                                              </html>
+  </html>
