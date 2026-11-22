@@ -56,7 +56,6 @@ jobs:
           npm install --save-dev typescript@5.6.3
           npx cap sync android
 
-      # FIX FOR 127 - Check + Fix gradlew AFTER cap sync
       - name: Fix Gradle Wrapper - After Cap Sync
         run: |
           ls -la android/
@@ -68,9 +67,10 @@ jobs:
             curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradlew -o gradlew
             mkdir -p gradle/wrapper
             curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
-            curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.properties -o gradle/wrapper/gradle-wrapper.properties
             cd ..
           fi
+          # ALWAYS force stable Gradle 8.9 - AGP 8.7.3 rejects 8.9-rc-2
+          printf 'distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.9-all.zip\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n' > android/gradle/wrapper/gradle-wrapper.properties
           chmod +x android/gradlew
           ls -la android/gradlew
           cat android/gradle/wrapper/gradle-wrapper.properties
