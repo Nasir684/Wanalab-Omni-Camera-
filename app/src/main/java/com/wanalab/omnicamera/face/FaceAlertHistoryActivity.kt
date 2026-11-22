@@ -1,6 +1,7 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.ViewGroup
@@ -8,6 +9,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -66,6 +68,18 @@ class FaceAlertHistoryActivity : AppCompatActivity() {
         loadAlerts()
     }
 
+    // FIX v2.2: Decode sampled thumbnail - 400px, not full 8MB - Prevents OOM on 3GB phones
+    private fun decodeThumb(file: File): Bitmap? {
+        return try {
+            val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(file.absolutePath, opts)
+            var sample = 1
+            while (opts.outWidth / sample > 400 || opts.outHeight / sample > 400) sample *= 2
+            val opts2 = BitmapFactory.Options().apply { inSampleSize = sample }
+            BitmapFactory.decodeFile(file.absolutePath, opts2)
+        } catch (e: Exception) { null }
+    }
+
     private fun loadAlerts() {
         scope.launch(Dispatchers.Default) {
             val files = FaceAlertManager.getAlertHistory(this@FaceAlertHistoryActivity)
@@ -87,11 +101,10 @@ class FaceAlertHistoryActivity : AppCompatActivity() {
                         setPadding(0, 12, 0, 12)
                     }
 
-                    // Thumbnail
                     val thumb = ImageView(this@FaceAlertHistoryActivity).apply {
                         layoutParams = LinearLayout.LayoutParams(-1, 400)
                         scaleType = ImageView.ScaleType.CENTER_CROP
-                        setImageBitmap(BitmapFactory.decodeFile(file.absolutePath))
+                        setImageBitmap(decodeThumb(file))
                     }
 
                     val timeStr = SimpleDateFormat("dd MMM yyyy, hh:mm:ss a", Locale.US).format(Date(file.lastModified()))
@@ -109,8 +122,8 @@ class FaceAlertHistoryActivity : AppCompatActivity() {
                         text = "View Full"
                         layoutParams = LinearLayout.LayoutParams(0, -2, 1f)
                         setOnClickListener {
-                            // Open full image in Enroll - reuse pendingBitmap
-                            val bmp = BitmapFactory.decodeFile(file.absolutePath)
+                            // FIX v2.2: Use thumb for preview, full only when needed
+                            val bmp = decodeThumb(file)
                             FaceEnrollActivity.pendingBitmap = bmp
                             startActivity(Intent(this@FaceAlertHistoryActivity, FaceEnrollActivity::class.java))
                         }
@@ -120,7 +133,7 @@ class FaceAlertHistoryActivity : AppCompatActivity() {
                         text = "Enroll This Person"
                         layoutParams = LinearLayout.LayoutParams(0, -2, 1f)
                         setOnClickListener {
-                            val bmp = BitmapFactory.decodeFile(file.absolutePath)
+                            val bmp = decodeThumb(file)
                             FaceEnrollActivity.pendingBitmap = bmp
                             Toast.makeText(this@FaceAlertHistoryActivity, "Now enter name and Save", Toast.LENGTH_SHORT).show()
                             startActivity(Intent(this@FaceAlertHistoryActivity, FaceEnrollActivity::class.java))
@@ -170,5 +183,11 @@ class FaceAlertHistoryActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadAlerts()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // FIX v2.2: Cancel scope - No leak on rotate
+        try { scope.cancel() } catch (e: Exception) {}
     }
 }
