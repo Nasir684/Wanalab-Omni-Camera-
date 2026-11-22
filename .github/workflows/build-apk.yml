@@ -17,8 +17,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          # DO NOT use cache: npm here - you have no package-lock.json
-          # cache will fail the job
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -29,15 +27,16 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build web assets
-        run: npm run build
+      - name: Verify web assets exist
+        run: |
+          ls -la www/
+          test -f www/index.html || (echo "Missing www/index.html" && exit 1)
 
       - name: Sync Capacitor Android
         run: npx cap sync android
 
       - name: Force AndroidX + Gradle 8.9
         run: |
-          # 1. Force gradle.properties - cap sync overwrites it
           cat > android/gradle.properties <<'EOF'
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           org.gradle.parallel=true
@@ -45,9 +44,7 @@ jobs:
           android.enableJetifier=true
           android.nonTransitiveRClass=true
           EOF
-          cat android/gradle.properties
 
-          # 2. Force Gradle 8.9 stable - fixes Gradle deprecation / incompatibility
           cat > android/gradle/wrapper/gradle-wrapper.properties <<'EOF'
           distributionBase=GRADLE_USER_HOME
           distributionPath=wrapper/dists
@@ -55,8 +52,6 @@ jobs:
           zipStoreBase=GRADLE_USER_HOME
           zipStorePath=wrapper/dists
           EOF
-          cat android/gradle/wrapper/gradle-wrapper.properties
-
           chmod +x android/gradlew
 
       - name: Build Debug APK
