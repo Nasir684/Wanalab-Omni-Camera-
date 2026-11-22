@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Export Hub v2.2 - GodEye v2.2 - By WanaLab</title>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Export Hub v2.2 FINAL - GodEye v2.2 - By WanaLab</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -7,8 +7,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://unpkg.com/mqtt@5.10.0/dist/mqtt.min.js"></script>
 </head><body style="background:#000;color:#0f8;font-family:system-ui;padding:16px;max-width:900px;margin:auto">
-<h2>📘 Export Hub v2.2 - GodEye v2.2 - By WanaLab</h2>
-<p>Pages: <b id="pc">0</b> | <span id="net" style="color:#ffcc00"></span> | <a href="index.html" style="color:#0f8">Back to Camera v2.2</a> | <span id="proBadge2" style="color:#FFC107">FREE</span></p>
+<h2>📘 Export Hub v2.2 FINAL - GodEye v2.2 - By WanaLab</h2>
+<p>Pages: <b id="pc">0</b> | <span id="net" style="color:#ffcc00"></span> | <a href="www/index.html" style="color:#0f8">← Back to Camera v2.2</a> | <a href="./shop.html" style="color:#0f8">Shop Hub →</a> | <a href="./about.html" style="color:#0f8">About</a> | <span id="proBadge2" style="color:#FFC107">FREE</span></p>
 
 <!-- v23: GPS Timestamp - On Export Hub -->
 <div style="background:#111;border:2px solid #00E676;border-radius:14px;padding:14px;margin:12px 0">
@@ -101,7 +101,7 @@
 <input id="ws_url" placeholder="WebSocket - ws://192.168.1.100:8080" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
 </div>
 <div style="margin-top:12px"><button onclick="clearAll()" style="padding:12px;background:#300;color:#f55;border:none;border-radius:10px">🗑️ CLEAR ALL PAGES</button></div>
-<p style="color:#666;font-size:12px;text-align:center;margin-top:16px">By WanaLab • Founded by Nasir Khan • GodEye v2.2 • Export Hub v2.2 • GPS + Anti-Fake GPS</p>
+<p style="color:#666;font-size:12px;text-align:center;margin-top:16px">By WanaLab • Founded by Nasir Khan • GodEye v2.2 • Export Hub v2.2 FINAL • GPS + Anti-Fake GPS • <a href="www/index.html" style="color:#0f8">Back to Camera</a></p>
 
 <script>
 let isPro = localStorage.getItem('godeye_pro')==='1';
@@ -119,15 +119,11 @@ function setStatus(m){ document.getElementById('status').innerText=m; }
 function getT(id){ return document.getElementById(id).checked; }
 function updateNet(){ document.getElementById('net').innerText=navigator.onLine?'🟢 Online':'🟡 Offline - PDF/DOCX/XLSX/CSV/ZIP OK'; }
 window.addEventListener('online',updateNet); window.addEventListener('offline',updateNet); updateNet();
-
-// ===== v23 + v23-B: GPS Timestamp + Anti-Fake GPS - Block GPS Emulator / Fake GPS =====
 let currentGPS = null, gpsFake = false, gpsFakeReason = '';
 function gpsDistance(lat1, lon1, lat2, lon2){ var R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180; var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
 function checkFakeGPS(pos){
   if(!document.getElementById('t_antifake').checked) return {fake:false, reason:''};
-  // Check 1: isFromMockProvider - Android built-in flag - GPS Emulator / Fake GPS sets this
   if(pos.coords && pos.coords.isFromMockProvider) return {fake:true, reason:'Mock Provider ON - isFromMockProvider - Fake GPS App / GPS Emulator Detected'};
-  // Check 2: GPS Jump - >5km in <10 sec = Impossible = Fake
   var last = JSON.parse(localStorage.getItem('godeye_last_gps')||'null');
   if(last){
     var dist = gpsDistance(last.lat, last.lng, pos.coords.latitude, pos.coords.longitude);
@@ -170,7 +166,6 @@ function getGPSLine(){
   return 'GPS: '+currentGPS.lat+','+currentGPS.lng+' - Accuracy '+Math.round(currentGPS.acc)+'m - Time: '+currentGPS.time+' - Map: '+currentGPS.map+' - ✅ Real GPS Proof';
 }
 function gpsShare(){
-  // v23-A + v23-B: GPS Share With Anti-Fake Check
   if(gpsFake && isPro){ setStatus('❌ Fake GPS Blocked - Cannot Share - '+gpsFakeReason); return; }
   if(!currentGPS){ refreshGPS(); setStatus('Getting GPS - Tap GPS Share Again'); return; }
   var c=getCredHeader();
@@ -186,7 +181,6 @@ function shareLocationOnly(){
   setStatus('✅ Location Only Shared - No Photo - Map Link Sent');
 }
 refreshGPS();
-
 function getCredHeader(){
   if(!document.getElementById('cred_show').checked) return {header:'', footer:''};
   let type=document.getElementById('cred_type').value;
