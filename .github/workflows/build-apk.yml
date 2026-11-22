@@ -1,4 +1,4 @@
-name: Build GodEye APK + AAB - v2.1 - Thumb + Effects + Credentials
+name: Build GodEye APK + AAB - v2.2 - Thumb + Effects + Credentials + GPS + Anti-Fake
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 
 env:
-  GODEYE_VERSION: "2.1"
+  GODEYE_VERSION: "2.2"
   GODEYE_NAME: "GodEye - By WanaLab"
   PRO_PRICE: "Rs. 2,500 / Year"
 
@@ -17,11 +17,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show repo files
+      - name: Show repo files - v2.2 Structure
         run: |
           ls -la
+          echo "--- www/ - Main Camera ---"
           ls -la www/ || echo "www/ NOT FOUND"
           ls -lh www/index.html || echo "www/index.html MISSING"
+          echo "--- ROOT - Shop / Export / About / Privacy ---"
+          ls -lh shop.html || echo "shop.html MISSING in ROOT"
+          ls -lh export.html || echo "export.html MISSING in ROOT"
+          ls -lh about.html || echo "about.html MISSING in ROOT"
+          ls -lh privacy.html || echo "privacy.html MISSING in ROOT"
           echo "Version: $GODEYE_VERSION - $GODEYE_NAME - PRO: $PRO_PRICE"
 
       - name: Ensure web assets exist
@@ -34,7 +40,7 @@ jobs:
       # v4-v22-A CHECK: HTML must contain full spec - FAIL if old HTML
       - name: Check Spec v4-v22-A in HTML - FAIL if old HTML
         run: |
-          echo "Checking HTML for v4-v22-A spec..."
+          echo "Checking www/index.html for v4-v22-A spec..."
           grep -q "468 Dots" www/index.html || (echo "❌ FAIL: Face Mesh 468 Dots missing - See Spec v18" && exit 1)
           grep -q "MediaPipe\|mediapipe\|face_mesh" www/index.html || (echo "❌ FAIL: MediaPipe missing - See Spec v18" && exit 1)
           grep -q "External Devices" www/index.html || (echo "❌ FAIL: External Devices section missing - See Spec v19" && exit 1)
@@ -56,13 +62,57 @@ jobs:
           grep -q "Profile Type" www/index.html || (echo "❌ FAIL: Profile Type Shop/Office/Department missing - See Spec v22-A" && exit 1)
           grep -q "Shop.*Office.*Department\|Office.*Department" www/index.html || (echo "❌ FAIL: Universal Profile Types Shop/Office/Department missing - See Spec v22-A" && exit 1)
           grep -q "WanaLab.*Watermark\|Made By WanaLab" www/index.html || (echo "❌ FAIL: WanaLab Watermark missing for FREE - See Spec v22" && exit 1)
+          # v23 + v23-A + v23-B - GPS Timestamp + GPS Share + Anti-Fake GPS - NEW v2.2
+          grep -q "GPS Timestamp" www/index.html || (echo "❌ FAIL: GPS Timestamp missing - See Spec v23" && exit 1)
+          grep -q "GPS Share\|gpsShare" www/index.html || (echo "❌ FAIL: GPS Share missing - See Spec v23-A" && exit 1)
+          grep -q "isFromMockProvider\|Anti-Fake GPS" www/index.html || (echo "❌ FAIL: Anti-Fake GPS missing - See Spec v23-B" && exit 1)
+          grep -q "maps.google.com" www/index.html || (echo "❌ FAIL: Map Link missing for GPS Share - See Spec v23-A" && exit 1)
+          grep -q "v2.2" www/index.html || (echo "❌ FAIL: Version v2.2 missing in www/index.html - Update version" && exit 1)
+          # Link Checks - For Structure www/index.html + ROOT files - NEW v2.2
+          grep -q "\.\./shop.html\|\.\./export.html" www/index.html || (echo "❌ FAIL: www/index.html links must be ../shop.html / ../export.html - Not shop.html alone - See Structure: index in www/, shop/export in ROOT" && exit 1)
           # OLD BAD TEXT - Must NOT exist
           if grep -q "SHOP PRO" www/index.html; then echo "❌ FAIL: Old SHOP PRO Rs. 5,000 still in HTML - Delete it - See Spec v8" && exit 1; fi
           if grep -q "HARDWARE BUNDLE" www/index.html; then echo "❌ FAIL: Old HARDWARE BUNDLE still in HTML - Delete it" && exit 1; fi
           if grep -q "Simulated" www/index.html; then echo "❌ FAIL: 'Simulated' Thermal still in HTML - Delete it - See Spec v19" && exit 1; fi
           if grep -q "localStorage.clear()" www/index.html; then echo "❌ FAIL: Dangerous localStorage.clear() still in HTML - Delete Clear Data button from Main - See Spec v12" && exit 1; fi
           if grep -q "Browser cannot match faces" www/index.html; then echo "❌ FAIL: Old Face Tag Only text still in HTML - Replace with 468 Dots - See Spec v18" && exit 1; fi
-          echo "✅ HTML Spec Check Passed - v4-v22-A - Thumb + Effects + Credentials"
+          echo "✅ HTML Spec Check Passed - v4-v23-B - Thumb + Effects + Credentials + GPS + Anti-Fake"
+
+      # ROOT Files Checks - Shop + Export + About + Privacy - NEW v2.2
+      - name: Check ROOT Files - shop.html + export.html - FAIL if old
+        run: |
+          echo "Checking ROOT files..."
+          if [ -f shop.html ]; then
+            grep -q "GPS Timestamp" shop.html || (echo "❌ FAIL: GPS Timestamp missing in shop.html - See Spec v23" && exit 1)
+            grep -q "Credentials" shop.html || (echo "❌ FAIL: Credentials missing in shop.html - See Spec v22-A" && exit 1)
+            grep -q "Barcode" shop.html || (echo "❌ FAIL: Barcode missing in shop.html" && exit 1)
+            grep -q "www/index.html" shop.html || (echo "❌ FAIL: shop.html link must be www/index.html - Not index.html alone - index is in www/" && exit 1)
+            grep -q "v2.2" shop.html || (echo "❌ FAIL: Version v2.2 missing in shop.html" && exit 1)
+            echo "✅ shop.html Passed"
+          else
+            echo "⚠️ shop.html not found in ROOT - Skipping Shop check - Commit shop.html in ROOT"
+          fi
+          if [ -f export.html ]; then
+            grep -q "GPS Timestamp" export.html || (echo "❌ FAIL: GPS Timestamp missing in export.html - See Spec v23" && exit 1)
+            grep -q "Credentials" export.html || (echo "❌ FAIL: Credentials missing in export.html - See Spec v22-A" && exit 1)
+            grep -q "www/index.html" export.html || (echo "❌ FAIL: export.html link must be www/index.html - Not index.html alone" && exit 1)
+            grep -q "v2.2" export.html || (echo "❌ FAIL: Version v2.2 missing in export.html" && exit 1)
+            echo "✅ export.html Passed"
+          else
+            echo "⚠️ export.html not found in ROOT - Skipping Export check"
+          fi
+          if [ -f about.html ]; then
+            grep -q "v2.2" about.html || (echo "❌ FAIL: Version v2.2 missing in about.html" && exit 1)
+            grep -q "GPS" about.html || (echo "❌ FAIL: GPS missing in about.html - Privacy must mention GPS" && exit 1)
+            echo "✅ about.html Passed"
+          fi
+          if [ -f privacy.html ]; then
+            grep -q "v2.2" privacy.html || (echo "❌ FAIL: Version v2.2 missing in privacy.html" && exit 1)
+            grep -q "GPS\|Location" privacy.html || (echo "❌ FAIL: GPS / Location missing in privacy.html - Must mention GPS for Play Store" && exit 1)
+            grep -q "Thumb" privacy.html || (echo "❌ FAIL: Thumb missing in privacy.html - Must mention Thumb for Play Store" && exit 1)
+            echo "✅ privacy.html Passed"
+          fi
+          echo "✅ ROOT Files Check Passed"
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
@@ -99,8 +149,8 @@ jobs:
       - name: Sync web assets
         run: npx cap sync android
 
-      # v19: ALL PERMISSIONS - Internal + External Devices
-      - name: Fix Permissions - Camera + Mic + Bluetooth + USB + Storage + Network
+      # v19 + v23: ALL PERMISSIONS - Internal + External + GPS Location
+      - name: Fix Permissions - Camera + Mic + Bluetooth + USB + Storage + Network + GPS Location
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i '/CAMERA/d' $MANIFEST
@@ -113,11 +163,13 @@ jobs:
           sed -i '/INTERNET/d' $MANIFEST
           sed -i '/ACCESS_NETWORK_STATE/d' $MANIFEST
           sed -i '/FOREGROUND_SERVICE/d' $MANIFEST
-          sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />\n    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />\n    <uses-feature android:name="android.hardware.usb.host" android:required="false" />\n    <uses-feature android:name="android.hardware.microphone" android:required="false" />\n    <application|' $MANIFEST
+          sed -i '/ACCESS_FINE_LOCATION/d' $MANIFEST
+          sed -i '/ACCESS_COARSE_LOCATION/d' $MANIFEST
+          sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />\n    <uses-feature android:name="android.hardware.usb.host" android:required="false" />\n    <uses-feature android:name="android.hardware.microphone" android:required="false" />\n    <uses-feature android:name="android.hardware.location.gps" android:required="false" />\n    <application|' $MANIFEST
           echo "--- Permissions in Manifest ---"
-          grep -i "CAMERA\|RECORD_AUDIO\|BLUETOOTH\|USB\|EXTERNAL_STORAGE\|READ_MEDIA\|INTERNET\|FOREGROUND" $MANIFEST || echo "Permission check failed"
+          grep -i "CAMERA\|RECORD_AUDIO\|BLUETOOTH\|USB\|EXTERNAL_STORAGE\|READ_MEDIA\|INTERNET\|FOREGROUND\|LOCATION" $MANIFEST || echo "Permission check failed"
 
-      - name: Set Version v2.1 in Build Gradle
+      - name: Set Version v2.2 in Build Gradle
         run: |
           GRADLE="android/app/build.gradle"
           sed -i "s/versionName .*/versionName \"$GODEYE_VERSION\"/" $GRADLE || echo "versionName not in gradle - OK, set in Capacitor config"
@@ -143,19 +195,19 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: GodEye-APK-v2.1
+          name: GodEye-APK-v2.2
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: GodEye-AAB-v2.1
+          name: GodEye-AAB-v2.2
           path: android/app/build/outputs/bundle/debug/app-debug.aab
 
       - name: Build Summary
         run: |
-          echo "✅ GodEye v2.1 Build Done"
+          echo "✅ GodEye v2.2 Build Done"
           echo "Version: $GODEYE_VERSION"
           echo "PRO: $PRO_PRICE"
-          echo "Features: Bill + Scan + Count + Face 468 Dots + Voice ONE + External PRO + Thumb Biometric NADRA-Style + Attendance + Photo Effects Insta + Universal Credentials Every Page"
+          echo "Features: Bill + Scan + Count + Face 468 Dots + Voice ONE + External PRO + Thumb Biometric NADRA-Style + Attendance + Photo Effects Insta + Universal Credentials Every Page + GPS Timestamp + GPS Share + Anti-Fake GPS"
           echo "By WanaLab - Founded by Nasir Khan"
