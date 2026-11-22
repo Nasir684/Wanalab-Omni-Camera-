@@ -1,4 +1,4 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.Manifest
 import android.content.Intent
@@ -41,7 +41,6 @@ class CameraActivity : AppCompatActivity() {
     private var cameraProvider: ProcessCameraProvider? = null
     private lateinit var faceEngine: FaceEngine
 
-    // FIX 2: Single executor, created once, shutdown in onDestroy
     private val analysisExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private val faceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
@@ -52,7 +51,6 @@ class CameraActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_CODE = 1001
-        // FIX 3: 150ms throttle, not 300ms - Don't miss 2nd person
         private const val THROTTLE_MS = 150L
         private val PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
@@ -87,7 +85,6 @@ class CameraActivity : AppCompatActivity() {
         }
         root.addView(statusText, statusParams)
 
-        // FIX 4: ONE Menu button, not 4 stacked buttons - Saves 40% preview
         val menuBtn = Button(this).apply {
             text = "☰ Menu - Viewer / Enroll / Alerts / Log"
             setOnClickListener { view ->
@@ -128,7 +125,6 @@ class CameraActivity : AppCompatActivity() {
 
         setContentView(root)
 
-        // Tap overlay to enroll - Only for enroll, NOT for every frame
         overlayView.setOnClickListener {
             val bmp = previewView.bitmap
             if (bmp != null) {
@@ -140,7 +136,6 @@ class CameraActivity : AppCompatActivity() {
             }
         }
 
-        // Face Engine - Offline
         faceEngine = FaceEngine(this)
         faceScope.launch {
             try {
@@ -152,7 +147,6 @@ class CameraActivity : AppCompatActivity() {
             }
         }
 
-        // Network - Offline / Online, does NOT overwrite face count
         NetworkAutoManager.start(this) { online, wifi ->
             isOnlineNow = online
             runOnUiThread { updateStatus() }
@@ -212,7 +206,6 @@ class CameraActivity : AppCompatActivity() {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .build().also {
-                    // FIX 2: Reuse same executor, don't create new one
                     it.setAnalyzer(analysisExecutor) { imageProxy ->
                         processFaceFrame(imageProxy)
                     }
@@ -241,27 +234,24 @@ class CameraActivity : AppCompatActivity() {
             lastProcessed = now
             isProcessing = true
 
-            // FIX 1: Use imageProxy -> Bitmap, NOT previewView.bitmap
-            // previewView.bitmap = Screenshot on UI thread, 8MB copy, lags + heats phone
-            // imageProxy = Direct YUV from CameraX, 3x faster, no UI thread block
             val bitmap = imageProxyToBitmap(imageProxy) ?: run {
                 isProcessing = false
                 return
             }
-            // Scale down for FaceEngine - 640px is enough for face, faster
             val scaled = if (bitmap.width > 640) {
                 val ratio = 640f / bitmap.width.toFloat()
                 Bitmap.createScaledBitmap(bitmap, 640, (bitmap.height * ratio).toInt(), true)
             } else bitmap
+            // FIX v2.2: Recycle original ONLY if we made a scaled copy, once
             if (scaled != bitmap) {
                 try { bitmap.recycle() } catch (e: Exception) {}
             }
             val safeCopy = scaled.copy(Bitmap.Config.ARGB_8888, false)
+            // FIX v2.2: Do NOT recycle scaled here - safeCopy is separate, scaled still needed until finally
 
             faceScope.launch {
                 try {
                     val results = faceEngine.processFrame("mobile_camera", safeCopy)
-                    // FIX 3: Reset isProcessing BEFORE UI update, so next frame not missed
                     isProcessing = false
                     if (results.isNotEmpty()) {
                         FaceLogManager.logFaces(this@CameraActivity, results)
@@ -286,8 +276,9 @@ class CameraActivity : AppCompatActivity() {
                     e.printStackTrace()
                     isProcessing = false
                 } finally {
-                    try { safeCopy.recycle() } catch (e: Exception) {}
-                    try { scaled.recycle() } catch (e: Exception) {}
+                    // FIX v2.2: Recycle each bitmap ONCE here - No double recycle
+                    try { if (!safeCopy.isRecycled) safeCopy.recycle() } catch (e: Exception) {}
+                    try { if (!scaled.isRecycled) scaled.recycle() } catch (e: Exception) {}
                 }
             }
         } catch (e: Exception) {
@@ -298,7 +289,6 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    // FIX 1 Helper: YUV_420_888 -> Bitmap, fast, no UI thread
     private fun imageProxyToBitmap(imageProxy: ImageProxy): Bitmap? {
         return try {
             val yBuffer = imageProxy.planes[0].buffer
@@ -326,7 +316,6 @@ class CameraActivity : AppCompatActivity() {
         super.onDestroy()
         cameraProvider?.unbindAll()
         try { faceEngine.close() } catch (e: Exception) {}
-        // FIX 2: Shutdown executor + scope, no leak on rotate
         try { analysisExecutor.shutdown() } catch (e: Exception) {}
         try { faceScope.cancel() } catch (e: Exception) {}
     }
