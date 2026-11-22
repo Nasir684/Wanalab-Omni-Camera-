@@ -1,4 +1,4 @@
-package com.godeye.app.face
+package com.wanalab.godeye
 
 import android.net.Uri
 import android.util.Log
@@ -61,7 +61,6 @@ object CameraProtocolManager {
             }
             Protocol.RTMP -> {
                 // FIX: RTMP via Progressive + DefaultHttpDataSource - RtmpDataSource removed in Media3 1.4+
-                // If you have RTMP extension, replace factory below with RtmpDataSource.Factory
                 try {
                     val factory = DefaultHttpDataSource.Factory()
                     val source = androidx.media3.exoplayer.source.ProgressiveMediaSource.Factory(factory)
