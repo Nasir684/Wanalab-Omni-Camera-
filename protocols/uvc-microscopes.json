@@ -16,7 +16,14 @@
     "use": "Seeds, PCB, skin, insects, Count ROI",
     "voice": ["microscope", "micro", "uvc", "usb"],
     "price_rs": 2500,
-    "version": "1.6.9"
+    "features": ["count-roi", "gps-timestamp", "gps-share", "photo-effects-clarendon"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "generic-uvc-microscope-1600x",
@@ -35,7 +42,14 @@
     "use": "Seeds, PCB, small parts, Count ROI",
     "voice": ["microscope", "micro", "uvc"],
     "price_rs": 3500,
-    "version": "1.6.9"
+    "features": ["count-roi", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "jiusion-microscope",
@@ -54,6 +68,13 @@
     "use": "Seeds, PCB, skin, Count ROI",
     "voice": ["jiusion", "microscope", "micro"],
     "price_rs": 3000,
-    "version": "1.6.9"
+    "features": ["count-roi", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   }
 ]
