@@ -14,7 +14,14 @@
     "use": "Pipes, engine, wall inspection, Count ROI",
     "voice": ["endoscope", "inspection", "pipe", "uvc"],
     "price_rs": 3000,
-    "version": "1.6.9"
+    "features": ["count-roi", "gps-timestamp", "gps-share", "photo-effects-clarendon"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "depstech-endoscope-wf028",
@@ -33,7 +40,14 @@
     "use": "Pipes, engine, dual lens inspection",
     "voice": ["depstech", "endoscope", "wifi", "inspection"],
     "price_rs": 6500,
-    "version": "1.6.9"
+    "features": ["dual-lens", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "teslong-endoscope",
@@ -50,6 +64,13 @@
     "use": "Engine, pipes, inspection",
     "voice": ["teslong", "endoscope", "inspection"],
     "price_rs": 8000,
-    "version": "1.6.9"
+    "features": ["gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   }
 ]
