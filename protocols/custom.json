@@ -4,11 +4,15 @@
     "name": "Omni Cam - Phone Camera",
     "type": "PHONE",
     "mode": "auto",
-    "description": "Main camera - Capture, Video, Count, Scan, Face, Night HDR",
+    "description": "Main camera - Capture, Video, Count, Scan, Face 468 Dots, Thumb, Night HDR, GPS Timestamp",
     "status": "active",
     "protocol": "getUserMedia",
     "resolution": "1920x1080",
-    "version": "1.6.9"
+    "features": ["capture", "video", "count", "scan", "face-468", "thumb-biometric", "night-hdr", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "dji-mini-4-pro",
@@ -18,8 +22,11 @@
     "description": "Tracking via template-match (canvas). No DJI SDK in browser.",
     "status": "active",
     "protocol": "canvas-template-match",
-    "features": ["tap-to-lock", "confidence-percent", "center-dot"],
-    "version": "1.6.9"
+    "features": ["tap-to-lock", "confidence-percent", "center-dot", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "flir-one-pro",
@@ -30,8 +37,11 @@
     "status": "active",
     "protocol": "canvas-thermal-jet-simulated",
     "palette": ["jet", "ironbow", "hot"],
-    "features": ["live-thermal-0-100", "night-mode-0-100", "hdr-0-100", "exposure-slider"],
-    "version": "1.6.9"
+    "features": ["live-thermal-0-100", "night-mode-0-100", "hdr-0-100", "exposure-slider", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "usb-doc-cam",
@@ -42,7 +52,11 @@
     "status": "active",
     "protocol": "uvc",
     "resolution": "1920x1080",
-    "version": "1.6.9"
+    "features": ["gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "ip-cam-rtsp",
@@ -54,7 +68,11 @@
     "protocol": "hls-via-go2rtc",
     "ip": "192.168.1.100",
     "rtsp": "rtsp://192.168.1.100:554/stream1",
-    "version": "1.6.9"
+    "features": ["gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-uvc-device",
@@ -68,7 +86,10 @@
     "resolution": "1920x1080",
     "protocol": "uvc",
     "addedBy": "user",
-    "version": "1.6.9"
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-wifi-camera",
@@ -81,7 +102,10 @@
     "status": "template",
     "protocol": "mjpeg",
     "port": 80,
-    "version": "1.6.9"
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-ip-camera",
@@ -95,7 +119,10 @@
     "protocol": "rtsp-via-go2rtc",
     "port": 554,
     "username": "admin",
-    "version": "1.6.9"
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-doc-scanner",
@@ -106,11 +133,14 @@
     "status": "active",
     "protocol": "canvas-camscan",
     "engine": "canvas 2d + tesseract.js v5 + jspdf + docx.js",
-    "features": ["manual-4-corner-crop", "count-roi", "ocr-roi", "barcode-roi", "magic-filter", "bw", "gray", "thermal-filter", "night-filter", "searchable-pdf", "docx-with-images", "tap-bill-overlay"],
+    "features": ["manual-4-corner-crop", "count-roi", "ocr-roi", "barcode-roi", "magic-filter", "bw", "gray", "thermal-filter", "night-filter", "searchable-pdf", "docx-with-images", "tap-bill-overlay", "gps-timestamp", "gps-share"],
     "filters": ["original", "magic", "bw", "gray", "thermal", "night", "warm", "cool", "sharp"],
-    "ocrLanguages": ["eng", "urd", "eng+urd"],
+    "ocrLanguages": ["eng", "urd", "ara", "pus", "hin", "eng+urd"],
     "exportFormats": ["jpg", "img-pdf", "searchable-pdf", "txt", "docx-with-images"],
-    "version": "1.6.9"
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-ocr-scanner",
@@ -121,21 +151,27 @@
     "status": "active",
     "protocol": "tesseract-js-roi",
     "engine": "tesseract.js v5 ROI",
-    "features": ["roi-ocr", "full-ocr", "searchable-pdf", "txt-export", "docx-img-export", "copy-text"],
-    "languages": ["eng", "urd", "eng+urd"],
-    "version": "1.6.9"
+    "features": ["roi-ocr", "full-ocr", "searchable-pdf", "txt-export", "docx-img-export", "copy-text", "gps-timestamp"],
+    "languages": ["eng", "urd", "ara", "pus", "hin", "eng+urd"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-count-roi",
     "name": "Count ROI - Object Counter",
     "type": "COUNT",
     "mode": "auto",
-    "description": "Drag box to count bottles only inside. Uses COCO-SSD + CountingPro. For shop inventory.",
+    "description": "Drag box to count bottles only inside. Uses COCO-SSD + CountingPro v2.2 Anti-Mix.",
     "status": "active",
     "protocol": "coco-ssd-count",
     "engine": "COCO-SSD + CountingPro",
-    "features": ["roi-count", "live-count", "shop-inventory"],
-    "version": "1.6.9"
+    "features": ["roi-count", "live-count", "shop-inventory", "gps-timestamp"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-bill-tap",
@@ -146,53 +182,68 @@
     "status": "active",
     "protocol": "tap-bill-overlay",
     "engine": "canvas overlay + jsPDF",
-    "features": ["tap-to-add", "price-tag-overlay", "total-overlay", "bill-pdf-export"],
-    "version": "1.6.9"
+    "features": ["tap-to-add", "price-tag-overlay", "total-overlay", "bill-pdf-export", "gps-timestamp"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-barcode-roi",
     "name": "Barcode ROI - Fast Scan",
     "type": "BARCODE",
     "mode": "auto",
-    "description": "Drag small box to scan only inside. BarcodeDetector only - No ZXing. Links to Bill.",
+    "description": "Drag small box to scan only inside. 4 Engines - BarcodeDetector + ZXing + Quagga + Html5-QRCode. Links to Bill.",
     "status": "active",
-    "protocol": "barcode-detector-roi",
-    "engine": "BarcodeDetector + ROI crop",
-    "features": ["roi-barcode", "ean13", "ean8", "code128", "qrcode", "auto-bill", "auto-scan", "beep", "scan-history"],
-    "version": "1.6.9"
+    "protocol": "barcode-4-engines",
+    "engine": "BarcodeDetector + ZXing + Quagga + Html5-QRCode + ROI crop",
+    "features": ["roi-barcode", "ean13", "ean8", "code128", "qrcode", "auto-bill", "auto-scan", "beep", "scan-history", "gps-timestamp"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-export-hub",
     "name": "Export Hub - All Formats",
     "type": "EXPORT",
     "mode": "auto",
-    "description": "JPG, IMG PDF, Searchable PDF (OCR layer), TXT, DOCX with Images, Bill PDF, JSON",
+    "description": "JPG, IMG PDF, Searchable PDF (OCR layer), TXT, DOCX with Images, Bill PDF, JSON - v2.2 No PWA",
     "status": "active",
     "protocol": "jspdf + tesseract + docx",
-    "features": ["jpg", "img-pdf", "searchable-pdf", "txt", "docx-with-images", "bill-pdf", "json"],
-    "version": "1.6.9"
+    "features": ["jpg", "img-pdf", "searchable-pdf", "txt", "docx-with-images", "bill-pdf", "json", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-scan-advanced",
     "name": "Advanced Scan - AUTO + MULTI",
     "type": "SCAN",
     "mode": "auto",
-    "description": "AUTO Scan, MULTI Scan, BEEP + Vibrate, Torch, Scan History. No ZXing.",
+    "description": "AUTO Scan, MULTI Scan, BEEP + Vibrate, Torch, Scan History. 4 Engines.",
     "status": "active",
-    "protocol": "barcode-detector-advanced",
+    "protocol": "barcode-detector-advanced-4-engines",
     "features": ["barcode", "qr", "auto-scan", "multi-scan", "beep", "vibrate", "scan-light", "scan-history"],
-    "version": "1.6.9"
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-edit-studio",
     "name": "Edit Studio - Photo Editor",
     "type": "EDIT",
     "mode": "auto",
-    "description": "Rotate, Flip, Crop, Brightness, Contrast, Filters (BW, Warm, Cool, Sharp), Add Text, Date Stamp",
+    "description": "Rotate, Flip, Crop, Brightness, Contrast, Filters (BW, Warm, Cool, Sharp), Add Text, Date Stamp + Photo Effects PRO Insta Clarendon",
     "status": "active",
     "protocol": "canvas-edit-studio",
-    "features": ["rotate", "flip", "crop", "brightness", "contrast", "filter-bw", "filter-warm", "filter-cool", "filter-sharp", "add-text", "date-stamp"],
-    "version": "1.6.9"
+    "features": ["rotate", "flip", "crop", "brightness", "contrast", "filter-bw", "filter-warm", "filter-cool", "filter-sharp", "add-text", "date-stamp", "photo-effects-clarendon", "gps-timestamp"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-dashboard",
@@ -202,29 +253,38 @@
     "description": "6 Categories, 27 Rows: Shop, Documents, Security, Thermal/Night, Capture, System. Tap any row.",
     "status": "active",
     "protocol": "localstorage-dashboard",
-    "features": ["photos-count", "count-total", "scans-count", "bill-total", "export-all", "clear-data"],
-    "version": "1.6.9"
+    "features": ["photos-count", "count-total", "scans-count", "bill-total", "export-all", "clear-data", "gps-timestamp"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-voice",
-    "name": "Voice Commands - 38 Commands",
+    "name": "Voice One - Voice Commands",
     "type": "VOICE",
     "mode": "auto",
-    "description": "38 Voice Commands: Capture, Video, Count / Gintee, Barcode, Scan, Doc, PDF, Face, Dashboard, Torch, Night, Thermal, Export - EN / UR / PS",
+    "description": "Voice One - 38 Voice Commands: Capture, Video, Count / Gintee, Barcode, Scan, Doc, PDF, Face, Dashboard, Torch, Night, Thermal, Export - EN / UR / PS",
     "status": "active",
     "protocol": "webkit-speech-recognition",
     "features": ["capture", "video", "count", "bottle", "barcode", "scan", "doc", "pdf", "face", "dashboard", "torch", "night", "thermal", "export", "language-switch"],
     "languages": ["en-US", "ur-PK", "ps-AF"],
-    "version": "1.6.9"
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "custom-about",
     "name": "About - God Eye",
     "type": "ABOUT",
     "mode": "auto",
-    "description": "Developer Nasir Khan - WanaLab, Dera Ismail Khan KPK, Version v1.6.9, Features, Dashboard + Voice",
+    "description": "Developer Nasir Khan - WanaLab, Dera Ismail Khan KPK, Version v2.2, Features, Dashboard + Voice One + Thumb Biometric + GPS + Credentials",
     "status": "active",
     "protocol": "about-page",
-    "version": "1.6.9"
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true, "gps_share": true, "anti_fake_gps": true, "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   }
 ]
