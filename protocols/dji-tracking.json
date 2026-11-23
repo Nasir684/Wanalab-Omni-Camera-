@@ -1,7 +1,7 @@
 {
   "id": "dji-tracking-v1",
   "name": "DJI Auto Tracking - Tap to Lock",
-  "version": "1.6.9",
+  "version": "2.2",
   "description": "DJI style tracking - Tap any object/person to lock - Green corner brackets + confidence % + Follow via template matching. Canvas engine, not OpenCV. No DJI SDK in browser.",
   "status": "active",
   "protocol": "canvas-template-match",
@@ -18,9 +18,15 @@
     "bracketColor": "#00ff88",
     "lockColor": "#00aaff"
   },
-  "features": ["tap-to-lock", "dji-corner-brackets", "center-dot", "confidence-percent", "auto-follow", "template-matching", "search-area-2x"],
+  "features": ["tap-to-lock", "dji-corner-brackets", "center-dot", "confidence-percent", "auto-follow", "template-matching", "search-area-2x", "gps-timestamp", "gps-share"],
   "use": "Person, car, box, bird - Tap to lock, follow",
   "voice": ["track", "tracking", "lock", "follow"],
   "resolution": "1920x1080",
-  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=169"
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=2.2",
+  "credentials": { "shop": "", "office": "", "department": "" },
+  "gps_timestamp": true,
+  "gps_share": true,
+  "anti_fake_gps": true,
+  "wanalab_watermark": true,
+  "pricing": "PRO Rs. 2,500 / Year"
 }
