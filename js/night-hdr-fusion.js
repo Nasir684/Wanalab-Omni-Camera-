@@ -1,11 +1,21 @@
-// WanaLab God Eye v1.4.2 - Night God HDR Fusion
+// WanaLab God Eye v2.2 - Night God HDR Fusion
 // Real 5-frame fusion with canvas filter bracketing
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
 window.nightGodEngine = {
+  version: "2.2",
   video: null,
   canvas: null,
   ctx: null,
   frames: [],
   isCapturing: false,
+
+  // v2.2 - Universal
+  credentials: { shop: "", office: "", department: "" },
+  gps_timestamp: true,
+  gps_share: true,
+  anti_fake_gps: true,
+  wanalab_watermark: true,
+  pricing: "PRO Rs. 2,500 / Year",
 
   init() {
     this.video = document.getElementById('camera');
@@ -13,6 +23,7 @@ window.nightGodEngine = {
     if (this.canvas) this.ctx = this.canvas.getContext('2d');
   },
 
+  // NOTE v2.2: Name kept as capture10Frames for button compatibility - Actually captures 5 frames
   async capture10Frames() {
     if (!this.video) this.init();
     if (this.isCapturing) return;
