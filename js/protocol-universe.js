@@ -1,12 +1,20 @@
-// WanaLab God Eye v1.4.2 - protocol-universe.js
-// Master protocol + counting config - By Nasir Khan
+// WanaLab God Eye v2.2 - protocol-universe.js
+// Master protocol + counting config - By Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa
 
 const ProtocolUniverse = {
-  version: "1.4.2",
+  version: "2.2",
   codename: "Anti-Mix",
   app: "WanaLab God Eye",
-  lastUpdated: "2026-11-21",
-  pricing: { enabled: false, note: "FREE during testing phase" },
+  lastUpdated: "2026-11-23",
+  pricing: "PRO Rs. 2,500 / Year",
+  pricing_enabled: true,
+
+  // v2.2 - Universal
+  credentials: { shop: "", office: "", department: "" },
+  gps_timestamp: true,
+  gps_share: true,
+  anti_fake_gps: true,
+  wanalab_watermark: true,
 
   protocols: {
     rtsp: { enabled: true, tcpFirst: false, timeoutMs: 10000, note: "LAN camera - auto TCP/UDP, like Android" },
@@ -31,7 +39,7 @@ const ProtocolUniverse = {
   },
 
   countingPro: {
-    id: "counting_pro_v142",
+    id: "counting_pro_v22",
     enabled: true,
     defaultMode: "total",
     defaultClass: "bottle",
@@ -69,7 +77,7 @@ const ProtocolUniverse = {
   thermal: { enabled: true, file: "thermal.json" },
   nightVision: { enabled: true, file: "night-vision.json" },
   barcode: { enabled: true, file: "tap-bill.json" },
-  export: { enabled: true, file: "export-hub.js" },
+  export: { enabled: true, file: "export-hub.json" },
 
   getPreset: function(className) {
     return this.countingPro.presets[className] || this.countingPro.presets.bottle;
