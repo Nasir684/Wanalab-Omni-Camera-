@@ -1,8 +1,8 @@
 {
   "id": "tap-bill-v1",
   "name": "Tap Bill - Tap Item to Bill",
-  "version": "1.6.9",
-  "description": "Tap any item in camera to add to bill. Count ROI + Tap Bill linked for Shop. Bill PDF + JPG + TXT export.",
+  "version": "2.2",
+  "description": "Tap any item in camera to add to bill. Count ROI + Tap Bill linked for Shop. Bill PDF + JPG + TXT export + Bill Offline + GPS Timestamp + Credentials.",
   "status": "active",
   "bill": {
     "currency": "Rs.",
@@ -12,7 +12,8 @@
     "item": "Tap to set name - Default: Item",
     "quantity": 1,
     "totalFormula": "total = quantity * price",
-    "export": ["BILL_PDF", "JPG", "TXT"]
+    "export": ["BILL_PDF", "JPG", "TXT"],
+    "offline": true
   },
   "priceDB": {
     "storage": "localStorage",
@@ -27,10 +28,17 @@
   },
   "shop": {
     "enabled": true,
-    "features": ["bill", "count_sessions", "bill_pdf", "price_db"],
+    "features": ["bill", "count_sessions", "bill_pdf", "price_db", "bill_offline", "gps_timestamp", "gps_share", "credentials_shop_office_department"],
     "note": "Bill + Count only. No inventory / customer / tax / profit / xlsx / bluetooth yet."
   },
   "voice": ["bill", "tap bill", "shop", "total"],
   "offline": true,
-  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=169"
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=2.2",
+  "features": ["tap-to-add", "price-tag-overlay", "total-overlay", "bill-pdf-export", "bill-offline", "gps-timestamp", "gps-share"],
+  "credentials": { "shop": "", "office": "", "department": "" },
+  "gps_timestamp": true,
+  "gps_share": true,
+  "anti_fake_gps": true,
+  "wanalab_watermark": true,
+  "pricing": "PRO Rs. 2,500 / Year"
 }
