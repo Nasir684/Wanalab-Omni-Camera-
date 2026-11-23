@@ -1,12 +1,23 @@
-// WanaLab God Eye v1.4.2 - RTSP / ONVIF / IP Camera Player
+// WanaLab God Eye v2.2 - RTSP / ONVIF / IP Camera Player
 // Works: Hikvision, Dahua, ESP32-CAM, Any RTSP via go2rtc, WiFi Microscopes
 // Browser CANNOT play RTSP directly - needs go2rtc gateway -> HLS / WebRTC / MJPEG
+// v2.2: RTSP via go2rtc + MQTT + WebSocket
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
 window.rtspEngine = {
+  version: "2.2",
   video: null,
   hls: null,
   mjpegImg: null,
   currentUrl: null,
   currentType: null,
+
+  // v2.2 - Universal
+  credentials: { shop: "", office: "", department: "" },
+  gps_timestamp: true,
+  gps_share: true,
+  anti_fake_gps: true,
+  wanalab_watermark: true,
+  pricing: "PRO Rs. 2,500 / Year",
 
   init() {
     this.video = document.getElementById('camera');
