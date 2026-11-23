@@ -13,7 +13,14 @@
     "use": "Night shop, animals, dark room",
     "voice": ["night", "night vision", "ir", "dark"],
     "price_rs": 1500,
-    "version": "1.6.9"
+    "features": ["night-filter", "hdr", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "night-god-10frame",
@@ -21,12 +28,18 @@
     "type": "SOFTWARE",
     "mode": "night",
     "description": "Night HDR software mode - Brightness + HDR filter + Night filter in app. Not 10-frame fusion - No 10-frame code in app. Works on any camera.",
-    "features": ["night-filter", "hdr", "brightness-boost", "thermal-filter"],
+    "features": ["night-filter", "hdr", "brightness-boost", "thermal-filter", "gps-timestamp", "gps-share"],
     "protocol": "software",
     "status": "working",
     "use": "Night shop, night doc scan, dark room",
     "voice": ["night", "night god", "dark", "hdr"],
     "price_rs": 0,
-    "version": "1.6.9"
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   }
 ]
