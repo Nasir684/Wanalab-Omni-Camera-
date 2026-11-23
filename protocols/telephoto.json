@@ -13,7 +13,14 @@
     "use": "Number plate, board, bird, Tracking",
     "voice": ["telephoto", "zoom", "clip", "telescope"],
     "price_rs": 1800,
-    "version": "1.6.9"
+    "features": ["gps-timestamp", "gps-share", "tracking"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "apexel-60x-telescope",
@@ -29,7 +36,14 @@
     "use": "Moon, distant building, Tracking",
     "voice": ["apexel", "telescope", "moon", "telephoto"],
     "price_rs": 4500,
-    "version": "1.6.9"
+    "features": ["moon-mode", "gps-timestamp", "gps-share", "tracking"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "generic-monocular-40x60",
@@ -45,21 +59,18 @@
     "use": "Distance, hunting, field, Tracking",
     "voice": ["monocular", "telephoto", "zoom"],
     "price_rs": 2200,
-    "version": "1.6.9"
+    "features": ["gps-timestamp", "gps-share", "tracking"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "telephoto-clip-12x",
     "name": "Telephoto Clip 12x - WanaLab",
     "type": "CLIP",
     "mode": "tele",
-    "description": "WanaLab 12x clip - matches clip-lenses.json. Best for shop distance + tracking.",
-    "optical": "12x",
-    "total": "12x optical",
-    "status": "working",
-    "distance_m": 15,
-    "use": "Shop distance + Tracking",
-    "voice": ["telephoto", "zoom", "clip"],
-    "price_rs": 2500,
-    "version": "1.6.9"
-  }
-]
+    "description": "W
