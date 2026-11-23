@@ -1,7 +1,9 @@
 {
-  "version": "1.4.2",
-  "author": "Nasir Khan",
+  "version": "2.2",
+  "author": "Nasir Khan - WanaLab",
   "app": "WanaLab God Eye",
+  "city": "Dera Ismail Khan, Khyber Pakhtunkhwa, Pakistan",
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=2.2",
   "formats": [
     {
       "id": "jpg-single",
@@ -42,7 +44,8 @@
       "protocol": "docx-8.5 + tesseract",
       "status": "active",
       "position": "middle-right",
-      "needsLib": ["docx", "tesseract"]
+      "needsLib": ["docx", "tesseract"],
+      "note": "DOCX is DOCX_IMG only - Images + OCR text, not native Word text"
     },
     {
       "id": "bill-pdf",
@@ -86,5 +89,14 @@
     }
   ],
   "total_formats": 8,
-  "test_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/export.html"
+  "formats_note": "No xlsx / csv / html / zip / full_report - not implemented. DOCX is DOCX_IMG only.",
+  "ocr_languages": ["eng", "urd", "ara", "pus", "hin", "eng+urd"],
+  "toggles": ["ocr", "enhance", "compress", "timestamp", "gps_timestamp", "gps_share", "credentials"],
+  "credentials": { "shop": "", "office": "", "department": "" },
+  "gps_timestamp": true,
+  "gps_share": true,
+  "anti_fake_gps": true,
+  "wanalab_watermark": true,
+  "pricing": "PRO Rs. 2,500 / Year",
+  "test_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/export.html?v=2.2"
 }
