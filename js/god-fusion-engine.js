@@ -1,16 +1,25 @@
-// WanaLab God Eye - CamScan Engine v1.4.2
+// WanaLab God Eye - CamScan Engine v2.2
 // Phone Camera + Doc Scan + Camera Recovery
-// Date: 2026-11-21 - Author: Nasir Khan
+// Date: 2026-11-23 - Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa
 // NOTE: Renamed from Emergency Fix v1.2 - this is NOT fusion, it's CamScan. Fusion is in god-fusion-engine.js
-console.log("God Eye CamScan v1.4.2 Loading...");
+console.log("God Eye CamScan v2.2 Loading...");
 
 window.GodEye = {
+  version: "2.2",
   video: null,
   docMode: false,
   opencvReady: false,
   stream: null,
   recoverTimer: null,
   isInitializing: false,
+
+  // v2.2 - Universal
+  credentials: { shop: "", office: "", department: "" },
+  gps_timestamp: true,
+  gps_share: true,
+  anti_fake_gps: true,
+  wanalab_watermark: true,
+  pricing: "PRO Rs. 2,500 / Year",
 
   init: async function() {
     if (this.isInitializing) return;
@@ -34,7 +43,7 @@ window.GodEye = {
       v.srcObject = stream;
       await v.play();
       document.body.style.background = "#000";
-      console.log("✅ Camera LIVE - God Eye v1.4.2 Ready");
+      console.log("✅ Camera LIVE - God Eye v2.2 Ready");
 
       if (window.cv && window.cv.Mat) {
         this.opencvReady = true;
