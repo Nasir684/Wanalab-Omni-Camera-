@@ -1,16 +1,17 @@
 {
   "app": "WanaLab God Eye",
-  "version": "1.6.9",
-  "codename": "God Eye v1.6.9 - All Protocols + Voice 38 + Dashboard 6 Categories",
+  "version": "2.2",
+  "codename": "God Eye v2.2 - Thumb Biometric NADRA-Style + Attendance + Photo Effects Clarendon + Universal Credentials + GPS Timestamp + GPS Share + Anti-Fake GPS + External Devices PRO",
   "author": "Nasir Khan - WanaLab",
-  "city": "Wana, South Waziristan, KPK, Pakistan",
-  "last_updated": "2026-11-21",
-  "build": "God Eye v1.6.9 FINAL - No PWA - Chrome Only",
+  "city": "Dera Ismail Khan, Khyber Pakhtunkhwa, Pakistan",
+  "last_updated": "2026-11-23",
+  "build": "God Eye v2.2 FINAL - No PWA - Chrome Only",
   "pwa": false,
-  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=169",
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=2.2",
   "modules": [
     "devices.json",
     "clip-lenses.json",
+    "custom.json",
     "dji-tracking.json",
     "doc-scanner.json",
     "endoscopes.json",
@@ -28,67 +29,90 @@
     "enabled": true,
     "categories": 6,
     "categories_list": ["Shop", "Doc", "Count", "Track", "Thermal", "Devices"],
-    "version": "1.6.9"
+    "version": "2.2"
   },
   "counting": {
     "enabled": true,
     "mode": "total",
-    "methods": ["coco_ssd_bottle", "manual_plus_minus"],
+    "methods": ["coco_ssd_bottle", "manual_plus_minus", "counting_pro_anti_mix"],
     "default_class": "bottle",
-    "version": "1.6.9",
-    "note": "COCO-SSD only. No blob / edge methods - removed fake methods."
+    "version": "2.2",
+    "note": "3 Methods - COCO-SSD + Manual + CountingPro v2.2 Anti-Mix. No fake methods."
   },
   "scan": {
     "enabled": true,
     "mode": "advanced",
-    "engines": ["native_barcode_detector", "manual"],
+    "engines": ["native_barcode_detector", "zxing", "quagga", "html5_qrcode"],
     "features": ["barcode", "qr", "auto_scan", "beep", "vibrate", "history", "torch"],
-    "version": "1.6.9",
-    "note": "No ZXing / Quagga - not loaded. Native BarcodeDetector only."
+    "version": "2.2",
+    "note": "4 Engines - BarcodeDetector + ZXing + Quagga + Html5-QRCode."
   },
   "editing": {
     "enabled": true,
-    "features": ["rotate", "flip", "crop", "brightness", "contrast", "filters_bw_warm_cool", "draw", "date_stamp", "add_text"],
-    "version": "1.6.9",
-    "note": "In camscan-engine.js + doc-scanner.json. Draw + DateStamp + AddText added in v1.6.9."
+    "features": ["rotate", "flip", "crop", "brightness", "contrast", "filters_bw_warm_cool", "draw", "date_stamp", "add_text", "photo_effects_clarendon", "thumb_clear", "doc_clear", "face_clear"],
+    "version": "2.2",
+    "note": "Edit Studio + Photo Effects PRO Insta Clarendon + Thumb Clear / Doc Clear / Face Clear."
   },
   "face": {
     "enabled": true,
-    "mode": "detection_only",
-    "features": ["face_detector", "tag_photo", "alert_history", "face_log", "snapshot"],
-    "version": "1.6.9",
-    "note": "CRITICAL: Detection only. No identity matching. All faces = Yellow Face Detected. No known_green."
+    "mode": "detect_enroll_468_dots",
+    "features": ["face_detector", "face_enroll_468_dots", "tag_photo", "alert_history", "face_log", "snapshot", "face_clear"],
+    "version": "2.2",
+    "note": "Face Detect + Enroll 468 Dots. Detection + Enroll, not just detection."
+  },
+  "thumb": {
+    "enabled": true,
+    "mode": "nadra_style_biometric",
+    "features": ["thumb_biometric_pro", "thumb_attendance_pro", "thumb_liveness_move_check", "thumb_clear"],
+    "version": "2.2",
+    "note": "Thumb Biometric NADRA-Style + Attendance + Liveness Move Check."
   },
   "shop": {
     "enabled": true,
-    "features": ["bill", "count_sessions", "bill_pdf"],
-    "version": "1.6.9",
-    "note": "Bill + Count only. No inventory / customer / tax / profit / xlsx / bluetooth yet."
+    "features": ["bill", "count_sessions", "bill_pdf", "bill_offline", "credentials_shop_office_department", "gps_timestamp", "gps_share"],
+    "version": "2.2",
+    "note": "Bill + Count + Bill Offline + Universal Credentials + GPS. No inventory / tax / profit / xlsx yet."
   },
   "export": {
     "enabled": true,
     "pwa": false,
     "formats": ["pdf", "searchable_pdf", "docx_img", "json", "txt", "bill_pdf", "jpg"],
     "formats_note": "No xlsx / csv / html / zip / full_report - not implemented. DOCX is DOCX_IMG only.",
-    "ocr_languages": ["eng", "urd", "eng+urd"],
-    "toggles": ["ocr", "enhance", "compress", "timestamp"],
-    "version": "1.6.9",
-    "note": "No xlsx / csv / html / zip / full_report - not implemented. DOCX is DOCX_IMG only."
+    "ocr_languages": ["eng", "urd", "ara", "pus", "hin", "eng+urd"],
+    "toggles": ["ocr", "enhance", "compress", "timestamp", "gps_timestamp", "gps_share", "credentials"],
+    "version": "2.2",
+    "note": "Export v2.2 - No PWA - GPS + Credentials on every export."
   },
   "protocols": {
     "enabled": true,
     "free": ["http_post", "mjpeg", "hls", "webrtc_via_go2rtc", "clipboard", "print"],
-    "note": "No MQTT / WebSocket / RTSP direct / ONVIF auto-scan in browser. RTSP via go2rtc gateway only.",
-    "version": "1.6.9"
+    "pro": ["mqtt", "websocket", "http", "webrtc"],
+    "note": "MQTT + WebSocket + HTTP + WebRTC Enabled in v2.2 PRO. RTSP via go2rtc gateway only.",
+    "version": "2.2"
   },
   "voice": {
     "enabled": true,
+    "name": "Voice One",
     "languages": ["en-US", "ur-PK", "ps-AF"],
     "commands": 38,
-    "version": "1.6.9"
+    "version": "2.2"
+  },
+  "credentials": {
+    "enabled": true,
+    "fields": ["shop", "office", "department"],
+    "every_page": true,
+    "version": "2.2",
+    "note": "Universal Credentials Every Page - Shop / Office / Department."
+  },
+  "gps": {
+    "enabled": true,
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "version": "2.2"
   },
   "pricing": {
     "enabled": true,
-    "note": "FREE Trial + PRO Rs. 2500/Year + SHOP PRO Rs. 5000/Year + Hardware Bundle Rs. 18500 - JazzCash / EasyPaisa"
+    "note": "Only PRO Rs. 2,500 / Year - No SHOP PRO - No HARDWARE BUNDLE - No FREE Trial - JazzCash / EasyPaisa"
   }
 }
