@@ -1,9 +1,9 @@
 {
-  "_comment": "WanaLab God Eye v1.6.9 - Thermal + Night + HDR - Nasir Khan - SIMULATED in browser, Real Temp needs Native FLIR App",
+  "_comment": "WanaLab God Eye v2.2 - Thermal + Night + HDR - Nasir Khan - SIMULATED in browser, Real Temp needs Native FLIR App",
   "id": "thermal-v1",
-  "version": "1.6.9",
+  "version": "2.2",
   "name": "Thermal + Night HDR - FLIR Style (Simulated)",
-  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=169",
+  "live_url": "https://nasir684.github.io/Wanalab-Omni-Camera-/?v=2.2",
   "modes": ["thermal", "night", "hdr"],
   "note": "SIMULATED: Canvas filter over phone camera. Not real temperature. Real temp needs FLIR ONE + Native App. No OpenCV.",
   "thermal": {
@@ -58,5 +58,12 @@
     "flir_one_pro": "Real temp - Use Native FLIR App, not browser",
     "seek": "Real temp - Use Native Seek App",
     "infiray": "Real temp - Use Native InfiRay App"
-  }
+  },
+  "features": ["thermal-jet", "night-hdr", "hdr-filter", "gps-timestamp", "gps-share"],
+  "credentials": { "shop": "", "office": "", "department": "" },
+  "gps_timestamp": true,
+  "gps_share": true,
+  "anti_fake_gps": true,
+  "wanalab_watermark": true,
+  "pricing": "PRO Rs. 2,500 / Year"
 }
