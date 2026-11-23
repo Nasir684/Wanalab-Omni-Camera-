@@ -1,29 +1,36 @@
-// WanaLab God Eye v1.4.2 - Device Hub - Nasir Khan 2026-11-21
-// Live: https://nasir684.github.io/Wanalab-Omni-Camera-/
+// WanaLab God Eye v2.2 - Device Hub - Nasir Khan 2026-11-23
+// Live: https://nasir684.github.io/Wanalab-Omni-Camera-/?v=2.2
+// Dera Ismail Khan, Khyber Pakhtunkhwa
 
 function safeGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
 function safeSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
 
 window.WanaDevices = {};
 window.WanaDeviceHub = {
-  version: '1.4.2',
+  version: '2.2',
   currentDeviceId: safeGet('wanaCurrentDevice') || 'wanalab-omni-cam',
   devices: [],
-  loaded: false
+  loaded: false,
+  credentials: { shop: "", office: "", department: "" },
+  gps_timestamp: true,
+  gps_share: true,
+  anti_fake_gps: true,
+  wanalab_watermark: true,
+  pricing: "PRO Rs. 2,500 / Year"
 };
 
 const DEVICE_LIST = {
-  version: '1.4.2',
-  live_url: 'https://nasir684.github.io/Wanalab-Omni-Camera-/',
+  version: '2.2',
+  live_url: 'https://nasir684.github.io/Wanalab-Omni-Camera-/?v=2.2',
   devices: [
     {
       id: 'wanalab-omni-cam',
       name: 'WanaLab Omni Camera PRO',
       type: 'phone-camera',
-      protocol: 'doc-scanner-v1 + count-v1.4.2 + voice',
+      protocol: 'doc-scanner-v2.2 + count-v2.2 + voice',
       connection: 'native',
-      features: ['doc-scan','manual-crop','count-roi','ocr-roi','barcode-roi','tap-bill','thermal','tracking','searchable-pdf','docx-img','bill-pdf','voice-en-ur-ps','torch','sliders'],
-      caps: ['doc-scan','count-roi','ocr-roi','barcode-roi','tap-bill','thermal','tracking','voice','torch','capture','export'],
+      features: ['doc-scan','manual-crop','count-roi','ocr-roi','barcode-roi','tap-bill','thermal','tracking','searchable-pdf','docx-img','bill-pdf','voice-en-ur-ps','torch','sliders','gps-timestamp','gps-share','credentials'],
+      caps: ['doc-scan','count-roi','ocr-roi','barcode-roi','tap-bill','thermal','tracking','voice','torch','capture','export','gps'],
       icon: '👁️',
       status: 'active',
       default: true,
@@ -34,10 +41,10 @@ const DEVICE_LIST = {
       id: 'dji-mini-4-pro',
       name: 'DJI Mini 4 Pro',
       type: 'drone',
-      protocol: 'dji-tracking-v1 + thermal + 4k',
+      protocol: 'dji-tracking-v2.2 + thermal + 4k',
       connection: 'wifi',
-      features: ['tracking','thermal','hdr','4k-video','follow-me','orbit'],
-      caps: ['tracking','thermal','4k-video','follow-me'],
+      features: ['tracking','thermal','hdr','4k-video','follow-me','orbit','gps-timestamp','gps-share'],
+      caps: ['tracking','thermal','4k-video','follow-me','gps'],
       icon: '🚁',
       status: 'supported',
       position: 'aerial'
@@ -46,10 +53,10 @@ const DEVICE_LIST = {
       id: 'flir-one-pro',
       name: 'FLIR ONE Pro Thermal',
       type: 'thermal-camera',
-      protocol: 'thermal-v1 + jet + iron',
+      protocol: 'thermal-v2.2 + jet + iron',
       connection: 'usb-c',
-      features: ['thermal','thermal-roi','temp-measure','night'],
-      caps: ['thermal-roi','temp-measure','thermal-jet'],
+      features: ['thermal','thermal-roi','temp-measure','night','gps-timestamp'],
+      caps: ['thermal-roi','temp-measure','thermal-jet','gps'],
       maps: ['JET','IRON','HOT','BONE','COOL','OCEAN','RAINBOW','WHITEHOT','BLACKHOT','INFERNO'],
       icon: '🔥',
       status: 'supported',
@@ -59,10 +66,10 @@ const DEVICE_LIST = {
       id: 'usb-doc-cam',
       name: 'USB Document Camera',
       type: 'doc-camera',
-      protocol: 'doc-scanner-v1 + ocr',
+      protocol: 'doc-scanner-v2.2 + ocr',
       connection: 'usb',
-      features: ['doc-scan','ocr','count-roi','doc-crop'],
-      caps: ['doc-scan','ocr','count-roi'],
+      features: ['doc-scan','ocr','count-roi','doc-crop','gps-timestamp'],
+      caps: ['doc-scan','ocr','count-roi','gps'],
       icon: '📄',
       status: 'supported',
       position: 'document'
@@ -71,10 +78,10 @@ const DEVICE_LIST = {
       id: 'ip-camera',
       name: 'IP Camera / CCTV RTSP',
       type: 'ip-camera',
-      protocol: 'rtsp + onvif + tracking',
+      protocol: 'rtsp via go2rtc + onvif + tracking + mqtt + websocket',
       connection: 'rtsp',
-      features: ['tracking','count-roi','thermal','motion-detect'],
-      caps: ['tracking','count-roi','motion-detect'],
+      features: ['tracking','count-roi','thermal','motion-detect','gps-timestamp'],
+      caps: ['tracking','count-roi','motion-detect','gps'],
       icon: '📹',
       status: 'experimental',
       position: 'surveillance'
@@ -98,7 +105,7 @@ async function loadDeviceHub() {
             if (!local) return dev;
             return { ...local, ...dev, caps: dev.caps || local.caps, features: dev.features || local.features };
           });
-          console.log('✅ devices.json v1.4.2 loaded');
+          console.log('✅ devices.json v2.2 loaded');
         }
       }
     } catch (e) { console.warn('devices.json not found, using built-in list'); }
@@ -114,10 +121,10 @@ async function loadDeviceHub() {
       safeSet('wanaCurrentDevice', window.WanaDeviceHub.currentDeviceId);
     }
 
-    console.log('✅ Device Hub loaded v1.4.2', data.devices.length, 'devices - Current:', window.WanaDeviceHub.currentDeviceId);
+    console.log('✅ Device Hub loaded v2.2', data.devices.length, 'devices - Current:', window.WanaDeviceHub.currentDeviceId);
 
     const stat = document.getElementById('statText') || document.getElementById('stat');
-    if (stat) stat.innerText = `Ready v1.4.2 - ${data.devices.length} devices - ${getCurrentDevice().name}`;
+    if (stat) stat.innerText = `Ready v2.2 - ${data.devices.length} devices - ${getCurrentDevice().name}`;
 
     renderDeviceSelector();
     verifyButtons();
@@ -183,13 +190,13 @@ function verifyButtons() {
     'VOICE': 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
   };
   const allOk = Object.values(checks).every(v => v);
-  console.log('🔍 v1.4.2 Button Check:', checks, 'ALL WORKING:', allOk);
+  console.log('🔍 v2.2 Button Check:', checks, 'ALL WORKING:', allOk);
   const see = document.getElementById('see');
   if (see) {
-    if (allOk) see.innerText = '✅ v1.4.2 - All 13 buttons working - Ready to draw ROI';
+    if (allOk) see.innerText = '✅ v2.2 - All 13 buttons working - Ready to draw ROI';
     else {
       const failed = Object.keys(checks).filter(k => !checks[k]);
-      see.innerText = `⚠️ v1.4.2 - ${failed.length} missing: ${failed.join(', ')}`;
+      see.innerText = `⚠️ v2.2 - ${failed.length} missing: ${failed.join(', ')}`;
     }
   }
   return checks;
@@ -199,7 +206,7 @@ function renderDeviceSelector() {
   const existing = document.getElementById('deviceHubPage');
   if (existing) existing.remove();
 
-  let html = `<div id="deviceHubPage" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:9997;padding:14px;overflow-y:auto"><div style="max-width:440px;margin:20px auto;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:20px;padding:16px"><h2 style="color:#00ff88;text-align:center">📱 Device Hub v1.4.2</h2><p style="color:#aaa;font-size:10px;text-align:center;margin:6px 0">All protocols active + positioned • ${DEVICE_LIST.live_url}</p><div style="margin:12px 0">`;
+  let html = `<div id="deviceHubPage" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:9997;padding:14px;overflow-y:auto"><div style="max-width:440px;margin:20px auto;background:linear-gradient(180deg,#001a0a,#000);border:2px solid #00ff88;border-radius:20px;padding:16px"><h2 style="color:#00ff88;text-align:center">📱 Device Hub v2.2</h2><p style="color:#aaa;font-size:10px;text-align:center;margin:6px 0">All protocols active + positioned • ${DEVICE_LIST.live_url}</p><div style="margin:12px 0">`;
 
   window.WanaDeviceHub.devices.forEach(d => {
     const active = d.id === window.WanaDeviceHub.currentDeviceId;
@@ -207,7 +214,7 @@ function renderDeviceSelector() {
     html += `<div onclick="switchDevice('${d.id}')" style="background:${active ? '#00ff88' : '#111'};color:${active ? '#000' : '#fff'};border:1px solid ${active ? '#00ff88' : '#333'};border-radius:12px;padding:10px;margin:6px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">${d.icon} ${d.name}</div><div style="font-size:8px;opacity:0.8">${d.type} • ${caps.slice(0, 3).join(', ')} • ${d.status} • ${d.position}</div></div><div style="font-size:10px;font-weight:800">${active ? '✅ ACTIVE' : '➡️'}</div></div>`;
   });
 
-  html += `</div><button onclick="hideDeviceHub()" style="width:100%;padding:12px;background:#333;color:#fff;border:none;border-radius:10px;font-weight:800">❌ CLOSE</button><div style="text-align:center;margin-top:10px;color:#00ff88;font-size:10px">✅ v1.4.2 - Buttons verified</div></div></div>`;
+  html += `</div><button onclick="hideDeviceHub()" style="width:100%;padding:12px;background:#333;color:#fff;border:none;border-radius:10px;font-weight:800">❌ CLOSE</button><div style="text-align:center;margin-top:10px;color:#00ff88;font-size:10px">✅ v2.2 - Buttons verified</div></div></div>`;
 
   document.body.insertAdjacentHTML('beforeend', html);
 }
