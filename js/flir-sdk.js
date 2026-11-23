@@ -1,14 +1,24 @@
-// WanaLab God Eye v1.4.2 - FLIR ONE SDK + RGB-Thermal Fusion
-// Founder Nasir Khan - Works with FLIR ONE Gen3/Pro/Edge
+// WanaLab God Eye v2.2 - FLIR ONE SDK + RGB-Thermal Fusion
+// Founder Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// Works with FLIR ONE Gen3/Pro/Edge
 // WARNING: Browser cannot access real FLIR ONE via WebRTC. Real temp needs native Android FLIR SDK.
 // This file provides SIMULATED thermal for demo + hook for native bridge.
 window.flirEngine = {
+  version: "2.2",
   thermalCanvas: null,
   rgbVideo: null,
   fusionMode: 'fusion', // thermal, rgb, fusion, msx
   isConnected: false,
   isSimulated: true, // FIX: Always true in browser - never claim real temp
   palette: 'iron',
+
+  // v2.2 - Universal
+  credentials: { shop: "", office: "", department: "" },
+  gps_timestamp: true,
+  gps_share: true,
+  anti_fake_gps: true,
+  wanalab_watermark: true,
+  pricing: "PRO Rs. 2,500 / Year",
 
   init(rgbVideoElement) {
     this.rgbVideo = rgbVideoElement || document.getElementById('camera');
