@@ -1,9 +1,9 @@
-// WanaLab God Eye v1.4.2 - ai-detection.js
+// WanaLab God Eye v2.2 - ai-detection.js
 // Anti-Mix: ID Tracking + Size + Shape + Stability
-// By Nasir Khan
+// By Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa
 
 const CountingPro = {
-  version: "1.4.2",
+  version: "2.2",
   trackObjects: {},
   classHistory: {},
   nextId: 1,
@@ -15,6 +15,14 @@ const CountingPro = {
   targetClass: 'bottle',
   countLineY: 0,
   roiZones: [],
+
+  // v2.2 - Universal
+  credentials: { shop: "", office: "", department: "" },
+  gps_timestamp: true,
+  gps_share: true,
+  anti_fake_gps: true,
+  wanalab_watermark: true,
+  pricing: "PRO Rs. 2,500 / Year",
 
   config: {
     confThreshold: 0.50,
