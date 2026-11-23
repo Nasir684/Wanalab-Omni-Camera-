@@ -11,7 +11,14 @@
     "use": "Count ROI + Macro Photo",
     "voice": ["macro", "clip", "lens"],
     "price_rs": 1500,
-    "version": "1.6.9"
+    "features": ["count-roi", "macro-photo", "gps-timestamp", "gps-share", "photo-effects-clarendon"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "wide-clip-0.45x",
@@ -24,7 +31,15 @@
     "use": "Shop Wide Photo + Dashboard",
     "voice": ["wide", "clip", "lens"],
     "price_rs": 1200,
-    "version": "1.6.9"
+    "features": ["shop-wide-photo", "gps-timestamp", "gps-share", "photo-effects-clarendon"],
+    "voice": ["wide", "clip", "lens"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "telephoto-clip-12x",
@@ -38,7 +53,14 @@
     "use": "Telephoto + Tracking",
     "voice": ["telephoto", "zoom", "clip"],
     "price_rs": 2500,
-    "version": "1.6.9"
+    "features": ["telephoto", "tracking", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "fisheye-clip-180",
@@ -51,7 +73,14 @@
     "use": "Fisheye Photo",
     "voice": ["fisheye", "clip"],
     "price_rs": 1000,
-    "version": "1.6.9"
+    "features": ["fisheye-photo", "gps-timestamp", "gps-share", "photo-effects-clarendon"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   },
   {
     "id": "cpl-clip",
@@ -63,6 +92,13 @@
     "use": "Doc Scan through glass + Shop window",
     "voice": ["cpl", "filter", "clip"],
     "price_rs": 800,
-    "version": "1.6.9"
+    "features": ["doc-scan-glass", "gps-timestamp", "gps-share"],
+    "version": "2.2",
+    "credentials": { "shop": "", "office": "", "department": "" },
+    "gps_timestamp": true,
+    "gps_share": true,
+    "anti_fake_gps": true,
+    "wanalab_watermark": true,
+    "pricing": "PRO Rs. 2,500 / Year"
   }
 ]
