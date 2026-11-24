@@ -7,7 +7,24 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import java.util.concurrent.CopyOnWriteArraySet
 
+// WanaLab God Eye v2.2 - NetworkAutoManager.kt
+// Network Auto - Online / Offline + WiFi Detect - LAN vs Cloud Protocol
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
 object NetworkAutoManager {
+
+    const val VERSION = "2.2"
+    const val APP_NAME = "WanaLab God Eye"
+    const val PRICING = "PRO Rs. 2,500 / Year"
+    // v2.2 - Universal
+    var credentialsShop: String = ""
+    var credentialsOffice: String = ""
+    var credentialsDepartment: String = ""
+    var gpsTimestamp: Boolean = true
+    var gpsShare: Boolean = true
+    var antiFakeGps: Boolean = true
+    var wanalabWatermark: Boolean = true
 
     var isOnline = false
         private set
