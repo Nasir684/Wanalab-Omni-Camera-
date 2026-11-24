@@ -1,3 +1,6 @@
+# WanaLab God Eye v2.2 - build.yml - GitHub Actions
+# Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+# PRO Rs. 2,500 / Year
 name: Build GodEye APK + AAB - v2.2 - Thumb + Effects + Credentials + GPS + Anti-Fake
 
 on:
