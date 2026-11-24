@@ -5,6 +5,28 @@ import androidx.room.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+// WanaLab God Eye v2.2 - DataBase.kt
+// Room DB - Known Faces + Embeddings - Offline
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
+object DataBaseInfo {
+    const val VERSION = "2.2"
+    const val APP_NAME = "WanaLab God Eye"
+    const val PRICING = "PRO Rs. 2,500 / Year"
+    // v2.2 - Universal
+    var credentialsShop: String = ""
+    var credentialsOffice: String = ""
+    var credentialsDepartment: String = ""
+    var gpsTimestamp: Boolean = true
+    var gpsShare: Boolean = true
+    var antiFakeGps: Boolean = true
+    var wanalabWatermark: Boolean = true
+    const val DB_NAME = "wanalab_faces.db"
+    // NOTE: DB_VERSION = 1 - Room version hai, App version nahi. Change mat karo warna data delete hoga.
+    const val DB_VERSION = 1
+}
+
 // Type converter for FloatArray embedding
 class Converters {
     @TypeConverter
