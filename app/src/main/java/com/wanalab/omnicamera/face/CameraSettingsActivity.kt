@@ -11,9 +11,26 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
+// WanaLab God Eye v2.2 - CameraSettingsActivity.kt
+// 3 Cameras Save - Home / Office - Auto-Fix URL + Protocol Hint
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
 class CameraSettingsActivity : AppCompatActivity() {
 
     companion object {
+        const val VERSION = "2.2"
+        const val APP_NAME = "WanaLab God Eye"
+        const val PRICING = "PRO Rs. 2,500 / Year"
+        // v2.2 - Universal
+        var credentialsShop: String = ""
+        var credentialsOffice: String = ""
+        var credentialsDepartment: String = ""
+        var gpsTimestamp: Boolean = true
+        var gpsShare: Boolean = true
+        var antiFakeGps: Boolean = true
+        var wanalabWatermark: Boolean = true
+
         const val PREFS = "godeye_cameras"
         const val KEY_1 = "camera_1_url"
         const val KEY_2 = "camera_2_url"
