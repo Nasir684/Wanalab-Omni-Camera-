@@ -3,6 +3,11 @@ package com.wanalab.godeye
 import android.content.Context
 import androidx.media3.exoplayer.ExoPlayer
 
+// WanaLab God Eye v2.2 - AutoProtocolEngine.kt
+// Auto-start / Auto-stop cameras on network change - Anti-Flicker
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
 data class CameraSlot(
     val player: ExoPlayer,
     val url: String,
@@ -10,6 +15,19 @@ data class CameraSlot(
 )
 
 object AutoProtocolEngine {
+
+    const val VERSION = "2.2"
+    const val APP_NAME = "WanaLab God Eye"
+
+    // v2.2 - Universal
+    var credentialsShop: String = ""
+    var credentialsOffice: String = ""
+    var credentialsDepartment: String = ""
+    var gpsTimestamp: Boolean = true
+    var gpsShare: Boolean = true
+    var antiFakeGps: Boolean = true
+    var wanalabWatermark: Boolean = true
+    const val PRICING = "PRO Rs. 2,500 / Year"
 
     private val slots = mutableListOf<CameraSlot>()
     private var lastOnline: Boolean? = null
