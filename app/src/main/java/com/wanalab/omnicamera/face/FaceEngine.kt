@@ -17,6 +17,11 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.sqrt
 
+// WanaLab God Eye v2.2 - FaceEngine.kt
+// Face Detect + Mesh + MobileFaceNet Recognition - Offline
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
 // --- FACE RESULT ---
 // NOTE v2.2: KnownFaceEntity / FaceDatabase / FaceDao / Converters are in FaceDatabase.kt ONLY - Do NOT redefine here
 
@@ -46,6 +51,17 @@ class FaceEngine(private val context: Context) {
 
     companion object {
         private const val TAG = "FaceEngine"
+        const val VERSION = "2.2"
+        const val APP_NAME = "WanaLab God Eye"
+        const val PRICING = "PRO Rs. 2,500 / Year"
+        // v2.2 - Universal
+        var credentialsShop: String = ""
+        var credentialsOffice: String = ""
+        var credentialsDepartment: String = ""
+        var gpsTimestamp: Boolean = true
+        var gpsShare: Boolean = true
+        var antiFakeGps: Boolean = true
+        var wanalabWatermark: Boolean = true
     }
 
     suspend fun refreshCache() = withContext(Dispatchers.IO) {
