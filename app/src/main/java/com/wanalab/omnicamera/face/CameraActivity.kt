@@ -33,6 +33,11 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+// WanaLab God Eye v2.2 - CameraActivity.kt
+// Main Face Camera - Offline Face Recognition + Alerts + Log
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
 class CameraActivity : AppCompatActivity() {
 
     private lateinit var previewView: PreviewView
@@ -50,6 +55,18 @@ class CameraActivity : AppCompatActivity() {
     private var lastFaceText = "Face: Waiting..."
 
     companion object {
+        const val VERSION = "2.2"
+        const val APP_NAME = "WanaLab God Eye"
+        const val PRICING = "PRO Rs. 2,500 / Year"
+        // v2.2 - Universal
+        var credentialsShop: String = ""
+        var credentialsOffice: String = ""
+        var credentialsDepartment: String = ""
+        var gpsTimestamp: Boolean = true
+        var gpsShare: Boolean = true
+        var antiFakeGps: Boolean = true
+        var wanalabWatermark: Boolean = true
+
         private const val REQUEST_CODE = 1001
         private const val THROTTLE_MS = 150L
         private val PERMISSIONS = arrayOf(
