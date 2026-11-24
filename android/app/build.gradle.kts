@@ -1,3 +1,6 @@
+// WanaLab God Eye v2.2 - build.gradle.kts (app)
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
