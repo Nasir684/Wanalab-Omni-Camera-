@@ -9,7 +9,25 @@ import androidx.media3.exoplayer.rtsp.RtspMediaSource
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.dash.DashMediaSource
 
+// WanaLab God Eye v2.2 - CameraProtocolManager.kt
+// RTSP / HLS / DASH / RTMP / MJPEG / HTTP - Auto Protocol Detect + Play
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
 object CameraProtocolManager {
+
+    const val VERSION = "2.2"
+    const val APP_NAME = "WanaLab God Eye"
+    const val PRICING = "PRO Rs. 2,500 / Year"
+
+    // v2.2 - Universal
+    var credentialsShop: String = ""
+    var credentialsOffice: String = ""
+    var credentialsDepartment: String = ""
+    var gpsTimestamp: Boolean = true
+    var gpsShare: Boolean = true
+    var antiFakeGps: Boolean = true
+    var wanalabWatermark: Boolean = true
 
     private const val TAG = "CameraProtocol"
 
@@ -83,8 +101,8 @@ object CameraProtocolManager {
             }
             Protocol.MJPEG -> {
                 // FIX: ExoPlayer cannot play MJPEG - log, don't crash
-                // TODO v2: Use MjpegView (ImageView + OkHttp thread) for ESP32-CAM
-                Log.w(TAG, "MJPEG not supported by ExoPlayer: $cleanUrl - Use MjpegView in v2")
+                // TODO v2.2: Use MjpegView (ImageView + OkHttp thread) for ESP32-CAM
+                Log.w(TAG, "MJPEG not supported by ExoPlayer: $cleanUrl - Use MjpegView in v2.2")
                 player.setMediaItem(MediaItem.fromUri(uri))
             }
             else -> {
@@ -105,7 +123,7 @@ object CameraProtocolManager {
             Protocol.HLS -> "HLS - Remote / cloud, 5-10s delay"
             Protocol.DASH -> "DASH - Adaptive, low bandwidth"
             Protocol.RTMP -> "RTMP - Push / old NVR"
-            Protocol.MJPEG -> "MJPEG - Old camera / ESP32-CAM - Needs MjpegView v2"
+            Protocol.MJPEG -> "MJPEG - Old camera / ESP32-CAM - Needs MjpegView v2.2"
             Protocol.HTTP -> "HTTP - Snapshot / MP4 / TS"
             Protocol.UNKNOWN -> "Auto - Trying ExoPlayer default"
         }
