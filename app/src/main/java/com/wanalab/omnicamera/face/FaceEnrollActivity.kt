@@ -12,6 +12,11 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+// WanaLab God Eye v2.2 - FaceEnrollActivity.kt
+// Enroll Face - Offline - 3 Photos - Front / Left / Right
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
 class FaceEnrollActivity : AppCompatActivity() {
 
     private lateinit var faceEngine: FaceEngine
@@ -25,6 +30,18 @@ class FaceEnrollActivity : AppCompatActivity() {
     private val capturedPhotos = mutableListOf<Bitmap>()
 
     companion object {
+        const val VERSION = "2.2"
+        const val APP_NAME = "WanaLab God Eye"
+        const val PRICING = "PRO Rs. 2,500 / Year"
+        // v2.2 - Universal
+        var credentialsShop: String = ""
+        var credentialsOffice: String = ""
+        var credentialsDepartment: String = ""
+        var gpsTimestamp: Boolean = true
+        var gpsShare: Boolean = true
+        var antiFakeGps: Boolean = true
+        var wanalabWatermark: Boolean = true
+
         var pendingBitmap: Bitmap? = null
         var pendingFaceBox: android.graphics.RectF? = null
     }
