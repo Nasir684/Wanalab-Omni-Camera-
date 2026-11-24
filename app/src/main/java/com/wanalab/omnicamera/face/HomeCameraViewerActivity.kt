@@ -12,6 +12,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
+// WanaLab God Eye v2.2 - HomeCameraViewerActivity.kt
+// Home Viewer - 3 Cameras - RTSP / HLS / MJPEG - Auto Protocol + ONVIF
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
 class HomeCameraViewerActivity : AppCompatActivity() {
 
     private lateinit var player1: ExoPlayer
@@ -24,6 +29,20 @@ class HomeCameraViewerActivity : AppCompatActivity() {
 
     private var lastConnectedUrls: List<String> = emptyList()
     private var isFirstResume = true
+
+    companion object {
+        const val VERSION = "2.2"
+        const val APP_NAME = "WanaLab God Eye"
+        const val PRICING = "PRO Rs. 2,500 / Year"
+        // v2.2 - Universal
+        var credentialsShop: String = ""
+        var credentialsOffice: String = ""
+        var credentialsDepartment: String = ""
+        var gpsTimestamp: Boolean = true
+        var gpsShare: Boolean = true
+        var antiFakeGps: Boolean = true
+        var wanalabWatermark: Boolean = true
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
