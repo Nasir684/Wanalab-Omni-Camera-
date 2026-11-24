@@ -17,11 +17,30 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// WanaLab God Eye v2.2 - FaceAlertHistoryActivity.kt
+// Alert History - Unknown Faces - Thumbnail + Enroll + Delete
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
+
 class FaceAlertHistoryActivity : AppCompatActivity() {
 
     private lateinit var listLayout: LinearLayout
     private lateinit var statusText: TextView
     private val scope = CoroutineScope(Dispatchers.Main)
+
+    companion object {
+        const val VERSION = "2.2"
+        const val APP_NAME = "WanaLab God Eye"
+        const val PRICING = "PRO Rs. 2,500 / Year"
+        // v2.2 - Universal
+        var credentialsShop: String = ""
+        var credentialsOffice: String = ""
+        var credentialsDepartment: String = ""
+        var gpsTimestamp: Boolean = true
+        var gpsShare: Boolean = true
+        var antiFakeGps: Boolean = true
+        var wanalabWatermark: Boolean = true
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
