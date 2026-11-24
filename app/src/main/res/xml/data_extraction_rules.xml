@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- WanaLab God Eye v2.2 - backup_rules.xml - full-backup-content -->
+<!-- Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23 -->
+<!-- PRO Rs. 2,500 / Year -->
 <full-backup-content>
     <!-- FIXED: Old file excluded root + database + sharedpref + external = excluded EVERYTHING, backup did nothing -->
     <!-- Only exclude sensitive / cache data, keep cameras + settings backed up -->
