@@ -1,3 +1,6 @@
+# WanaLab God Eye v2.2 - proguard-rules.pro
+# Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+# PRO Rs. 2,500 / Year
 # GodEye - By WanaLab - v2.2 - ProGuard Rules
 # Keep Capacitor + App - Your 3 lines - DO NOT DELETE
 -keep class com.getcapacitor.** { *; }
