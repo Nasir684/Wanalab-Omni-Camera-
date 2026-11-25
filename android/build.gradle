@@ -1,12 +1,13 @@
-// WanaLab God Eye v2.2 - build.gradle (ROOT)
-// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
-// PRO Rs. 2,500 / Year
+// WanaLab God Eye v2.2 - build.gradle (ROOT) - FIXED for Line 16
+// FIX: Removed allprojects { repositories } - Repositories are ONLY in settings.gradle.kts
+// Because settings uses FAIL_ON_PROJECT_REPOS, allprojects repositories = BUILD FAILED line 16
 // Capacitor 7 + Gradle 8.7 + AGP 8.5.2 + Kotlin 2.0.0
 
 buildscript {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.5.2'
@@ -15,12 +16,8 @@ buildscript {
     }
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+// NO allprojects block here - DO NOT ADD IT BACK
+// Repositories are defined in settings.gradle.kts -> dependencyResolutionManagement
 
 task clean(type: Delete) {
     delete rootProject.buildDir
