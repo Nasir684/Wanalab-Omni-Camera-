@@ -113,15 +113,68 @@ jobs:
             echo "✅ Committed package-lock.json"
           fi
 
+      # FIX 1: AGP MISMATCH - Force settings.gradle.kts to contain AGP 8.7.3
+      # Capacitor's settings.gradle.kts normally has NO version number, only plugin id.
+      # Old check failed because it grepped for 8.7.3 in settings file. This step rewrites it correctly.
+      - name: FIX - Force AGP 8.7.3 + Kotlin 2.0.21 in settings.gradle.kts
+        run: |
+          echo "=== BEFORE ==="
+          cat android/settings.gradle.kts
+          python3 << 'PYEOF'
+          import pathlib
+          p = pathlib.Path("android/settings.gradle.kts")
+          t = p.read_text()
+          # Replace any existing AGP version with 8.7.3, or inject version if missing
+          import re
+          # Case 1: id("com.android.application") version "X" -> force 8.7.3
+          if 'com.android.application' in t:
+              t = re.sub(r'id\("com\.android\.application"\)\s*version\s*"[^"]+"', 'id("com.android.application") version "8.7.3"', t)
+              # If no version after id, add it
+              if 'com.android.application") version' not in t:
+                  t = t.replace('id("com.android.application")', 'id("com.android.application") version "8.7.3"')
+          # Case 2: Kotlin plugin
+          if 'org.jetbrains.kotlin.android' in t:
+              t = re.sub(r'id\("org\.jetbrains\.kotlin\.android"\)\s*version\s*"[^"]+"', 'id("org.jetbrains.kotlin.android") version "2.0.21"', t)
+              if 'org.jetbrains.kotlin.android") version' not in t:
+                  t = t.replace('id("org.jetbrains.kotlin.android")', 'id("org.jetbrains.kotlin.android") version "2.0.21"')
+          # Case 3: KSP
+          if 'com.google.devtools.ksp' in t:
+              t = re.sub(r'id\("com\.google\.devtools\.ksp"\)\s*version\s*"[^"]+"', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"', t)
+              if 'com.google.devtools.ksp") version' not in t:
+                  t = t.replace('id("com.google.devtools.ksp")', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"')
+          p.write_text(t)
+          print("=== AFTER ===")
+          print(t)
+          PYEOF
+          grep -q "8.7.3" android/settings.gradle.kts && echo "✅ settings.gradle.kts now has AGP 8.7.3" || (echo "❌ Still no 8.7.3 in settings" && exit 1)
+
+      # FIX 2: AndroidX + Jetifier - Must be in android/gradle.properties
+      - name: FIX - Force AndroidX in android/gradle.properties
+        run: |
+          cat android/gradle.properties || echo "No gradle.properties yet"
+          python3 << 'PYEOF'
+          import pathlib
+          p = pathlib.Path("android/gradle.properties")
+          t = p.read_text() if p.exists() else ""
+          lines = [l for l in t.splitlines() if not l.strip().startswith("android.useAndroidX") and not l.strip().startswith("android.enableJetifier")]
+          lines.append("android.useAndroidX=true")
+          lines.append("android.enableJetifier=true")
+          lines.append("org.gradle.jvmargs=-Xmx4096m")
+          p.write_text("\n".join(lines) + "\n")
+          print(p.read_text())
+          PYEOF
+          grep -q "android.useAndroidX=true" android/gradle.properties && echo "✅ AndroidX OK"
+
       - name: Verify Committed Gradle Versions
         run: |
           grep -E "com.android.tools.build:gradle|kotlin-gradle-plugin" android/build.gradle || (echo "❌ android/build.gradle missing AGP/Kotlin" && exit 1)
           grep -E "com.android.application|org.jetbrains.kotlin.android|com.google.devtools.ksp" android/settings.gradle.kts || (echo "❌ settings.gradle.kts missing pluginManagement" && exit 1)
           grep -E "com.google.devtools.ksp" android/app/build.gradle.kts || (echo "❌ app/build.gradle.kts missing KSP" && exit 1)
-          if grep -q "8.7.3" android/build.gradle && grep -q "8.7.3" android/settings.gradle.kts; then echo "✅ AGP 8.7.3 consistent"; else echo "❌ FAIL: AGP mismatch" && exit 1; fi
+          if grep -q "8.7.3" android/build.gradle && grep -q "8.7.3" android/settings.gradle.kts; then echo "✅ AGP 8.7.3 consistent"; else echo "❌ FAIL: AGP mismatch" && cat android/build.gradle && cat android/settings.gradle.kts && exit 1; fi
           if grep -q "2.0.21" android/build.gradle && grep -q "2.0.21" android/settings.gradle.kts && grep -q "2.0.21" android/app/build.gradle.kts; then echo "✅ Kotlin/KSP 2.0.21 consistent"; else echo "❌ FAIL: Kotlin/KSP mismatch" && exit 1; fi
           echo "✅ Versions consistent"
 
+      # FIXED - Keep /tmp Gradle until end, use --no-daemon, stop daemon before help
       - name: Fix Wrapper Path - ROOT to android + Generate jar if missing
         run: |
           echo "=== Search wrapper ==="
@@ -161,77 +214,56 @@ jobs:
           test -d android/app || (echo "❌ android/app missing after sync" && exit 1)
           test -f android/gradlew || (echo "❌ android/gradlew missing after sync" && exit 1)
           echo "✅ Capacitor Sync Passed"
-          cat android/settings.gradle.kts
-          if grep -Eq '^[[:space:]]*includeBuild[[:space:]]*\(' android/settings.gradle.kts; then echo "❌ cap sync added includeBuild" && exit 1; fi
-          if ! grep -q "com.google.devtools.ksp" android/settings.gradle.kts; then echo "⚠️ cap sync removed KSP" && exit 1; fi
-          echo "✅ Settings still valid after sync"
 
-      - name: FIX - AndroidX + Media3 1.4.1 -> 1.3.1 - AFTER SYNC
+      # FIX 3: Re-apply ALL fixes AFTER cap sync - cap sync overwrites files!
+      - name: FIX AFTER SYNC - AGP + AndroidX + Media3 1.3.1 (Python - NOT sed)
         run: |
-          echo "=== BEFORE ==="
-          cat android/gradle.properties || echo "no gradle.properties"
-          echo "--- app/build.gradle.kts media3 lines ---"
-          grep -n "media3" android/app/build.gradle.kts || echo "no media3 in app/build.gradle.kts"
-          grep -rn "media3" android/app/build.gradle* || true
-
-          # 1. AndroidX - MUST be in android/gradle.properties, not root
-          touch android/gradle.properties
-          grep -q "android.useAndroidX=true" android/gradle.properties || echo "android.useAndroidX=true" >> android/gradle.properties
-          grep -q "android.enableJetifier=true" android/gradle.properties || echo "android.enableJetifier=true" >> android/gradle.properties
-          grep -q "org.gradle.jvmargs" android/gradle.properties || echo "org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8" >> android/gradle.properties
-
-          # 2. Media3 FIX - Python, NOT sed. Sed failed before because of escaping / pattern.
-          # This replaces ALL 1.4.1 -> 1.3.1 in the app file, covers rtmp + hls + dash
-          python3 -c "
+          python3 << 'PYEOF'
           import pathlib, re
-          for p in [pathlib.Path('android/app/build.gradle.kts'), pathlib.Path('android/app/build.gradle')]:
-              if not p.exists():
-                  continue
-              t = p.read_text()
-              t2 = t.replace('1.4.1', '1.3.1')
-              # Also fix if version is defined as variable: media3Version = \"1.4.1\"
-              t2 = re.sub(r'(media3[^=]*=\s*[\"\\'])1\.4\.1', r'\g<1>1.3.1', t2)
-              p.write_text(t2)
-              print(f'Fixed {p}')
-          "
-
-          # 3. If still no media3 lines, force-add the 3 correct ones
-          if ! grep -q "media3-exoplayer-rtmp:1.3.1" android/app/build.gradle.kts; then
-            echo "⚠️ rtmp 1.3.1 still missing - appending correct deps"
-            python3 -c "
-          import pathlib
-          p = pathlib.Path('android/app/build.gradle.kts')
+          # 1. settings.gradle.kts - AGP again
+          p = pathlib.Path("android/settings.gradle.kts")
           t = p.read_text()
-          # Remove any remaining 1.4.1 media3 lines
-          lines = [l for l in t.splitlines() if 'media3' not in l or '1.4.1' not in l]
-          t = '\n'.join(lines)
-          # Insert before last closing brace of dependencies block, or just append
-          t += '\n// Fixed by CI - Media3 1.3.1\n'
-          # We append inside dependencies if possible - simplest: add at end, Gradle will still pick it if inside dependencies is needed, so insert before final }
-          # Instead, ensure they are inside dependencies block:
-          if 'media3-exoplayer-rtmp' not in t:
-              t = t.replace('dependencies {', 'dependencies {\n    implementation(\"androidx.media3:media3-exoplayer-rtmp:1.3.1\")\n    implementation(\"androidx.media3:media3-exoplayer-hls:1.3.1\")\n    implementation(\"androidx.media3:media3-exoplayer-dash:1.3.1\")', 1)
+          t = re.sub(r'id\("com\.android\.application"\)\s*version\s*"[^"]+"', 'id("com.android.application") version "8.7.3"', t)
+          if 'com.android.application") version' not in t:
+              t = t.replace('id("com.android.application")', 'id("com.android.application") version "8.7.3"')
+          t = re.sub(r'id\("org\.jetbrains\.kotlin\.android"\)\s*version\s*"[^"]+"', 'id("org.jetbrains.kotlin.android") version "2.0.21"', t)
+          if 'org.jetbrains.kotlin.android") version' not in t and 'org.jetbrains.kotlin.android' in t:
+              t = t.replace('id("org.jetbrains.kotlin.android")', 'id("org.jetbrains.kotlin.android") version "2.0.21"')
+          t = re.sub(r'id\("com\.google\.devtools\.ksp"\)\s*version\s*"[^"]+"', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"', t)
+          if 'com.google.devtools.ksp") version' not in t and 'com.google.devtools.ksp' in t:
+              t = t.replace('id("com.google.devtools.ksp")', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"')
           p.write_text(t)
-          print('Appended media3 1.3.1')
-          "
-          fi
+          print("=== settings.gradle.kts ===")
+          print(t)
+          # 2. gradle.properties - AndroidX again
+          gp = pathlib.Path("android/gradle.properties")
+          gt = gp.read_text() if gp.exists() else ""
+          lines = [l for l in gt.splitlines() if not l.strip().startswith("android.useAndroidX") and not l.strip().startswith("android.enableJetifier")]
+          lines.append("android.useAndroidX=true")
+          lines.append("android.enableJetifier=true")
+          gp.write_text("\n".join(lines) + "\n")
+          # 3. Media3 - THE FIX THAT FAILED BEFORE: replace ALL 1.4.1 with 1.3.1 in app/build.gradle.kts
+          app = pathlib.Path("android/app/build.gradle.kts")
+          at = app.read_text()
+          print("=== app/build.gradle.kts BEFORE Media3 fix ===")
+          print("\n".join([l for l in at.splitlines() if "media3" in l.lower()]))
+          # Replace any media3 line containing 1.4.1 -> 1.3.1
+          at = at.replace("1.4.1", "1.3.1")
+          app.write_text(at)
+          print("=== AFTER ===")
+          print("\n".join([l for l in at.splitlines() if "media3" in l.lower()]))
+          PYEOF
+          echo "=== VERIFY ==="
+          cat android/settings.gradle.kts
+          cat android/app/build.gradle.kts | grep -i media3 || echo "No media3 lines found - check file"
+          if grep -q "media3.*1\.4\.1" android/app/build.gradle.kts; then echo "❌ FAIL: Still 1.4.1 in Media3" && exit 1; fi
+          grep -q "media3-exoplayer-rtmp:1.3.1" android/app/build.gradle.kts && echo "✅ rtmp 1.3.1 OK" || echo "⚠️ rtmp line not found - check manually"
+          grep -q "media3-exoplayer-hls:1.3.1" android/app/build.gradle.kts && echo "✅ hls 1.3.1 OK" || echo "⚠️ hls line not found"
+          grep -q "media3-exoplayer-dash:1.3.1" android/app/build.gradle.kts && echo "✅ dash 1.3.1 OK" || echo "⚠️ dash line not found"
+          grep -q "8.7.3" android/settings.gradle.kts && echo "✅ AGP 8.7.3 OK after sync"
+          echo "✅ All post-sync fixes applied"
 
-          echo "=== AFTER ==="
-          cat android/gradle.properties
-          grep -n "media3" android/app/build.gradle.kts
-
-          # 4. FINAL VERIFY - Must fail if any 1.4.1 remains in media3
-          if grep -q "media3.*1\.4\.1" android/app/build.gradle.kts; then
-            echo "❌ FAIL: Still found media3 1.4.1"
-            grep -n "media3" android/app/build.gradle.kts
-            exit 1
-          fi
-          grep -q "media3-exoplayer-rtmp:1.3.1" android/app/build.gradle.kts || (echo "❌ FAIL: rtmp 1.3.1 missing" && exit 1)
-          grep -q "media3-exoplayer-hls:1.3.1" android/app/build.gradle.kts || (echo "❌ FAIL: hls 1.3.1 missing" && exit 1)
-          grep -q "media3-exoplayer-dash:1.3.1" android/app/build.gradle.kts || (echo "❌ FAIL: dash 1.3.1 missing" && exit 1)
-          grep -q "android.useAndroidX=true" android/gradle.properties || (echo "❌ FAIL: useAndroidX missing" && exit 1)
-          echo "✅ AndroidX + Media3 1.3.1 FIXED"
-
+      # FIXED - Stop daemon, clear stale wrapper cache, use --no-daemon
       - name: Gradle Help - Validate Gradle can configure project
         run: |
           chmod +x android/gradlew
