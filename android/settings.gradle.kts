@@ -1,9 +1,8 @@
-// WanaLab God Eye v2.2 - settings.gradle.kts - COMPLETE - FIXED for Line 16
-// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// WanaLab God Eye v2.2 - settings.gradle.kts - COMPLETE - STATIC - Capacitor 8
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa
 // PRO Rs. 2,500 / Year
-// FIX: Changed FAIL_ON_PROJECT_REPOS to PREFER_SETTINGS - So build.gradle won't fail on repositories
-// FIX: KSP plugin not found - pluginManagement + gradlePluginPortal + KSP 2.0.0-1.0.24
-// FIX: Capacitor paths - Real location is ../node_modules/@capacitor/... NOT android/capacitor-android
+// FIX: No echo generation - Static file - No IncludedBuild corruption
+// Capacitor 8 + AGP 8.7.3 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
 
 pluginManagement {
     repositories {
@@ -12,9 +11,9 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        id("com.android.application") version "8.5.2" apply false
-        id("org.jetbrains.kotlin.android") version "2.0.0" apply false
-        id("com.google.devtools.ksp") version "2.0.0-1.0.24" apply false
+        id("com.android.application") version "8.7.3" apply false
+        id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+        id("com.google.devtools.ksp") version "2.0.21-1.0.28" apply false
     }
 }
 
