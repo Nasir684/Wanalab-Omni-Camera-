@@ -1,8 +1,6 @@
-// WanaLab God Eye v2.2 - settings.gradle.kts - COMPLETE - STATIC - Capacitor 8
-// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa
-// PRO Rs. 2,500 / Year
-// FIX: No echo generation - Static file - No IncludedBuild corruption
-// Capacitor 8 + AGP 8.7.3 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
+// WanaLab God Eye v2.2 - settings.gradle.kts - COMMITTED - Capacitor 8
+// Single source of truth: AGP 8.7.3 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
+// CI does NOT rewrite this file
 
 pluginManagement {
     repositories {
