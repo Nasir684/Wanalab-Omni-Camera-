@@ -1,3 +1,4 @@
+<!-- WanaLab GodEye v2.2 - export.html - Author: Nasir Khan - Wana, South Waziristan - 2026-11-23 - PRO Rs. 2,500 / Year -->
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Export Hub v2.2 FINAL - GodEye v2.2 - By WanaLab</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -8,12 +9,12 @@
 <script src="https://unpkg.com/mqtt@5.10.0/dist/mqtt.min.js"></script>
 </head><body style="background:#000;color:#0f8;font-family:system-ui;padding:16px;max-width:900px;margin:auto">
 <h2>📘 Export Hub v2.2 FINAL - GodEye v2.2 - By WanaLab</h2>
-<p>Pages: <b id="pc">0</b> | <span id="net" style="color:#ffcc00"></span> | <a href="www/index.html" style="color:#0f8">← Back to Camera v2.2</a> | <a href="./shop.html" style="color:#0f8">Shop Hub →</a> | <a href="./about.html" style="color:#0f8">About</a> | <span id="proBadge2" style="color:#FFC107">FREE</span></p>
+<p>Pages: <b id="pc">0</b> | <span id="net" style="color:#ffcc00"></span> | <a href="./index.html" style="color:#0f8">← Back to Camera v2.2</a> | <a href="./shop.html" style="color:#0f8">Shop Hub →</a> | <a href="./about.html" style="color:#0f8">About</a> | <span id="proBadge2" style="color:#FFC107">FREE</span></p>
 
-<!-- v23: GPS Timestamp - On Export Hub -->
+<!-- v23: GPS Timestamp - On Export Hub - GPS OFF by default -->
 <div style="background:#111;border:2px solid #00E676;border-radius:14px;padding:14px;margin:12px 0">
 <h3 style="color:#fff;margin:0 0 10px">📍 GPS Timestamp - Location + Time - Proof</h3>
-<p style="color:#fff;font-size:13px">GPS: <b id="gpsLabel">📍 Getting GPS...</b> | <span id="gpsStatus" style="color:#FFC107">Checking GPS...</span></p>
+<p style="color:#fff;font-size:13px">GPS: <b id="gpsLabel">📍 GPS: OFF - Tap Get GPS</b> | <span id="gpsStatus" style="color:#FFC107">GPS OFF - Tap Get GPS to Enable</span></p>
 <p style="color:#aaa;font-size:12px">GPS Timestamp • Location + Time stamped on every photo + every export • Map Link included • Anti-Fake GPS: Block GPS Emulator / Fake GPS / Mock Location</p>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
 <button onclick="refreshGPS()" style="padding:10px;background:#00E676;color:#000;border:none;border-radius:8px;font-weight:800">🔄 Get GPS Now</button>
@@ -101,7 +102,7 @@
 <input id="ws_url" placeholder="WebSocket - ws://192.168.1.100:8080" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
 </div>
 <div style="margin-top:12px"><button onclick="clearAll()" style="padding:12px;background:#300;color:#f55;border:none;border-radius:10px">🗑️ CLEAR ALL PAGES</button></div>
-<p style="color:#666;font-size:12px;text-align:center;margin-top:16px">By WanaLab • Founded by Nasir Khan • GodEye v2.2 • Export Hub v2.2 FINAL • GPS + Anti-Fake GPS • <a href="www/index.html" style="color:#0f8">Back to Camera</a></p>
+<p style="color:#666;font-size:12px;text-align:center;margin-top:16px">By WanaLab • Founded by Nasir Khan • GodEye v2.2 • Export Hub v2.2 FINAL • GPS + Anti-Fake GPS • <a href="./index.html" style="color:#0f8">Back to Camera</a> • <a href="./privacy.html" style="color:#0f8">Privacy</a></p>
 
 <script>
 let isPro = localStorage.getItem('godeye_pro')==='1';
@@ -180,7 +181,7 @@ function shareLocationOnly(){
   window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
   setStatus('✅ Location Only Shared - No Photo - Map Link Sent');
 }
-refreshGPS();
+// GPS OFF by default - DO NOT auto-call refreshGPS() on load - v2.2 spec
 function getCredHeader(){
   if(!document.getElementById('cred_show').checked) return {header:'', footer:''};
   let type=document.getElementById('cred_type').value;
