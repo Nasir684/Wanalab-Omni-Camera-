@@ -167,6 +167,33 @@ jobs:
           if ! grep -q "com.google.devtools.ksp" android/settings.gradle.kts; then echo "⚠️ cap sync removed KSP" && exit 1; fi
           echo "✅ Settings still valid after sync"
 
+      # NEW FIX 1 - AndroidX must be in android/gradle.properties, AFTER cap sync
+      - name: Fix AndroidX - android/gradle.properties
+        run: |
+          touch android/gradle.properties
+          grep -q "android.useAndroidX=true" android/gradle.properties || echo "android.useAndroidX=true" >> android/gradle.properties
+          grep -q "android.enableJetifier=true" android/gradle.properties || echo "android.enableJetifier=true" >> android/gradle.properties
+          grep -q "org.gradle.jvmargs" android/gradle.properties || echo "org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8" >> android/gradle.properties
+          # Remove wrong root copy if it confuses build
+          rm -f gradle.properties || true
+          cat android/gradle.properties
+          echo "✅ AndroidX fixed"
+
+      # NEW FIX 2 - media3-exoplayer-rtmp:1.4.1 DOES NOT EXIST - RTMP removed in 1.4.0, force 1.3.1
+      - name: Fix Media3 RTMP - Force 1.3.1
+        run: |
+          echo "=== Before ==="
+          grep -r "media3" android/app/build.gradle.kts android/app/build.gradle android/build.gradle 2>/dev/null || echo "No media3 in app files"
+          # Fix all 1.4.x media3 to 1.3.1 in every gradle file
+          find android -name "*.gradle" -o -name "*.gradle.kts" | xargs sed -i 's/media3[^:]*:1\.4\.[0-9]/media3:1.3.1/g' || true
+          find android -name "*.gradle" -o -name "*.gradle.kts" | xargs sed -i 's/:1\.4\.1/:1.3.1/g' || true
+          find android -name "*.gradle" -o -name "*.gradle.kts" | xargs sed -i 's/media3Version.*=.*1\.4.*/media3Version = "1.3.1"/g' || true
+          find android -name "*.gradle" -o -name "*.gradle.kts" | xargs sed -i 's/1\.4\.1/1.3.1/g' || true
+          echo "=== After ==="
+          grep -r "media3" android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || echo "No media3 left"
+          if grep -r "media3.*1\.4\.1" android/ --include="*.gradle" --include="*.kts" 2>/dev/null; then echo "❌ Still 1.4.1 found" && exit 1; fi
+          echo "✅ Media3 forced to 1.3.1 - RTMP exists in 1.3.1"
+
       # FIXED - Stop daemon, clear stale wrapper cache, use --no-daemon
       - name: Gradle Help - Validate Gradle can configure project
         run: |
