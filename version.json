@@ -6,18 +6,6 @@
   "location": "Wana, South Waziristan",
   "founded": "WanaLab - Wana, South Waziristan",
   "pro": "Rs. 2,500 / Year",
-  "proPrice": 2500,
-  "currency": "PKR",
-  "features": [
-    "Clarendon",
-    "Credentials",
-    "Face 468 Dots",
-    "Thumb Biometric",
-    "GPS Timestamp",
-    "External Devices PRO"
-  ],
   "forceUpdate": true,
-  "minVersion": "2.2",
-  "updateUrl": "https://github.com/Nasir684/Wanalab-Omni-Camera-/releases",
-  "privacy": "Offline-first. Data stays on device unless user chooses to share/export."
+  "minVersion": "2.2"
 }
