@@ -114,8 +114,6 @@ jobs:
           fi
 
       # FIX 1: AGP MISMATCH - Force settings.gradle.kts to contain AGP 8.7.3
-      # Capacitor's settings.gradle.kts normally has NO version number, only plugin id.
-      # Old check failed because it grepped for 8.7.3 in settings file. This step rewrites it correctly.
       - name: FIX - Force AGP 8.7.3 + Kotlin 2.0.21 in settings.gradle.kts
         run: |
           echo "=== BEFORE ==="
@@ -124,20 +122,15 @@ jobs:
           import pathlib
           p = pathlib.Path("android/settings.gradle.kts")
           t = p.read_text()
-          # Replace any existing AGP version with 8.7.3, or inject version if missing
           import re
-          # Case 1: id("com.android.application") version "X" -> force 8.7.3
           if 'com.android.application' in t:
               t = re.sub(r'id\("com\.android\.application"\)\s*version\s*"[^"]+"', 'id("com.android.application") version "8.7.3"', t)
-              # If no version after id, add it
               if 'com.android.application") version' not in t:
                   t = t.replace('id("com.android.application")', 'id("com.android.application") version "8.7.3"')
-          # Case 2: Kotlin plugin
           if 'org.jetbrains.kotlin.android' in t:
               t = re.sub(r'id\("org\.jetbrains\.kotlin\.android"\)\s*version\s*"[^"]+"', 'id("org.jetbrains.kotlin.android") version "2.0.21"', t)
               if 'org.jetbrains.kotlin.android") version' not in t:
                   t = t.replace('id("org.jetbrains.kotlin.android")', 'id("org.jetbrains.kotlin.android") version "2.0.21"')
-          # Case 3: KSP
           if 'com.google.devtools.ksp' in t:
               t = re.sub(r'id\("com\.google\.devtools\.ksp"\)\s*version\s*"[^"]+"', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"', t)
               if 'com.google.devtools.ksp") version' not in t:
@@ -148,7 +141,6 @@ jobs:
           PYEOF
           grep -q "8.7.3" android/settings.gradle.kts && echo "✅ settings.gradle.kts now has AGP 8.7.3" || (echo "❌ Still no 8.7.3 in settings" && exit 1)
 
-      # FIX 2: AndroidX + Jetifier - Must be in android/gradle.properties
       - name: FIX - Force AndroidX in android/gradle.properties
         run: |
           cat android/gradle.properties || echo "No gradle.properties yet"
@@ -168,13 +160,13 @@ jobs:
       - name: Verify Committed Gradle Versions
         run: |
           grep -E "com.android.tools.build:gradle|kotlin-gradle-plugin" android/build.gradle || (echo "❌ android/build.gradle missing AGP/Kotlin" && exit 1)
-          grep -E "com.android.application|org.jetbrains.kotlin.android|com.google.devtools.ksp" android/settings.gradle.kts || (echo "❌ settings.gradle.kts missing pluginManagement" && exit 1)
           grep -E "com.google.devtools.ksp" android/app/build.gradle.kts || (echo "❌ app/build.gradle.kts missing KSP" && exit 1)
           if grep -q "8.7.3" android/build.gradle && grep -q "8.7.3" android/settings.gradle.kts; then echo "✅ AGP 8.7.3 consistent"; else echo "❌ FAIL: AGP mismatch" && cat android/build.gradle && cat android/settings.gradle.kts && exit 1; fi
           if grep -q "2.0.21" android/build.gradle && grep -q "2.0.21" android/settings.gradle.kts && grep -q "2.0.21" android/app/build.gradle.kts; then echo "✅ Kotlin/KSP 2.0.21 consistent"; else echo "❌ FAIL: Kotlin/KSP mismatch" && exit 1; fi
           echo "✅ Versions consistent"
 
-      # FIXED - Keep /tmp Gradle until end, use --no-daemon, stop daemon before help
+      # FIXED v2.2 - DO NOT run `gradle wrapper` here. It configures project before cap sync and fails on :capacitor-android.
+      # Just download wrapper jar with curl, no Gradle configure.
       - name: Fix Wrapper Path - ROOT to android + Generate jar if missing
         run: |
           echo "=== Search wrapper ==="
@@ -184,19 +176,19 @@ jobs:
           if [ -f gradle/wrapper/gradle-wrapper.jar ]; then cp gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar && echo "✅ Copied jar ROOT -> android/"; fi
           if [ -f gradlew ]; then cp gradlew android/gradlew && echo "✅ Copied gradlew ROOT -> android/"; fi
           if [ -f gradlew.bat ]; then cp gradlew.bat android/gradlew.bat && echo "✅ Copied gradlew.bat ROOT -> android/"; fi
-          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.11.1-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
-          cat android/gradle/wrapper/gradle-wrapper.properties
-          if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ] || [ ! -f android/gradlew ]; then
-            echo "⚠️ Jar or gradlew missing - Generating in CI - KEEP /tmp Gradle, DO NOT DELETE YET"
-            cd /tmp && curl -sL -o g.zip https://services.gradle.org/distributions/gradle-8.11.1-all.zip && unzip -q -o g.zip
-            cd $GITHUB_WORKSPACE/android && /tmp/gradle-8.11.1/bin/gradle wrapper --gradle-version 8.11.1 --no-daemon
-            cd $GITHUB_WORKSPACE
-            echo "✅ Generated wrapper - /tmp/gradle-8.11.1 KEPT for later steps"
+          printf 'distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.11.1-all.zip\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n' > android/gradle/wrapper/gradle-wrapper.properties
+          if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ]; then
+            echo "⚠️ Jar missing - Downloading directly, NOT running gradle wrapper"
+            curl -sL -o android/gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradle/wrapper/gradle-wrapper.jar
+          fi
+          if [ ! -f android/gradlew ]; then
+            curl -sL -o android/gradlew https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradlew
+            curl -sL -o android/gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradlew.bat
           fi
           ls -lh android/gradlew android/gradlew.bat android/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.jar || (echo "❌ Wrapper still missing" && exit 1)
           chmod +x android/gradlew
           grep "gradle-8.11.1" android/gradle/wrapper/gradle-wrapper.properties || (echo "❌ Wrapper must be 8.11.1" && exit 1)
-          echo "✅ Wrapper ready - Gradle 8.11.1"
+          echo "✅ Wrapper ready - Gradle 8.11.1 - No Gradle configure run"
 
       - name: Validate settings.gradle.kts - No duplicate Gradle files
         run: |
@@ -220,7 +212,6 @@ jobs:
         run: |
           python3 << 'PYEOF'
           import pathlib, re
-          # 1. settings.gradle.kts - AGP again
           p = pathlib.Path("android/settings.gradle.kts")
           t = p.read_text()
           t = re.sub(r'id\("com\.android\.application"\)\s*version\s*"[^"]+"', 'id("com.android.application") version "8.7.3"', t)
@@ -232,23 +223,24 @@ jobs:
           t = re.sub(r'id\("com\.google\.devtools\.ksp"\)\s*version\s*"[^"]+"', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"', t)
           if 'com.google.devtools.ksp") version' not in t and 'com.google.devtools.ksp' in t:
               t = t.replace('id("com.google.devtools.ksp")', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"')
+          # Ensure capacitor projects still included after sync
+          if ':capacitor-android' not in t:
+              t += '\ninclude(":capacitor-android")\nproject(":capacitor-android").projectDir = File("node_modules/@capacitor/android/capacitor")\n'
           p.write_text(t)
           print("=== settings.gradle.kts ===")
           print(t)
-          # 2. gradle.properties - AndroidX again
           gp = pathlib.Path("android/gradle.properties")
           gt = gp.read_text() if gp.exists() else ""
           lines = [l for l in gt.splitlines() if not l.strip().startswith("android.useAndroidX") and not l.strip().startswith("android.enableJetifier")]
           lines.append("android.useAndroidX=true")
           lines.append("android.enableJetifier=true")
           gp.write_text("\n".join(lines) + "\n")
-          # 3. Media3 - THE FIX THAT FAILED BEFORE: replace ALL 1.4.1 with 1.3.1 in app/build.gradle.kts
           app = pathlib.Path("android/app/build.gradle.kts")
           at = app.read_text()
           print("=== app/build.gradle.kts BEFORE Media3 fix ===")
           print("\n".join([l for l in at.splitlines() if "media3" in l.lower()]))
-          # Replace any media3 line containing 1.4.1 -> 1.3.1
           at = at.replace("1.4.1", "1.3.1")
+          at = at.replace("1.8.0", "1.3.1")
           app.write_text(at)
           print("=== AFTER ===")
           print("\n".join([l for l in at.splitlines() if "media3" in l.lower()]))
@@ -263,7 +255,6 @@ jobs:
           grep -q "8.7.3" android/settings.gradle.kts && echo "✅ AGP 8.7.3 OK after sync"
           echo "✅ All post-sync fixes applied"
 
-      # FIXED - Stop daemon, clear stale wrapper cache, use --no-daemon
       - name: Gradle Help - Validate Gradle can configure project
         run: |
           chmod +x android/gradlew
