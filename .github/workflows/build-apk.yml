@@ -1,8 +1,7 @@
-# GodEye v2.2 - COMPLETE - No PC Needed
+# GodEye v2.2 - COMPLETE - FIXED - Do NOT delete /tmp Gradle early
 # Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa
 # PRO Rs. 2,500 / Year
 # Capacitor 8 = AGP 8.7.3 + Gradle 8.11.1 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
-# Fixes: Wrapper was at ROOT gradle/wrapper/, package-lock.json missing
 name: Build GodEye APK + AAB - v2.2
 
 on:
@@ -28,7 +27,7 @@ jobs:
       - name: Fail if www/index.html missing
         run: |
           if [ ! -f www/index.html ]; then echo "❌ FAIL: www/index.html missing" && exit 1; fi
-          ls -lh www/index.html shop.html export.html about.html privacy.html || echo "Check ROOT files - shop/export/about/privacy should be in ROOT"
+          ls -lh www/index.html shop.html export.html about.html privacy.html || echo "Check ROOT files"
           echo "✅ www/index.html exists"
 
       - name: Check Spec in HTML
@@ -89,9 +88,8 @@ jobs:
             echo "✅ package-lock.json found - Using npm ci"
             npm ci
           else
-            echo "⚠️ package-lock.json missing - Generating it now in CI (no PC needed)"
+            echo "⚠️ package-lock.json missing - Generating it now in CI"
             npm install
-            echo "✅ Generated package-lock.json"
             ls -lh package-lock.json
           fi
           npm list @capacitor/android @capacitor/app @capacitor/haptics @capacitor/keyboard @capacitor/status-bar @capacitor/core @capacitor/cli
@@ -108,11 +106,11 @@ jobs:
           git config user.email "github-actions@github.com"
           git add package-lock.json || echo "No lockfile to add"
           if git diff --cached --quiet; then
-            echo "✅ package-lock.json already committed - Nothing to do"
+            echo "✅ package-lock.json already committed"
           else
             git commit -m "Add package-lock.json - Generated in CI"
             git push
-            echo "✅ Committed package-lock.json - Next run will use npm ci"
+            echo "✅ Committed package-lock.json"
           fi
 
       - name: Verify Committed Gradle Versions
@@ -120,31 +118,28 @@ jobs:
           grep -E "com.android.tools.build:gradle|kotlin-gradle-plugin" android/build.gradle || (echo "❌ android/build.gradle missing AGP/Kotlin" && exit 1)
           grep -E "com.android.application|org.jetbrains.kotlin.android|com.google.devtools.ksp" android/settings.gradle.kts || (echo "❌ settings.gradle.kts missing pluginManagement" && exit 1)
           grep -E "com.google.devtools.ksp" android/app/build.gradle.kts || (echo "❌ app/build.gradle.kts missing KSP" && exit 1)
-          if grep -q "8.7.3" android/build.gradle && grep -q "8.7.3" android/settings.gradle.kts; then echo "✅ AGP 8.7.3 consistent"; else echo "❌ FAIL: AGP mismatch - Fix committed files to all use 8.7.3" && exit 1; fi
+          if grep -q "8.7.3" android/build.gradle && grep -q "8.7.3" android/settings.gradle.kts; then echo "✅ AGP 8.7.3 consistent"; else echo "❌ FAIL: AGP mismatch" && exit 1; fi
           if grep -q "2.0.21" android/build.gradle && grep -q "2.0.21" android/settings.gradle.kts && grep -q "2.0.21" android/app/build.gradle.kts; then echo "✅ Kotlin/KSP 2.0.21 consistent"; else echo "❌ FAIL: Kotlin/KSP mismatch" && exit 1; fi
-          echo "✅ Versions consistent - Capacitor 8 set"
+          echo "✅ Versions consistent"
 
+      # FIXED - Keep /tmp Gradle until end, use --no-daemon, stop daemon before help
       - name: Fix Wrapper Path - ROOT to android + Generate jar if missing
         run: |
-          echo "=== 1. Search entire repo for wrapper ==="
+          echo "=== Search wrapper ==="
           find . -name "gradle-wrapper.properties" -not -path "./node_modules/*"
-          find . -name "gradlew" -not -path "./node_modules/*"
-          find . -name "gradle-wrapper.jar" -not -path "./node_modules/*" || echo "No jar found - Will generate in CI"
-          echo "=== 2. Copy from ROOT if still there ==="
           mkdir -p android/gradle/wrapper
           if [ -f gradle/wrapper/gradle-wrapper.properties ]; then cp gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties && echo "✅ Copied properties ROOT -> android/"; fi
           if [ -f gradle/wrapper/gradle-wrapper.jar ]; then cp gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar && echo "✅ Copied jar ROOT -> android/"; fi
           if [ -f gradlew ]; then cp gradlew android/gradlew && echo "✅ Copied gradlew ROOT -> android/"; fi
           if [ -f gradlew.bat ]; then cp gradlew.bat android/gradlew.bat && echo "✅ Copied gradlew.bat ROOT -> android/"; fi
-          echo "=== 3. Force 8.11.1 ==="
           sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.11.1-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
           cat android/gradle/wrapper/gradle-wrapper.properties
-          echo "=== 4. Generate jar if missing ==="
           if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ] || [ ! -f android/gradlew ]; then
-            echo "⚠️ Jar or gradlew missing - Generating in CI"
-            cd /tmp && curl -sL -o g.zip https://services.gradle.org/distributions/gradle-8.11.1-all.zip && unzip -q g.zip
-            cd $GITHUB_WORKSPACE/android && /tmp/gradle-8.11.1/bin/gradle wrapper --gradle-version 8.11.1
-            cd $GITHUB_WORKSPACE && rm -rf /tmp/gradle-8.11.1 /tmp/g.zip
+            echo "⚠️ Jar or gradlew missing - Generating in CI - KEEP /tmp Gradle, DO NOT DELETE YET"
+            cd /tmp && curl -sL -o g.zip https://services.gradle.org/distributions/gradle-8.11.1-all.zip && unzip -q -o g.zip
+            cd $GITHUB_WORKSPACE/android && /tmp/gradle-8.11.1/bin/gradle wrapper --gradle-version 8.11.1 --no-daemon
+            cd $GITHUB_WORKSPACE
+            echo "✅ Generated wrapper - /tmp/gradle-8.11.1 KEPT for later steps"
           fi
           ls -lh android/gradlew android/gradlew.bat android/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.jar || (echo "❌ Wrapper still missing" && exit 1)
           chmod +x android/gradlew
@@ -172,18 +167,21 @@ jobs:
           if ! grep -q "com.google.devtools.ksp" android/settings.gradle.kts; then echo "⚠️ cap sync removed KSP" && exit 1; fi
           echo "✅ Settings still valid after sync"
 
+      # FIXED - Stop daemon, clear stale wrapper cache, use --no-daemon
       - name: Gradle Help - Validate Gradle can configure project
         run: |
           chmod +x android/gradlew
           cd android
-          ./gradlew help --stacktrace
+          ./gradlew --stop || echo "No daemon to stop - OK"
+          rm -rf ~/.gradle/caches/8.11.1 || echo "No stale cache"
+          ./gradlew help --no-daemon --stacktrace
 
       - name: Verify Manifest Activities Exist in android/app
         run: |
           grep -o 'android:name="[^"]*Activity"' android/app/src/main/AndroidManifest.xml || echo "No activities found in Manifest"
           find android/app/src/main/java -name "*.kt" | head -n 20 || echo "No Kotlin files in android/app/src/main/java"
           if grep -q "CameraActivity" android/app/src/main/AndroidManifest.xml; then
-            if find android/app/src/main/java -name "CameraActivity.kt" | grep -q .; then echo "✅ CameraActivity.kt exists in android/app"; else echo "⚠️ WARNING: Manifest declares CameraActivity but CameraActivity.kt NOT in android/app/src/main/java - Move Kotlin files to android/app/src/main/java/com/wanalab/godeye/"; fi
+            if find android/app/src/main/java -name "CameraActivity.kt" | grep -q .; then echo "✅ CameraActivity.kt exists in android/app"; else echo "⚠️ WARNING: Manifest declares CameraActivity but CameraActivity.kt NOT in android/app/src/main/java"; fi
           else
             echo "⚠️ CameraActivity not in Manifest - OK if you use only Capacitor WebView"
           fi
@@ -192,12 +190,12 @@ jobs:
         run: |
           chmod +x android/gradlew
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Build AAB - Debug
         run: |
           cd android
-          ./gradlew bundleDebug --stacktrace
+          ./gradlew bundleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -217,3 +215,4 @@ jobs:
           echo "Version: $GODEYE_VERSION"
           echo "PRO: $PRO_PRICE"
           echo "By WanaLab - Founded by Nasir Khan"
+          rm -rf /tmp/gradle-8.11.1 /tmp/g.zip || echo "Cleanup done"
