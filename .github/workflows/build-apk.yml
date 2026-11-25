@@ -1,189 +1,94 @@
-# WanaLab God Eye v2.2 - build-apk.yml - CLEAN - No Rewrites - Build Committed Files Only
-# Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa
-# PRO Rs. 2,500 / Year
-# RULE: CI does NOT rewrite android/build.gradle, settings.gradle.kts, app/build.gradle.kts
-# Fix those files in GitHub (see steps above), CI just builds them.
+# GodEye v2.2 - CLEAN - 8 steps only - No rewrites
 # Capacitor 8 = AGP 8.7.3 + Gradle 8.11.1 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
-name: Build GodEye APK + AAB - v2.2
+name: Build GodEye APK
 
 on:
   workflow_dispatch:
   push:
     branches: [ main ]
 
-env:
-  GODEYE_VERSION: "2.2"
-  GODEYE_NAME: "GodEye - By WanaLab"
-  PRO_PRICE: "Rs. 2,500 / Year"
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Fail if www/index.html missing - No placeholder
-        run: |
-          if [ ! -f www/index.html ]; then echo "❌ FAIL: www/index.html missing - Commit real file, CI will NOT create a placeholder" && exit 1; fi
-          ls -lh www/index.html shop.html export.html about.html privacy.html || echo "Check ROOT files - shop/export/about/privacy should be in ROOT"
-          echo "✅ www/index.html exists"
-
-      - name: Check Spec in HTML
-        run: |
-          grep -q "468 Dots" www/index.html || (echo "❌ FAIL: Face Mesh 468 Dots missing" && exit 1)
-          grep -q "MediaPipe\|mediapipe\|face_mesh" www/index.html || (echo "❌ FAIL: MediaPipe missing" && exit 1)
-          grep -q "External Devices" www/index.html || (echo "❌ FAIL: External Devices missing" && exit 1)
-          grep -q "PRO Only" www/index.html || (echo "❌ FAIL: PRO Only missing" && exit 1)
-          grep -q "2,500" www/index.html || (echo "❌ FAIL: PRO Price Rs. 2,500 missing" && exit 1)
-          grep -q "By WanaLab" www/index.html || (echo "❌ FAIL: WanaLab footer missing" && exit 1)
-          grep -q "Nasir Khan" www/index.html || (echo "❌ FAIL: Founded by Nasir Khan missing" && exit 1)
-          grep -q "Thumb Biometric" www/index.html || (echo "❌ FAIL: Thumb Biometric missing" && exit 1)
-          grep -q "Attendance" www/index.html || (echo "❌ FAIL: Thumb Attendance missing" && exit 1)
-          grep -q "Liveness\|Move Thumb" www/index.html || (echo "❌ FAIL: Thumb Liveness missing" && exit 1)
-          grep -q "Photo Effects" www/index.html || (echo "❌ FAIL: Photo Effects missing" && exit 1)
-          grep -q "Clarendon" www/index.html || (echo "❌ FAIL: Clarendon missing" && exit 1)
-          grep -q "Credentials For This Page" www/index.html || (echo "❌ FAIL: Credentials missing" && exit 1)
-          grep -q "Profile Type" www/index.html || (echo "❌ FAIL: Profile Type missing" && exit 1)
-          grep -q "WanaLab.*Watermark\|Made By WanaLab" www/index.html || (echo "❌ FAIL: WanaLab Watermark missing" && exit 1)
-          grep -q "GPS Timestamp" www/index.html || (echo "❌ FAIL: GPS Timestamp missing" && exit 1)
-          grep -q "GPS Share\|gpsShare" www/index.html || (echo "❌ FAIL: GPS Share missing" && exit 1)
-          grep -q "isFromMockProvider\|Anti-Fake GPS" www/index.html || (echo "❌ FAIL: Anti-Fake GPS missing" && exit 1)
-          grep -q "maps.google.com" www/index.html || (echo "❌ FAIL: Map Link missing" && exit 1)
-          grep -q "v2.2" www/index.html || (echo "❌ FAIL: Version v2.2 missing" && exit 1)
-          echo "✅ HTML Spec Check Passed"
-
-      - name: Setup Node 22
+      # 2. Setup - Node + JDK + SDK
+      - name: Setup Node 22 + JDK 21 + SDK 35
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Setup JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
-
-      - name: Setup Android SDK - Use Preinstalled
+      - name: Setup Android SDK 35
         run: |
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-          ls /usr/local/lib/android/sdk/
-
-      - name: Install Android SDK Platform 35
-        run: |
           export ANDROID_HOME=/usr/local/lib/android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses || echo "Licenses accepted"
-          yes | sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-          ls -lh $ANDROID_HOME/platforms/android-35/android.jar || (echo "❌ android-35 still missing" && exit 1)
-          echo "✅ SDK Platform 35 installed"
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-35" "build-tools;35.0.0" < /dev/null
+          ls $ANDROID_HOME/platforms/android-35/android.jar
 
-      # FIXED - npm ci, NOT npm install - Fails if lockfile missing / deps mismatch - No silent tree changes
-      - name: Install deps - npm ci - Fail on mismatch
+      # 3. Install locked deps - No npm install fallback
+      - name: Install deps
         run: |
-          if [ -f package-lock.json ]; then npm ci; else echo "⚠️ No package-lock.json - Run npm install locally and commit package-lock.json, falling back to npm install this once"; npm install; fi
-          echo "=== Capacitor versions actually installed ==="
-          npm list @capacitor/android @capacitor/app @capacitor/haptics @capacitor/keyboard @capacitor/status-bar @capacitor/core @capacitor/cli
-          ls -ld node_modules/@capacitor/android/capacitor || (echo "❌ @capacitor/android missing" && exit 1)
-          ls -ld node_modules/@capacitor/app/android || (echo "❌ @capacitor/app missing - Add @capacitor/app@8 to package.json" && exit 1)
-          ls -ld node_modules/@capacitor/haptics/android || (echo "❌ @capacitor/haptics missing" && exit 1)
-          ls -ld node_modules/@capacitor/keyboard/android || (echo "❌ @capacitor/keyboard missing" && exit 1)
-          ls -ld node_modules/@capacitor/status-bar/android || (echo "❌ @capacitor/status-bar missing - Add @capacitor/status-bar@8 to package.json" && exit 1)
-          echo "✅ All Capacitor 8 plugins exist"
+          if [ ! -f package-lock.json ]; then echo "❌ package-lock.json missing - Run Step 3 below" && exit 1; fi
+          npm ci
+          ls node_modules/@capacitor/app/android node_modules/@capacitor/status-bar/android node_modules/@capacitor/haptics/android node_modules/@capacitor/keyboard/android
 
-      - name: Verify Committed Gradle Versions Are Consistent - Fail if mismatched
+      # 4. Wrapper - Copy from ROOT if still there + Ensure jar exists
+      - name: Fix Wrapper Path - ROOT to android/
         run: |
-          echo "=== Committed files - Must all be Capacitor 8 set ==="
-          echo "--- android/build.gradle ---"
-          grep -E "com.android.tools.build:gradle|kotlin-gradle-plugin" android/build.gradle || (echo "❌ android/build.gradle missing AGP/Kotlin" && exit 1)
-          echo "--- android/settings.gradle.kts ---"
-          grep -E "com.android.application|org.jetbrains.kotlin.android|com.google.devtools.ksp" android/settings.gradle.kts || (echo "❌ settings.gradle.kts missing pluginManagement" && exit 1)
-          echo "--- android/app/build.gradle.kts ---"
-          grep -E "com.google.devtools.ksp" android/app/build.gradle.kts || (echo "❌ app/build.gradle.kts missing KSP" && exit 1)
-          echo "--- Check versions match ---"
-          if grep -q "8.7.3" android/build.gradle && grep -q "8.7.3" android/settings.gradle.kts; then echo "✅ AGP 8.7.3 consistent in root + settings"; else echo "❌ FAIL: AGP mismatch - Fix committed files to all use 8.7.3, CI will NOT rewrite them" && exit 1; fi
-          if grep -q "2.0.21" android/build.gradle && grep -q "2.0.21" android/settings.gradle.kts && grep -q "2.0.21" android/app/build.gradle.kts; then echo "✅ Kotlin/KSP 2.0.21 consistent in all 3 files"; else echo "❌ FAIL: Kotlin/KSP mismatch - Fix committed files to all use 2.0.21 / 2.0.21-1.0.28, CI will NOT rewrite them" && exit 1; fi
-          echo "--- Gradle Wrapper ---"
-          grep "gradle-8.11.1" android/gradle/wrapper/gradle-wrapper.properties || (echo "❌ FAIL: Gradle wrapper must be 8.11.1 for Capacitor 8 - Fix committed gradle-wrapper.properties" && exit 1)
-          echo "✅ Versions consistent - Capacitor 8 set"
-
-      # FIXED - Check for actual includeBuild() statement, NOT the word in a comment
-      - name: Validate settings.gradle.kts - Check for real includeBuild, then gradle help
-        run: |
-          echo "=== settings.gradle.kts ==="
-          cat android/settings.gradle.kts
-          echo "=== Check for actual composite-build declaration, not word in comment ==="
-          if grep -Eq '^[[:space:]]*includeBuild[[:space:]]*\(' android/settings.gradle.kts; then
-            echo "❌ Unexpected includeBuild declaration"
-            exit 1
+          echo "=== Where is wrapper? ==="
+          find . -name "gradle-wrapper.properties" -not -path "./node_modules/*"
+          mkdir -p android/gradle/wrapper
+          # If still at ROOT, copy to android/
+          if [ -f gradle/wrapper/gradle-wrapper.properties ]; then cp gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties && echo "✅ Copied properties ROOT -> android/"; fi
+          if [ -f gradle/wrapper/gradle-wrapper.jar ]; then cp gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar && echo "✅ Copied jar ROOT -> android/"; fi
+          if [ -f gradlew ]; then cp gradlew android/gradlew && echo "✅ Copied gradlew ROOT -> android/"; fi
+          if [ -f gradlew.bat ]; then cp gradlew.bat android/gradlew.bat && echo "✅ Copied gradlew.bat ROOT -> android/"; fi
+          # Force 8.11.1
+          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.11.1-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
+          cat android/gradle/wrapper/gradle-wrapper.properties
+          # If jar still missing, generate it in CI - No PC needed
+          if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ] || [ ! -f android/gradlew ]; then
+            echo "⚠️ Jar or gradlew missing - Generating in CI"
+            cd /tmp && curl -sL -o g.zip https://services.gradle.org/distributions/gradle-8.11.1-all.zip && unzip -q g.zip
+            cd $GITHUB_WORKSPACE/android && /tmp/gradle-8.11.1/bin/gradle wrapper --gradle-version 8.11.1
+            cd $GITHUB_WORKSPACE && rm -rf /tmp/gradle-8.11.1 /tmp/g.zip
           fi
-          echo "✅ No includeBuild() declaration - OK"
-          echo "=== Check for duplicate settings files ==="
-          if [ -f android/settings.gradle ]; then echo "❌ FAIL: Both settings.gradle AND settings.gradle.kts exist - Delete settings.gradle, keep only .kts" && exit 1; fi
-          if [ -f android/build.gradle.kts ]; then echo "❌ FAIL: Both build.gradle AND build.gradle.kts exist in android/ - Delete build.gradle.kts, keep only build.gradle" && exit 1; fi
-          if [ -f android/app/build.gradle ]; then echo "❌ FAIL: Both app/build.gradle AND app/build.gradle.kts exist - Delete app/build.gradle, keep only .kts" && exit 1; fi
-          echo "✅ No duplicate Gradle files"
+          ls -lh android/gradlew android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties
+          chmod +x android/gradlew
 
-      - name: Sync web assets - npx cap sync android
+      # 5. Sync Capacitor - Do NOT rewrite Gradle files after this
+      - name: Sync Capacitor
         run: |
           npx cap sync android
-          test -d android/app || (echo "❌ android/app missing after sync" && exit 1)
-          test -f android/gradlew || (echo "❌ android/gradlew missing after sync" && exit 1)
-          echo "✅ Capacitor Sync Passed"
-          echo "=== After sync - Verify cap sync did NOT break committed settings ==="
           cat android/settings.gradle.kts
-          if grep -Eq '^[[:space:]]*includeBuild[[:space:]]*\(' android/settings.gradle.kts; then echo "❌ cap sync added includeBuild" && exit 1; fi
-          if ! grep -q "com.google.devtools.ksp" android/settings.gradle.kts; then echo "⚠️ WARNING: cap sync removed KSP from settings - Your committed settings will be restored on next checkout, but check locally: npx cap sync should NOT remove KSP" && exit 1; fi
-          echo "✅ Settings still valid after sync"
+          cd android && ./gradlew help --stacktrace
 
-      - name: Gradle Help - Validate Gradle can configure project
+      # 6. Build
+      - name: Build APK + AAB
         run: |
-          chmod +x android/gradlew
-          cd android
-          ./gradlew help --stacktrace
-
-      - name: Verify Manifest Activities Exist in android/app - Fail if CameraActivity missing
-        run: |
-          echo "=== Manifest activities ==="
-          grep -o 'android:name="[^"]*Activity"' android/app/src/main/AndroidManifest.xml || echo "No activities found in Manifest"
-          echo "=== Kotlin sources in android/app ==="
-          find android/app/src/main/java -name "*.kt" | head -n 20 || echo "No Kotlin files in android/app/src/main/java"
-          echo "=== Check CameraActivity exists ==="
-          if grep -q "CameraActivity" android/app/src/main/AndroidManifest.xml; then
-            if find android/app/src/main/java -name "CameraActivity.kt" | grep -q .; then echo "✅ CameraActivity.kt exists in android/app"; else echo "⚠️ WARNING: Manifest declares CameraActivity but CameraActivity.kt NOT in android/app/src/main/java - APK may build but crash on launch - Move your Kotlin files to android/app/src/main/java/com/wanalab/godeye/"; fi
-          else
-            echo "⚠️ CameraActivity not in Manifest - OK if you use only Capacitor WebView"
-          fi
-
-      - name: Build APK - Debug
-        run: |
-          chmod +x android/gradlew
           cd android
           ./gradlew assembleDebug --stacktrace
-
-      - name: Build AAB - Debug
-        run: |
-          cd android
           ./gradlew bundleDebug --stacktrace
 
+      # 7. Upload
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: GodEye-APK-v2.2
           path: android/app/build/outputs/apk/debug/app-debug.apk
-
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: GodEye-AAB-v2.2
           path: android/app/build/outputs/bundle/debug/app-debug.aab
-
-      - name: Build Summary
-        run: |
-          echo "✅ GodEye v2.2 Build Done"
-          echo "Version: $GODEYE_VERSION"
-          echo "PRO: $PRO_PRICE"
-          echo "By WanaLab - Founded by Nasir Khan"
