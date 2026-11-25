@@ -17,11 +17,9 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: 'temurin', java-version: '21' }
 
-      # FIX: No setup-android@v3 - it asks for dead 'tools' package
       - name: Install Android SDK packages
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
@@ -36,8 +34,15 @@ jobs:
           test -f android/build.gradle
           test -f android/capacitor.settings.gradle
           test -f android/app/build.gradle
+          test -f www/index.html
+          test -f www/shop.html
+          test -f www/export.html
+          test -f www/privacy.html
+          test -f www/about.html
           head -n 1 android/app/src/main/AndroidManifest.xml | grep -q '<?xml'
-          echo "✅ Layout OK - Wana, South Waziristan"
+          grep -q "Wana, South Waziristan" www/index.html
+          grep -q "Wana, South Waziristan" version.json
+          echo "✅ Layout + Location OK - Wana, South Waziristan"
 
       - name: Build APK + AAB
         run: |
