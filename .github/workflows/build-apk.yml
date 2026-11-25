@@ -79,13 +79,23 @@ jobs:
           </paths>
           EOF
           echo "✅ Created file_paths.xml"; fi
-          PNG_B64="[STRIPPED 96 bytes]"
-          for folder in mipmap-hdpi mipmap-mdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
-            for name in ic_launcher.png ic_launcher_round.png; do
-              p="$RES/$folder/$name"
-              if [ ! -f "$p" ]; then printf '%s' "$PNG_B64" | base64 -d > "$p"; echo "✅ Created $p"; fi
-            done
-          done
+          python3 -c "
+          import zlib, struct, os
+          def png(path, r, g, b):
+              def chunk(t, d):
+                  c = t + d
+                  return struct.pack('>I', len(d)) + c + struct.pack('>I', zlib.crc32(c) & 0xffffffff)
+              ihdr = struct.pack('>IIBBBBB', 48, 48, 8, 2, 0, 0, 0)
+              raw = b''.join(b'\x00' + bytes([r,g,b])*48 for _ in range(48))
+              data = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', zlib.compress(raw)) + chunk(b'IEND', b'')
+              open(path,'wb').write(data)
+              print(f'Created {path}')
+          for folder in ['mipmap-hdpi','mipmap-mdpi','mipmap-xhdpi','mipmap-xxhdpi','mipmap-xxxhdpi']:
+              for name in ['ic_launcher.png','ic_launcher_round.png']:
+                  p = f'android/app/src/main/res/{folder}/{name}'
+                  if not os.path.exists(p):
+                      png(p, 0, 230, 118)
+          "
           ls -l $RES/values/ $RES/xml/ $RES/mipmap-xxxhdpi/
           echo "✅ All Android resources restored"
       - name: Generate gradlew if missing
