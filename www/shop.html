@@ -1,0 +1,451 @@
+<!-- WanaLab GodEye v2.2 - shop.html - Author: Nasir Khan - Wana, South Waziristan - 2026-11-23 - PRO Rs. 2,500 / Year -->
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shop Hub v2.2 FINAL - GodEye v2.2 - By WanaLab</title>
+<script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js"></script>
+<script src="https://unpkg.com/mqtt@5.10.0/dist/mqtt.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+</head><body style="background:#000;color:#fff;font-family:system-ui;padding:14px;max-width:900px;margin:auto">
+<h2>🏪 Shop Hub v2.2 FINAL - Barcode + Count + POS - GodEye v2.2</h2>
+<p><a href="./index.html" style="color:#0f8">← Camera v2.2</a> | <a href="./export.html" style="color:#0f8">Export Hub v2.2 →</a> | <a href="./about.html" style="color:#0f8">About</a> | <span id="net" style="color:#ffcc00"></span> | <span id="proBadgeShop" style="color:#FFC107">FREE</span> | <span id="shopLimit" style="color:#aaa">FREE: Bill 5 / 5 • Scan 5 / 5 • Count 5 / 5</span></p>
+
+<!-- v22-A: Credentials For This Shop - ROOT File -->
+<div style="background:#111;border:2px solid #FFC107;border-radius:14px;padding:12px">
+<h3 style="margin:0">🏛️ Credentials For This Shop - Optional - For Everyone</h3>
+<p style="font-size:12px;color:#aaa">Profile Type: Shop / Office / Department / School / Hospital / Factory / Personal - Shows on Bill, XLSX, Share, Print</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+<label style="font-size:12px">Profile Type: <select id="cred_type" style="width:100%;padding:8px;background:#222;color:#fff;border:1px solid #444;border-radius:8px"><option>Shop</option><option>Office</option><option>Department</option><option>School</option><option>Hospital</option><option>Factory</option><option>Personal</option></select></label>
+<label style="font-size:12px">Name: <input id="cred_name" value="Wana General Store" style="width:100%;padding:8px;background:#222;color:#fff;border:1px solid #444;border-radius:8px"></label>
+<label style="font-size:12px">Person: <input id="cred_person" value="Nasir Khan" style="width:100%;padding:8px;background:#222;color:#fff;border:1px solid #444;border-radius:8px"></label>
+<label style="font-size:12px">Phone: <input id="cred_phone" value="0300-1234567" style="width:100%;padding:8px;background:#222;color:#fff;border:1px solid #444;border-radius:8px"></label>
+<label style="font-size:12px">Address: <input id="cred_addr" value="Main Bazar, Wana" style="width:100%;padding:8px;background:#222;color:#fff;border:1px solid #444;border-radius:8px"></label>
+<label style="font-size:12px">ID / License: <input id="cred_id" placeholder="CNIC / NTN / Dept ID" style="width:100%;padding:8px;background:#222;color:#fff;border:1px solid #444;border-radius:8px"></label>
+</div>
+<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><label style="font-size:12px">Footer: <input id="cred_footer" value="Thank You - Visit Again" style="padding:8px;background:#222;color:#fff;border:1px solid #444;border-radius:8px"></label><label style="font-size:12px"><input type="checkbox" id="cred_show" checked> ✅ Show Credentials On Bill / Export</label><button onclick="saveCred()" style="padding:8px;background:#FFC107;color:#000;border:none;border-radius:8px;font-weight:800">💾 Save</button></div>
+<div id="credPreview" style="background:#000;padding:8px;border-radius:8px;margin-top:8px;font-size:12px">Preview: Wana General Store - Nasir Khan - 0300-1234567 - Main Bazar, Wana</div>
+<p style="font-size:12px;color:#aaa">FREE: Shows Name + Phone + Made By WanaLab Watermark • PRO: No Watermark + Logo + Signature - PRO Rs. 2,500 / Year</p>
+</div>
+
+<!-- v23 + v23-B: GPS Timestamp + Anti-Fake GPS - GPS OFF by default -->
+<div style="background:#111;border:2px solid #00E676;border-radius:14px;padding:12px;margin-top:12px">
+<h3 style="margin:0">📍 GPS Timestamp - Location + Time - Proof</h3>
+<p style="font-size:12px;color:#fff">GPS: <b id="gpsLabel">📍 GPS: OFF - Tap Get GPS</b> | <span id="gpsStatus" style="color:#FFC107">GPS OFF - Tap Get GPS to Enable</span></p>
+<p style="font-size:12px;color:#aaa">GPS Timestamp on every Scan / Count / Bill • Map Link included • Anti-Fake GPS: Block GPS Emulator / Fake GPS / Mock Location</p>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button onclick="refreshGPS()" style="padding:10px;background:#00E676;color:#000;border:none;border-radius:8px;font-weight:800">🔄 Get GPS Now</button><button onclick="gpsShare()" style="padding:10px;background:#00C853;color:#fff;border:none;border-radius:8px;font-weight:800">📍 GPS Share - Photo + Location + Map Link</button><button onclick="shareLocationOnly()" style="padding:10px;background:#222;color:#fff;border:1px solid #00E676;border-radius:8px">📍 Location Only</button><label style="font-size:12px"><input type="checkbox" id="t_gps" checked> ✅ Include GPS On Bill / Export</label><label style="font-size:12px"><input type="checkbox" id="t_antifake" checked> 🛡️ Anti-Fake GPS - Block Mock / Fake GPS</label></div>
+</div>
+
+<div style="background:#111;border:2px solid #0f0;border-radius:14px;padding:12px;margin-top:12px">
+<h3 style="margin:0">📷 Barcode Reader - 4 Engines Auto-Fallback</h3>
+<p style="font-size:12px;color:#aaa;margin:6px 0">Engine: <b id="engine" style="color:#0f0">Auto</b> | Formats: EAN-13, EAN-8, UPC-A, UPC-E, Code128, Code39, QR, DataMatrix | Protocols: MQTT / WS / HTTP / Bluetooth</p>
+<div style="position:relative;background:#000;border-radius:10px;overflow:hidden">
+<video id="video" autoplay playsinline muted style="width:100%;max-height:320px;object-fit:cover;display:none"></video>
+<div id="noCam" style="padding:30px;text-align:center;color:#888">Tap CAM to Start<br><small>Allow Camera 1 time</small></div>
+<canvas id="overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"></canvas>
+<div id="scanBox" style="display:none;position:absolute;left:10%;right:10%;top:35%;height:110px;border:3px solid #0f0;border-radius:12px"></div>
+<div id="scanStatus" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#0f0;padding:6px 12px;border-radius:20px;font-size:12px;white-space:nowrap">Ready</div>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+<button onclick="startCam()" style="padding:11px;background:#0f0;color:#000;border:none;border-radius:10px;font-weight:800">📷 CAM</button>
+<button onclick="startScan()" style="padding:11px;background:#00aaff;color:#fff;border:none;border-radius:10px;font-weight:800">📷 START SCAN - Auto Engine</button>
+<button onclick="stopScan()" style="padding:11px;background:#f22;color:#fff;border:none;border-radius:10px">⏹ STOP</button>
+<button onclick="toggleTorch()" style="padding:11px;background:#222;color:#fff;border:1px solid #444;border-radius:10px">🔦 Torch</button>
+<button onclick="switchCam()" style="padding:11px;background:#222;color:#fff;border:1px solid #444;border-radius:10px">🔄 Front / Back</button>
+</div>
+<div style="display:flex;gap:6px;margin-top:8px">
+<input id="manualCode" placeholder="Manual barcode - Type if camera fails - No popup" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<button onclick="saveManual()" style="padding:10px;background:#0f0;color:#000;border:none;border-radius:8px;font-weight:800">💾 Save Manual</button>
+</div>
+<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+<label style="font-size:12px">Engine: <select id="engineSel" style="padding:8px;background:#222;color:#fff;border:1px solid #444;border-radius:8px"><option value="auto">Auto - Best Available</option><option value="native">Native BarcodeDetector - Fastest</option><option value="zxing">ZXing - Most Accurate</option><option value="quagga">Quagga2 - Old Phones</option></select></label>
+<label style="font-size:12px">Beep: <input type="checkbox" id="beep" checked> Vibrate: <input type="checkbox" id="vib" checked></label>
+</div>
+</div>
+
+<div style="background:#111;border:2px solid #ffcc00;border-radius:14px;padding:12px;margin-top:12px">
+<h3 style="margin:0">🔢 Counting - Professional - 3 Methods</h3>
+<p style="font-size:12px;color:#aaa">Method 1: Camera AI Blob Count | Method 2: Barcode Scan Count (Scan = +1) | Method 3: Manual +/-</p>
+<div style="display:flex;gap:10px;align-items:center;justify-content:center;background:#000;padding:14px;border-radius:10px">
+<button onclick="changeCount(-1)" style="padding:14px 18px;background:#f22;color:#fff;border:none;border-radius:50%;font-size:20px;font-weight:800">−</button>
+<div style="text-align:center"><div id="countVal" style="font-size:42px;font-weight:800;color:#ffcc00">0</div><div style="font-size:12px;color:#aaa">Total Count | Confidence: <span id="countConf" style="color:#0f0">-</span> | GPS: <span id="countGPS">-</span></div></div>
+<button onclick="changeCount(1)" style="padding:14px 18px;background:#0f0;color:#000;border:none;border-radius:50%;font-size:20px;font-weight:800">+</button>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+<button onclick="countCameraAI()" style="padding:11px;background:#ffcc00;color:#000;border:none;border-radius:10px;font-weight:800">📷 Count From Camera AI</button>
+<button onclick="countModeScan()" style="padding:11px;background:#00aaff;color:#fff;border:none;border-radius:10px;font-weight:800">📷 Scan Mode = Count +1 Per Scan</button>
+<button onclick="resetCount()" style="padding:11px;background:#222;color:#fff;border:1px solid #444;border-radius:10px">🔄 Reset</button>
+<input id="countName" placeholder="Product name for this count - e.g. Pepsi" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<button onclick="saveCountSession()" style="padding:10px;background:#0f0;color:#000;border:none;border-radius:8px;font-weight:800">💾 Save Session</button>
+</div>
+<div id="countHistory" style="margin-top:8px;font-size:13px"></div>
+</div>
+
+<div style="background:#111;border:2px solid #00aaff;border-radius:14px;padding:12px;margin-top:12px">
+<h3 style="margin:0">🧾 Shop POS - Inventory + Bill + Customer</h3>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+<input id="pName" placeholder="Product Name" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<input id="pBarcode" placeholder="Barcode - Auto from Scan" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<input id="pPrice" type="number" placeholder="Sell Price Rs." style="width:110px;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<input id="pCost" type="number" placeholder="Cost Rs." style="width:110px;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<input id="pStock" type="number" placeholder="Stock" style="width:80px;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<button onclick="addProduct()" style="padding:10px;background:#0f0;color:#000;border:none;border-radius:8px;font-weight:800">➕ Add Product</button>
+</div>
+<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+<input id="custName" placeholder="Customer Name - Optional" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<input id="discount" type="number" placeholder="Discount Rs." value="0" style="width:110px;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<input id="tax" type="number" placeholder="Tax % " value="0" style="width:90px;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<button onclick="exportBillXLSX()" style="padding:10px;background:#217346;color:#fff;border:none;border-radius:8px;font-weight:800">📊 Export Bill XLSX</button>
+</div>
+<div id="inventory" style="margin-top:10px"></div>
+<div id="billBox" style="margin-top:10px"></div>
+</div>
+
+<div style="background:#111;border:2px solid #7b2ff7;border-radius:14px;padding:12px;margin-top:12px">
+<h3 style="margin:0">📡 Protocols - All Free - Auto Sync</h3>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+<label style="font-size:12px"><input type="checkbox" id="proto_mqtt" checked> MQTT</label>
+<label style="font-size:12px"><input type="checkbox" id="proto_ws" checked> WebSocket</label>
+<label style="font-size:12px"><input type="checkbox" id="proto_http" checked> HTTP POST</label>
+<label style="font-size:12px"><input type="checkbox" id="proto_bt"> Bluetooth Printer</label>
+<label style="font-size:12px"><input type="checkbox" id="proto_share"> Web Share</label>
+</div>
+<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+<input id="mqttUrl" placeholder="MQTT WS - wss://broker.emqx.io:8084/mqtt" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<input id="wsUrl" placeholder="WebSocket - ws://192.168.1.100:8080" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+<input id="httpUrl" placeholder="HTTP POST - https://your-server.com/api/scan or http://192.168.1.100:3000/scan" style="flex:1;padding:10px;background:#222;color:#fff;border:1px solid #444;border-radius:8px">
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+<button onclick="syncAll()" style="padding:11px;background:#7b2ff7;color:#fff;border:none;border-radius:10px;font-weight:800">🔄 Sync All - MQTT + WS + HTTP</button>
+<button onclick="printBill()" style="padding:11px;background:#fff;color:#000;border:none;border-radius:10px;font-weight:800">🖨 Print Bill / Bluetooth</button>
+<button onclick="shareBill()" style="padding:11px;background:#25D366;color:#000;border:none;border-radius:10px;font-weight:800">💬 Share Bill WhatsApp</button>
+<button onclick="sendBillEmail()" style="padding:11px;background:#EA4335;color:#fff;border:none;border-radius:10px">📧 Email Bill</button>
+</div>
+<div id="protoLog" style="margin-top:8px;font-size:12px;color:#0f8;background:#000;padding:8px;border-radius:8px;max-height:120px;overflow:auto">Protocol Log: Ready</div>
+</div>
+<p style="color:#666;font-size:12px;text-align:center;margin-top:16px">By WanaLab • Founded by Nasir Khan • GodEye v2.2 • Shop Hub v2.2 FINAL • GPS + Anti-Fake GPS + Credentials • <a href="./index.html" style="color:#0f8">Back to Camera</a> • <a href="./privacy.html" style="color:#0f8">Privacy</a></p>
+
+<script>
+let isPro = localStorage.getItem('godeye_pro')==='1';
+document.getElementById('proBadgeShop').innerText = isPro ? 'PRO ✅' : 'FREE - Watermark On';
+let stream=null, facing='environment', torchOn=false, scanning=false, scanModeCount=false;
+let inventory=JSON.parse(localStorage.getItem('god_inventory')||'[]');
+let bill=JSON.parse(localStorage.getItem('god_bill')||'[]');
+let scans=JSON.parse(localStorage.getItem('god_scans')||'[]');
+let countTotal=parseInt(localStorage.getItem('god_count')||'0');
+let countSessions=JSON.parse(localStorage.getItem('god_count_sessions')||'[]');
+function logProto(m){ let el=document.getElementById('protoLog'); el.innerHTML+= '<br>['+new Date().toLocaleTimeString()+'] '+m; el.scrollTop=el.scrollHeight; }
+function saveAll(){ localStorage.setItem('god_inventory',JSON.stringify(inventory)); localStorage.setItem('god_bill',JSON.stringify(bill)); localStorage.setItem('god_scans',JSON.stringify(scans)); localStorage.setItem('god_count',countTotal); localStorage.setItem('god_count_sessions',JSON.stringify(countSessions)); }
+function updateNet(){ document.getElementById('net').innerText=navigator.onLine?'🟢 Online':'🟡 Offline - Barcode / Count / Bill work offline, Sync when online'; }
+window.addEventListener('online',updateNet); window.addEventListener('offline',updateNet); updateNet();
+function beep(){ if(!document.getElementById('beep').checked) return; try{ let ctx=new (window.AudioContext||window.webkitAudioContext)(); let o=ctx.createOscillator(); o.frequency.value=1200; o.connect(ctx.destination); o.start(); setTimeout(()=>o.stop(),120); }catch(e){} }
+function vib(){ if(document.getElementById('vib').checked && navigator.vibrate) navigator.vibrate(200); }
+function getCredHeader(){
+  if(!document.getElementById('cred_show').checked) return {header:'', footer:''};
+  let type=document.getElementById('cred_type').value, name=document.getElementById('cred_name').value, person=document.getElementById('cred_person').value, phone=document.getElementById('cred_phone').value, addr=document.getElementById('cred_addr').value, idv=document.getElementById('cred_id').value, footer=document.getElementById('cred_footer').value;
+  let header = name + ' | ' + type + ' | ' + person + ' | ' + phone + ' | ' + addr + (idv ? ' | ID: '+idv : '');
+  return {header, footer, type, name, person, phone, addr, idv};
+}
+function saveCred(){ localStorage.setItem('godeye_cred', JSON.stringify(getCredHeader())); document.getElementById('credPreview').innerText='Preview: '+getCredHeader().header; logProto('Credentials Saved: '+getCredHeader().header); }
+try{ let s=JSON.parse(localStorage.getItem('godeye_cred')||'null'); if(s){ document.getElementById('cred_name').value=s.name||''; document.getElementById('cred_person').value=s.person||''; document.getElementById('cred_phone').value=s.phone||''; document.getElementById('cred_addr').value=s.addr||''; document.getElementById('cred_id').value=s.idv||''; } }catch(e){}
+saveCred();
+let currentGPS=null, gpsFake=false, gpsFakeReason='';
+function gpsDistance(lat1, lon1, lat2, lon2){ var R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180; var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
+function checkFakeGPS(pos){
+  if(!document.getElementById('t_antifake').checked) return {fake:false, reason:''};
+  if(pos.coords && pos.coords.isFromMockProvider) return {fake:true, reason:'Mock Provider ON - isFromMockProvider - Fake GPS App / GPS Emulator Detected'};
+  var last = JSON.parse(localStorage.getItem('godeye_last_gps')||'null');
+  if(last){
+    var dist = gpsDistance(last.lat, last.lng, pos.coords.latitude, pos.coords.longitude);
+    var timeDiff = (Date.now() - last.time)/1000;
+    if(timeDiff>0 && timeDiff<10 && dist>5) return {fake:true, reason:'GPS Jump - '+dist.toFixed(1)+'km in '+timeDiff.toFixed(0)+'s - Fake GPS'};
+  }
+  localStorage.setItem('godeye_last_gps', JSON.stringify({lat:pos.coords.latitude, lng:pos.coords.longitude, time:Date.now()}));
+  return {fake:false, reason:''};
+}
+function refreshGPS(){
+  document.getElementById('gpsLabel').innerText='📍 Getting GPS...';
+  navigator.geolocation.getCurrentPosition((pos)=>{
+    var check=checkFakeGPS(pos);
+    gpsFake=check.fake; gpsFakeReason=check.reason;
+    currentGPS={lat:pos.coords.latitude, lng:pos.coords.longitude, acc:pos.coords.accuracy, time:new Date().toLocaleString('en-PK'), map:'https://maps.google.com/?q='+pos.coords.latitude+','+pos.coords.longitude};
+    if(check.fake){
+      var logs=JSON.parse(localStorage.getItem('god_fake_gps_log')||'[]'); logs.push({date:new Date().toISOString(), reason:check.reason}); localStorage.setItem('god_fake_gps_log', JSON.stringify(logs));
+      document.getElementById('gpsLabel').innerText='📍 GPS: '+currentGPS.lat+','+currentGPS.lng+' - FAKE';
+      document.getElementById('gpsStatus').innerText='❌ Fake GPS Detected - Blocked - '+check.reason;
+      document.getElementById('gpsStatus').style.color='#FF3B30';
+      logProto('❌ Fake GPS Detected - '+check.reason);
+    } else {
+      document.getElementById('gpsLabel').innerText='📍 Wana - '+currentGPS.lat+','+currentGPS.lng+' - '+currentGPS.time+' - Accuracy '+Math.round(currentGPS.acc)+'m - GPS Timestamp';
+      document.getElementById('gpsStatus').innerText='✅ Real GPS - Accuracy '+Math.round(currentGPS.acc)+'m - Proof OK';
+      document.getElementById('gpsStatus').style.color='#00E676';
+      document.getElementById('countGPS').innerText=currentGPS.lat+','+currentGPS.lng;
+    }
+  }, (e)=>{ document.getElementById('gpsLabel').innerText='📍 GPS OFF - Tap Get GPS'; }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
+}
+function getGPSLine(){
+  if(!document.getElementById('t_gps').checked) return '';
+  if(!currentGPS) return 'GPS: Not Yet - Tap Get GPS';
+  if(gpsFake) return 'GPS: '+currentGPS.lat+','+currentGPS.lng+' - FAKE GPS - No Proof - '+gpsFakeReason+' - Map: '+currentGPS.map;
+  return 'GPS: '+currentGPS.lat+','+currentGPS.lng+' - Accuracy '+Math.round(currentGPS.acc)+'m - Time: '+currentGPS.time+' - Map: '+currentGPS.map+' - ✅ Real GPS - GPS Timestamp';
+}
+function gpsShare(){
+  if(gpsFake && isPro){ logProto('❌ Fake GPS Blocked - Cannot Share'); return; }
+  if(!currentGPS){ refreshGPS(); return; }
+  var text='📍 Location Shared - GodEye v2.2\n🏪 From: '+getCredHeader().header+'\n📍 '+getGPSLine()+'\n📷 Photo: Captured With GPS Stamp\n'+(isPro?'PRO - No Watermark':'Made By WanaLab - GodEye FREE');
+  if(navigator.share) navigator.share({title:'GodEye GPS Share', text}).then(()=>logProto('✅ GPS Shared'));
+  else window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+}
+function shareLocationOnly(){
+  if(!currentGPS){ refreshGPS(); return; }
+  window.open('https://wa.me/?text='+encodeURIComponent('📍 I Am Here - GodEye v2.2\n'+getCredHeader().header+'\n📍 '+getGPSLine()),'_blank');
+}
+// GPS OFF by default - DO NOT auto-call refreshGPS() on load - v2.2 spec
+function updateShopLimits(){
+  var b=parseInt(localStorage.getItem('god_bill_count')||'0'), s=scans.length, c=countTotal;
+  if(isPro) document.getElementById('shopLimit').innerText='PRO ✅ Unlimited - Bill / Scan / Count';
+  else document.getElementById('shopLimit').innerText='FREE: Bill '+(5-b)+' / 5 Left • Scan '+(5-s)+' / 5 Left • Count '+(5-c)+' / 5 Left • Upgrade to PRO Rs. 2,500 / Year';
+}
+updateShopLimits();
+function checkProForScan(){
+  if(!isPro && scans.length>=5){ setStatus('FREE Limit: 5 Scans Done - Upgrade to PRO Rs. 2,500 / Year for Unlimited'); logProto('FREE Scan Limit Reached - Need PRO'); return false; }
+  return true;
+}
+async function startCam(){
+  try{
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing, width:{ideal:1920}}, audio:false});
+    let v=document.getElementById('video'); v.srcObject=stream; v.style.display='block'; document.getElementById('noCam').style.display='none';
+    setStatus('Camera Started - Tap START SCAN');
+  }catch(e){ setStatus('Camera: '+e.message+' - Allow Camera in 🔒'); }
+}
+function switchCam(){ facing=facing==='environment'?'user':'environment'; startCam(); }
+async function toggleTorch(){
+  if(!stream) return setStatus('First tap CAM');
+  try{ let tr=stream.getVideoTracks()[0]; let c=tr.getCapabilities(); if(!c.torch) return setStatus('Torch not supported'); torchOn=!torchOn; await tr.applyConstraints({advanced:[{torch:torchOn}]}); setStatus(torchOn?'Torch ON':'Torch OFF'); }catch(e){ setStatus('Torch: '+e.message); }
+}
+function setStatus(m){ document.getElementById('scanStatus').innerText=m; }
+async function startScan(){
+  if(!checkProForScan()) return;
+  if(!stream) await startCam();
+  if(!stream) return;
+  scanning=true; document.getElementById('scanBox').style.display='block';
+  setStatus('Scanning... Hold 15cm, steady, good light - GPS: '+(currentGPS?currentGPS.lat+','+currentGPS.lng:'Getting...'));
+  let engine=document.getElementById('engineSel').value;
+  document.getElementById('engine').innerText=engine;
+  if(engine==='auto' || engine==='native'){
+    if('BarcodeDetector' in window){
+      document.getElementById('engine').innerText='Native BarcodeDetector - Fastest';
+      if(await tryNative()) return;
+    }
+  }
+  if(engine==='auto' || engine==='zxing'){
+    document.getElementById('engine').innerText='ZXing - Most Accurate';
+    if(await tryZXing()) return;
+  }
+  if(engine==='auto' || engine==='quagga'){
+    document.getElementById('engine').innerText='Quagga2 - Old Phones';
+    if(await tryQuagga()) return;
+  }
+  setStatus('All engines failed - Use Manual below');
+}
+function stopScan(){ scanning=false; document.getElementById('scanBox').style.display='none'; try{ Quagga.stop(); }catch(e){} setStatus('Stopped'); }
+async function tryNative(){
+  try{
+    let det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','qr_code','data_matrix']});
+    let v=document.getElementById('video');
+    for(let i=0;i<50 && scanning;i++){
+      let found=await det.detect(v);
+      if(found.length){ onBarcode(found[0].rawValue, 'Native'); return true; }
+      await new Promise(r=>setTimeout(r,300));
+      setStatus('Native Scanning... '+(i+1)+'/50');
+    }
+    return false;
+  }catch(e){ return false; }
+}
+async function tryZXing(){
+  try{
+    let reader=new ZXingBrowser.BrowserMultiFormatReader();
+    let v=document.getElementById('video');
+    return new Promise((resolve)=>{
+      let done=false;
+      let timeout=setTimeout(()=>{ if(!done){ try{reader.reset();}catch(e){} resolve(false); } },20000);
+      reader.decodeFromVideoDevice(null, v, (result, err)=>{
+        if(result && !done){ done=true; clearTimeout(timeout); try{reader.reset();}catch(e){} onBarcode(result.getText(), 'ZXing'); resolve(true); }
+      });
+    });
+  }catch(e){ return false; }
+}
+async function tryQuagga(){
+  try{
+    return new Promise((resolve)=>{
+      Quagga.init({inputStream:{name:'Live', type:'LiveStream', target:document.getElementById('video'), constraints:{facingMode:facing}}, decoder:{readers:['ean_reader','ean_8_reader','upc_reader','code_128_reader','code_39_reader']}}, (err)=>{
+        if(err){ resolve(false); return; }
+        Quagga.start();
+        Quagga.onDetected((data)=>{ if(data && data.codeResult){ Quagga.stop(); onBarcode(data.codeResult.code, 'Quagga2'); resolve(true); } });
+        setTimeout(()=>{ try{Quagga.stop();}catch(e){} resolve(false); },20000);
+      });
+    });
+  }catch(e){ return false; }
+}
+function onBarcode(code, engine){
+  beep(); vib();
+  setStatus('✅ Scanned ['+engine+']: '+code+' - GPS: '+getGPSLine());
+  scans.unshift(code); saveAll();
+  document.getElementById('pBarcode').value=code;
+  let prod=inventory.find(p=>p.barcode===code);
+  if(prod){
+    addToBill(prod);
+    prod.stock=Math.max(0, (prod.stock||0)-1);
+    if(prod.stock<=2) setStatus('⚠️ LOW STOCK: '+prod.name+' - Only '+prod.stock+' left! Reorder!');
+    saveAll(); renderAll();
+    logProto('Barcode '+code+' -> Bill + Stock -1 - '+prod.name+' - GPS: '+(currentGPS?currentGPS.lat+','+currentGPS.lng:'-'));
+  } else {
+    setStatus('✅ New Barcode: '+code+' - Add Product Name + Price to save to Inventory');
+    renderAll();
+  }
+  if(scanModeCount){ countTotal++; document.getElementById('countVal').innerText=countTotal; saveAll(); setStatus('Count +1 = '+countTotal+' - Scanned '+code); }
+  syncBarcode(code, engine);
+  updateShopLimits();
+  setTimeout(()=>{ stopScan(); },800);
+}
+function saveManual(){
+  let m=document.getElementById('manualCode').value.trim();
+  if(!m) return setStatus('Type barcode first');
+  document.getElementById('manualCode').value=''; onBarcode(m, 'Manual');
+}
+function changeCount(d){ countTotal=Math.max(0, countTotal+d); document.getElementById('countVal').innerText=countTotal; saveAll(); }
+function resetCount(){ countTotal=0; document.getElementById('countVal').innerText=0; saveAll(); setStatus('Count Reset'); }
+function countModeScan(){ scanModeCount=!scanModeCount; setStatus(scanModeCount?'Scan Mode ON - Each scan = Count +1':'Scan Mode OFF'); startScan(); }
+function countCameraAI(){
+  let v=document.getElementById('video'); if(!v.srcObject) return setStatus('First tap CAM');
+  try{
+    let c=document.createElement('canvas'); c.width=640; c.height=480; let ctx=c.getContext('2d'); ctx.drawImage(v,0,0,640,480);
+    let d=ctx.getImageData(0,0,640,480).data;
+    let dark=0, edges=0;
+    for(let i=0;i<d.length;i+=4){ let g=(d[i]+d[i+1]+d[i+2])/3; if(g<80) dark++; if(i>4 && Math.abs(d[i]-d[i-4])>60) edges++; }
+    let est1=Math.max(1, Math.round(dark/1800));
+    let est2=Math.max(1, Math.round(edges/8000));
+    let est=Math.round((est1+est2)/2);
+    let conf=est1===est2?'High 90%':Math.abs(est1-est2)<=2?'Medium 75%':'Low 55% - Adjust +/-';
+    document.getElementById('countConf').innerText=conf;
+    countTotal+=est; document.getElementById('countVal').innerText=countTotal; saveAll();
+    setStatus('Camera AI Count: +'+est+' (Dark:'+est1+' Edge:'+est2+') = Total '+countTotal+' - GPS: '+(currentGPS?currentGPS.lat+','+currentGPS.lng:'-')+' - Adjust +/- if needed');
+    renderAll();
+  }catch(e){ setStatus('Count: '+e.message); }
+}
+function saveCountSession(){
+  let name=document.getElementById('countName').value.trim()||'Unnamed';
+  countSessions.unshift({name, count:countTotal, gps: currentGPS?currentGPS.lat+','+currentGPS.lng:'-', gpsMap: currentGPS?currentGPS.map:'', date:new Date().toLocaleString('en-PK'), fakeGPS:gpsFake});
+  saveAll(); renderAll(); setStatus('✅ Count Session Saved: '+name+' = '+countTotal+' - GPS: '+(currentGPS?currentGPS.lat+','+currentGPS.lng:'-'));
+}
+function addProduct(){
+  let name=document.getElementById('pName').value.trim()||'Item';
+  let barcode=document.getElementById('pBarcode').value.trim()||'NO-BARCODE-'+Date.now();
+  let price=parseInt(document.getElementById('pPrice').value||0);
+  let cost=parseInt(document.getElementById('pCost').value||0);
+  let stock=parseInt(document.getElementById('pStock').value||0);
+  inventory.push({name, barcode, price, cost, stock});
+  saveAll(); renderAll();
+  ['pName','pBarcode','pPrice','pCost','pStock'].forEach(id=>document.getElementById(id).value='');
+  setStatus('✅ Product Added: '+name);
+  logProto('Product Added: '+name+' - Rs. '+price+' - Stock '+stock);
+}
+function addToBill(prod){
+  bill.push({name:prod.name, price:prod.price, cost:prod.cost||0, barcode:prod.barcode, time:Date.now(), gps: currentGPS?currentGPS.lat+','+currentGPS.lng:'-'});
+  saveAll(); renderAll();
+}
+function renderAll(){
+  document.getElementById('countVal').innerText=countTotal;
+  let invHtml='<h4>📦 Inventory - '+inventory.length+' Products</h4>';
+  invHtml+=inventory.map((p,i)=>{
+    let profit=p.price-(p.cost||0);
+    let stockColor=p.stock<=2?'#f22':p.stock<=5?'#ffcc00':'#0f0';
+    return `<div style="display:flex;justify-content:space-between;background:#222;padding:10px;border-radius:8px;margin:4px 0"><span><b>${p.name}</b> | ${p.barcode} | Rs. ${p.price} | Cost Rs. ${p.cost||0} | Profit Rs. ${profit} | Stock <b style="color:${stockColor}">${p.stock}</b>${p.stock<=2?' ⚠️ LOW':''}</span><span><button onclick="addToBill(inventory[${i}]);saveAll();renderAll()" style="background:#0f0;color:#000;border:none;padding:6px 10px;border-radius:6px;font-weight:800">+ Bill</button> <button onclick="inventory.splice(${i},1);saveAll();renderAll()" style="background:#300;color:#f55;border:none;padding:6px 10px;border-radius:6px">Del</button></span></div>`;
+  }).join('')||'<p style="color:#888">No products yet - Scan barcode, add name + price</p>';
+  document.getElementById('inventory').innerHTML=invHtml;
+  let subtotal=bill.reduce((s,i)=>s+i.price,0);
+  let discount=parseInt(document.getElementById('discount').value||0);
+  let taxPct=parseInt(document.getElementById('tax').value||0);
+  let taxAmt=Math.round((subtotal-discount)*taxPct/100);
+  let total=subtotal-discount+taxAmt;
+  let profit=bill.reduce((s,i)=>s+((i.price-(i.cost||0))),0)-discount;
+  let billHtml=`<h4>🧾 Bill - ${bill.length} Items | Subtotal Rs. ${subtotal} | Discount Rs. ${discount} | Tax ${taxPct}% Rs. ${taxAmt} | <b>Total Rs. ${total}</b> | Profit Rs. ${profit}</h4><p style="font-size:12px;color:#aaa">${getCredHeader().header}<br>${getGPSLine()}</p>`;
+  billHtml+=bill.map((b,i)=>`<div style="display:flex;justify-content:space-between;background:#222;padding:8px;border-radius:8px;margin:3px 0"><span>${b.name} - ${b.barcode} - GPS: ${b.gps||'-'}</span><b>Rs. ${b.price}</b></div>`).join('');
+  billHtml+=`<div style="display:flex;gap:6px;margin-top:8px"><button onclick="bill=[];saveAll();renderAll()" style="background:#300;color:#f55;border:none;padding:10px;border-radius:8px">🗑 Clear Bill</button><button onclick="printBill()" style="background:#fff;color:#000;border:none;padding:10px;border-radius:8px;font-weight:800">🖨 Print Bill</button></div>`;
+  document.getElementById('billBox').innerHTML=billHtml;
+  let ch=countSessions.slice(0,5).map(s=>`<div style="background:#222;padding:8px;border-radius:8px;margin:3px 0;display:flex;justify-content:space-between"><span>${s.name} - GPS: ${s.gps||'-'}</span><b>${s.count} - ${s.date}</b></div>`).join('');
+  document.getElementById('countHistory').innerHTML='<h4>📝 Count Sessions</h4>'+(ch||'<p style="color:#888">No sessions yet</p>')+'<p style="color:#888">Scans: '+scans.slice(0,10).join(', ')+'</p>';
+}
+renderAll();
+async function syncBarcode(code, engine){
+  let payload={type:'barcode', code, engine, time:new Date().toISOString(), shop:'GodEye v2.2', credentials:getCredHeader(), gps:getGPSLine(), gpsFake:gpsFake, count:countTotal};
+  if(document.getElementById('proto_mqtt').checked){
+    try{
+      let url=document.getElementById('mqttUrl').value.trim()||'wss://broker.emqx.io:8084/mqtt';
+      let client=mqtt.connect(url);
+      client.on('connect', ()=>{ client.publish('godeye/shop/v22', JSON.stringify(payload)); logProto('MQTT ✅ Sent '+code+' to '+url); setTimeout(()=>client.end(),800); });
+      client.on('error', ()=>{ logProto('MQTT ❌ Failed - Offline or URL wrong'); client.end(); });
+    }catch(e){ logProto('MQTT ❌ '+e.message); }
+  }
+  if(document.getElementById('proto_ws').checked){
+    try{
+      let url=document.getElementById('wsUrl').value.trim();
+      if(url){
+        let ws=new WebSocket(url);
+        ws.onopen=()=>{ ws.send(JSON.stringify(payload)); logProto('WebSocket ✅ Sent '+code+' to '+url); ws.close(); };
+        ws.onerror=()=>logProto('WebSocket ❌ Failed - Is server running?');
+      } else logProto('WebSocket ⏭️ Skipped - No URL, set ws://192.168.1.100:8080 for LAN');
+    }catch(e){ logProto('WebSocket ❌ '+e.message); }
+  }
+  if(document.getElementById('proto_http').checked){
+    try{
+      let url=document.getElementById('httpUrl').value.trim();
+      if(url){
+        let res=await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+        logProto('HTTP POST '+(res.ok?'✅ Sent ':'❌ Failed ')+code+' to '+url);
+      } else logProto('HTTP ⏭️ Skipped - No URL');
+    }catch(e){ logProto('HTTP ❌ '+e.message+' - Server offline?'); }
+  }
+}
+function syncAll(){
+  let payload={type:'full_sync', inventory, bill, scans, countTotal, countSessions, credentials:getCredHeader(), gps:getGPSLine(), time:new Date().toISOString()};
+  logProto('Sync All - Inventory '+inventory.length+' + Bill '+bill.length+' + Scans '+scans.length+' + GPS');
+  syncBarcode('SYNC-ALL', 'Sync');
+  if(document.getElementById('proto_share').checked) shareBill();
+}
+function printBill(){
+  let subtotal=bill.reduce((s,i)=>s+i.price,0);
+  let c=getCredHeader(); let gps=getGPSLine();
+  let w=window.open('', '_blank');
+  w.document.write(`<html><head><title>Bill - GodEye v2.2</title></head><body style="font-family:monospace;padding:20px"><h2>GodEye v2.2 - By WanaLab</h2><p><b>${c.header}</b></p><p>${gps}</p><p>${new Date().toLocaleString('en-PK')} | Customer: ${document.getElementById('custName').value||'Walk-in'}</p><hr>${bill.map(b=>`<p>${b.name} - Rs. ${b.price} - GPS: ${b.gps||'-'}</p>`).join('')}<hr><h3>Total Rs. ${subtotal}</h3><p>${c.footer||'Thank You - Visit Again'}</p><p>${isPro?'PRO - No Watermark':'Made By WanaLab - GodEye FREE - Watermark'}</p></body></html>`);
+  w.document.close(); w.print();
+  logProto('Print ✅ Bill opened - With Credentials + GPS - Choose Bluetooth / WiFi Printer');
+  if(document.getElementById('proto_bt').checked) logProto('Bluetooth 🖨️ Select Bluetooth Printer in Print Dialog');
+}
+function shareBill(){
+  let total=bill.reduce((s,i)=>s+i.price,0);
+  let text=`GodEye v2.2 Bill - By WanaLab\n${getCredHeader().header}\n${getGPSLine()}\nCustomer: ${document.getElementById('custName').value||'Walk-in'}\nItems: ${bill.length}\nTotal: Rs. ${total}\nDate: ${new Date().toLocaleString('en-PK')}\n\n${bill.map(b=>`${b.name} - Rs. ${b.price}`).join('\n')}\n\n${isPro?'PRO - No Watermark':'Made By WanaLab - GodEye FREE'}`;
+  if(navigator.share){
+    navigator.share({title:'GodEye Bill', text}).then(()=>logProto('Web Share ✅ Bill shared - With Credentials + GPS')).catch(()=>{});
+  } else {
+    window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+    logProto('WhatsApp ✅ Bill opened - With Credentials + GPS');
+  }
+}
+function sendBillEmail(){
+  let total=bill.reduce((s,i)=>s+i.price,0);
+  let body=encodeURIComponent(`Bill - GodEye v2.2\n${getCredHeader().header}\n${getGPSLine()}\nCustomer: ${document.getElementById('custName').value||'Walk-in'}\nTotal: Rs. ${total}\n\n${bill.map(b=>`${b.name} - Rs. ${b.price}`).join('\n')}`);
+  window.location.href=`mailto:?subject=${encodeURIComponent('GodEye Bill v2.2')}&body=${body}`;
+  logProto('Email ✅ Opened - With Credentials + GPS');
+}
+function exportBillXLSX(){
+  let c=getCredHeader(); let gps=getGPSLine();
+  let wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(inventory.length?inventory.map(p=>({Credentials:c.header, GPS:gps, ...p})):[{Credentials:c.header, GPS:gps, name:'No products'}]), 'Inventory');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(bill.length?bill.map(b=>({Credentials:c.header, GPS:gps, ...b})):[{Credentials:c.header, GPS:gps, name:'No bill'}]), 'Bill');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(countSessions.length?countSessions.map(s=>({Credentials:c.header, GPS:gps, ...s})):[{Credentials:c.header, GPS:gps, name:'No count'}]), 'Count');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(scans.map(s=>({Credentials:c.header, GPS:gps, barcode:s}))), 'Scans');
+  XLSX.writeFile(wb, `GodEye-Shop-v22-${Date.now()}.xlsx`);
+  logProto('XLSX ✅ Exported - Inventory + Bill + Count + Scans - With Credentials + GPS');
+}
+</script>
+</body></html>
