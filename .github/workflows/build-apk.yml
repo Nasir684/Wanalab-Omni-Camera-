@@ -144,7 +144,6 @@ jobs:
             echo "--- Manifest ---"
             ls -lh android/app/src/main/AndroidManifest.xml || echo "Manifest MISSING"
             echo "--- Native Kotlin files ---"
-            find android/app/src/main/java -name "*.kt" 2>/dev/null | head -n 50 || echo "No Kotlin files found in java/ - Check path"
             find android/app/src/main -name "*.kt" 2>/dev/null | head -n 50 || echo "No Kotlin files found"
           fi
 
@@ -156,18 +155,17 @@ jobs:
       - name: Sync web assets
         run: npx cap sync android
 
-      # CHANGED TO WARNING ONLY - Will NOT fail build, will warn if android/ not pushed yet
+      # CHANGED TO WARNING ONLY - Will NOT fail build
       - name: Verify Native Files - WARNING ONLY
         run: |
           echo "Checking native files..."
           ls android/app/src/main/AndroidManifest.xml || echo "⚠️ WARNING: Manifest missing"
-          if grep -q "CameraActivity" android/app/src/main/AndroidManifest.xml; then echo "✅ CameraActivity in Manifest"; else echo "⚠️ WARNING: CameraActivity missing from Manifest - Commit android/ folder from PC - See Fix"; fi
+          if grep -q "CameraActivity" android/app/src/main/AndroidManifest.xml; then echo "✅ CameraActivity in Manifest"; else echo "⚠️ WARNING: CameraActivity missing from Manifest - Commit android/ folder from PC"; fi
           if grep -q "FaceEnrollActivity" android/app/src/main/AndroidManifest.xml; then echo "✅ FaceEnrollActivity in Manifest"; else echo "⚠️ WARNING: FaceEnrollActivity missing from Manifest"; fi
-          if find android/app/src/main -name "CameraActivity.kt" 2>/dev/null | grep -q "CameraActivity"; then echo "✅ CameraActivity.kt found"; else echo "⚠️ WARNING: CameraActivity.kt not in GitHub yet - Commit android/ folder - Build will continue but Camera will be missing"; fi
-          if find android/app/src/main -name "FaceEngine.kt" 2>/dev/null | grep -q "FaceEngine"; then echo "✅ FaceEngine.kt found"; else echo "⚠️ WARNING: FaceEngine.kt not found - Check path"; fi
+          if find android/app/src/main -name "CameraActivity.kt" 2>/dev/null | grep -q "CameraActivity"; then echo "✅ CameraActivity.kt found"; else echo "⚠️ WARNING: CameraActivity.kt not in GitHub yet - Commit android/ folder"; fi
           echo "✅ Verify done - Continuing build (WARNING ONLY)"
 
-      # v19 + v23: ALL PERMISSIONS - Internal + External + GPS Location
+      # v19 + v23: ALL PERMISSIONS
       - name: Fix Permissions - Camera + Mic + Bluetooth + USB + Storage + Network + GPS Location
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
@@ -192,6 +190,41 @@ jobs:
           GRADLE="android/app/build.gradle"
           sed -i "s/versionName .*/versionName \"$GODEYE_VERSION\"/" $GRADLE || echo "versionName not in gradle - OK, set in Capacitor config"
           grep -i "versionName" $GRADLE || echo "versionName check skipped"
+
+      # FIXED - REGENERATE gradlew IF MISSING - This was the chmod failure
+      - name: Ensure Gradle Wrapper Exists - FIX for chmod gradlew missing
+        run: |
+          echo "Checking android/gradlew..."
+          ls -lh android/gradlew || echo "⚠️ gradlew MISSING - Will regenerate"
+          ls -lh android/gradlew.bat || echo "⚠️ gradlew.bat MISSING"
+          ls -lh android/gradle/wrapper/gradle-wrapper.jar || echo "⚠️ gradle-wrapper.jar MISSING"
+          if [ ! -f android/gradlew ]; then
+            echo "Regenerating Gradle Wrapper from Capacitor template..."
+            # Try 1: Use Capacitor to restore wrapper files from template
+            npx cap sync android || true
+            # Try 2: If still missing, download wrapper from Gradle distribution
+            if [ ! -f android/gradlew ]; then
+              echo "Downloading Gradle Wrapper 8.7..."
+              cd android
+              # Use system gradle if available, else download wrapper scripts
+              if command -v gradle >/dev/null 2>&1; then
+                gradle wrapper --gradle-version 8.7 || true
+              else
+                # Fallback: Create wrapper from official Gradle repo
+                mkdir -p gradle/wrapper
+                curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar || echo "curl jar failed - trying alternative"
+                curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew || echo "curl gradlew failed"
+                curl -L -o gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew.bat || echo "curl gradlew.bat failed"
+                curl -L -o gradle/wrapper/gradle-wrapper.properties https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.properties || true
+              fi
+              cd ..
+            fi
+          fi
+          echo "--- Final check ---"
+          ls -lh android/gradlew
+          ls -lh android/gradle/wrapper/ || echo "wrapper folder missing"
+          chmod +x android/gradlew
+          echo "✅ gradlew ready"
 
       - name: Build APK - Debug for Testing
         run: |
