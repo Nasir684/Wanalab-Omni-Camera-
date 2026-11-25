@@ -4,7 +4,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
+    id("com.google.devtools.ksp") version "2.0.0-1.0.24"
 }
 
 android {
@@ -76,6 +76,12 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    // Capacitor - Loads www/index.html
+    implementation(project(":capacitor-android"))
+    implementation(project(":capacitor-app"))
+    implementation(project(":capacitor-haptics"))
+    implementation(project(":capacitor-keyboard"))
+    implementation(project(":capacitor-status-bar"))
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
