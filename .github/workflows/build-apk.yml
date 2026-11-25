@@ -1,5 +1,5 @@
 # GodEye v2.2 - COMPLETE - FIXED - Do NOT delete /tmp Gradle early
-# Author: Nasir Khan - Wana, South Waziristan, Khyber Pakhtunkhwa
+# Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa
 # PRO Rs. 2,500 / Year
 # Capacitor 8 = AGP 8.7.3 + Gradle 8.11.1 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
 name: Build GodEye APK + AAB - v2.2
@@ -164,8 +164,8 @@ jobs:
           if grep -q "2.0.21" android/build.gradle && grep -q "2.0.21" android/settings.gradle.kts && grep -q "2.0.21" android/app/build.gradle.kts; then echo "✅ Kotlin/KSP 2.0.21 consistent"; else echo "❌ FAIL: Kotlin/KSP mismatch" && exit 1; fi
           echo "✅ Versions consistent"
 
-      # FIXED - NEVER run `gradle wrapper` - it configures project before cap sync and fails
-      - name: Fix Wrapper Path - ROOT to android + Download jar if missing
+      # FIX 1: Wrapper via CURL ONLY - NEVER run `gradle wrapper` before cap sync
+      - name: Fix Wrapper Path - ROOT to android + Generate jar if missing
         run: |
           echo "=== Search wrapper ==="
           find . -name "gradle-wrapper.properties" -not -path "./node_modules/*"
@@ -177,10 +177,11 @@ jobs:
           printf 'distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.11.1-all.zip\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n' > android/gradle/wrapper/gradle-wrapper.properties
           cat android/gradle/wrapper/gradle-wrapper.properties
           if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ] || [ ! -f android/gradlew ]; then
-            echo "⚠️ Jar or gradlew missing - Downloading, NOT running gradle wrapper"
+            echo "⚠️ Jar or gradlew missing - Downloading via CURL, NOT running gradle wrapper"
             curl -sL -o android/gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradle/wrapper/gradle-wrapper.jar
             curl -sL -o android/gradlew https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradlew
             curl -sL -o android/gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradlew.bat
+            echo "✅ Downloaded wrapper via curl"
           fi
           ls -lh android/gradlew android/gradlew.bat android/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.jar || (echo "❌ Wrapper still missing" && exit 1)
           chmod +x android/gradlew
@@ -203,9 +204,11 @@ jobs:
           test -d android/app || (echo "❌ android/app missing after sync" && exit 1)
           test -f android/gradlew || (echo "❌ android/gradlew missing after sync" && exit 1)
           echo "✅ Capacitor Sync Passed"
+          echo "=== settings after cap sync (before our fix) ==="
+          cat android/settings.gradle.kts
 
-      # FIXED - Re-apply AFTER sync + FIX ../node_modules path + Media3 1.3.1
-      - name: FIX AFTER SYNC - AGP + AndroidX + Capacitor Includes + Media3 1.3.1
+      # FIX 2+3+4: Re-apply AFTER sync + ../node_modules + AUTO-DETECT real plugin layout
+      - name: FIX AFTER SYNC - AGP + AndroidX + Media3 1.3.1 + Capacitor Auto-Detect
         run: |
           python3 << 'PYEOF'
           import pathlib, re
@@ -221,24 +224,46 @@ jobs:
           t = re.sub(r'id\("com\.google\.devtools\.ksp"\)\s*version\s*"[^"]+"', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"', t)
           if 'com.google.devtools.ksp") version' not in t and 'com.google.devtools.ksp' in t:
               t = t.replace('id("com.google.devtools.ksp")', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"')
-          # 1b. FIX WRONG PATH: node_modules -> ../node_modules (settings is in android/, node_modules is at root)
-          t = t.replace('File("node_modules/@capacitor', 'File("../node_modules/@capacitor')
-          t = t.replace("File('node_modules/@capacitor", "File('../node_modules/@capacitor")
-          # 1c. Capacitor includes - MUST use ../node_modules
-          caps = {
-              ":capacitor-android": "../node_modules/@capacitor/android/capacitor",
-              ":capacitor-app": "../node_modules/@capacitor/app/android/capacitor",
-              ":capacitor-haptics": "../node_modules/@capacitor/haptics/android/capacitor",
-              ":capacitor-keyboard": "../node_modules/@capacitor/keyboard/android/capacitor",
-              ":capacitor-status-bar": "../node_modules/@capacitor/status-bar/android/capacitor",
+
+          # 1b. Capacitor AUTO-DETECT - FIX for v8 layout + ../ prefix
+          def find_gradle_dir(base_str):
+              base = pathlib.Path(base_str)
+              # Try .../android/capacitor first, then .../android
+              for cand in [base / "capacitor", base]:
+                  if cand.exists() and list(cand.glob("build.gradle*")):
+                      # settings is in android/, so need ../ prefix
+                      return f"../{cand.as_posix()}"
+              return None
+
+          caps_bases = {
+              ":capacitor-android": "node_modules/@capacitor/android/capacitor",
+              ":capacitor-app": "node_modules/@capacitor/app/android",
+              ":capacitor-haptics": "node_modules/@capacitor/haptics/android",
+              ":capacitor-keyboard": "node_modules/@capacitor/keyboard/android",
+              ":capacitor-status-bar": "node_modules/@capacitor/status-bar/android",
           }
-          for mod, path in caps.items():
+          for mod, base in caps_bases.items():
+              if mod == ":capacitor-android":
+                  real = "../node_modules/@capacitor/android/capacitor"
+              else:
+                  real = find_gradle_dir(base)
+                  if not real:
+                      print(f"⚠️ No build.gradle* found for {mod} in {base} - listing:")
+                      print(list(pathlib.Path(base).rglob("build.gradle*")) if pathlib.Path(base).exists() else "base missing")
+                      continue
+              print(f"{mod} -> {real}")
               if f'include("{mod}")' not in t:
                   t += f'\ninclude("{mod}")\n'
-                  t += f'project("{mod}").projectDir = File("{path}")\n'
+                  t += f'project("{mod}").projectDir = File("{real}")\n'
+              else:
+                  t = re.sub(rf'project\("{re.escape(mod)}"\)\.projectDir = File\("[^"]+"\)', f'project("{mod}").projectDir = File("{real}")', t)
+              # Fix any old wrong path without ../
+              t = t.replace(f'File("node_modules/@capacitor', f'File("../node_modules/@capacitor')
+
           p.write_text(t)
-          print("=== settings.gradle.kts ===")
+          print("=== settings.gradle.kts FINAL ===")
           print(t)
+
           # 2. gradle.properties - AndroidX again
           gp = pathlib.Path("android/gradle.properties")
           gt = gp.read_text() if gp.exists() else ""
@@ -246,7 +271,8 @@ jobs:
           lines.append("android.useAndroidX=true")
           lines.append("android.enableJetifier=true")
           gp.write_text("\n".join(lines) + "\n")
-          # 3. Media3 - replace ALL 1.4.1 with 1.3.1 in app/build.gradle.kts
+
+          # 3. Media3 - replace ALL 1.4.1 with 1.3.1
           app = pathlib.Path("android/app/build.gradle.kts")
           at = app.read_text()
           print("=== app/build.gradle.kts BEFORE Media3 fix ===")
@@ -260,18 +286,41 @@ jobs:
           cat android/settings.gradle.kts
           cat android/app/build.gradle.kts | grep -i media3 || echo "No media3 lines found - check file"
           if grep -q "media3.*1\.4\.1" android/app/build.gradle.kts; then echo "❌ FAIL: Still 1.4.1 in Media3" && exit 1; fi
-          grep -q 'include(":capacitor-app")' android/settings.gradle.kts || (echo "❌ FAIL: :capacitor-app still missing" && exit 1)
-          grep -q 'include(":capacitor-android")' android/settings.gradle.kts || (echo "❌ FAIL: :capacitor-android still missing" && exit 1)
-          if grep -q 'project(":capacitor-android").projectDir = File("node_modules' android/settings.gradle.kts; then echo "❌ FAIL: Wrong path without ../ - Will cause No variants exist" && exit 1; fi
-          grep -q 'project(":capacitor-android").projectDir = File("../node_modules' android/settings.gradle.kts && echo "✅ Path is ../node_modules - CORRECT"
           grep -q "8.7.3" android/settings.gradle.kts && echo "✅ AGP 8.7.3 OK after sync"
+          grep -q 'include(":capacitor-app")' android/settings.gradle.kts && echo "✅ :capacitor-app included" || (echo "❌ :capacitor-app missing" && exit 1)
+          grep -q 'include(":capacitor-android")' android/settings.gradle.kts && echo "✅ :capacitor-android included" || (echo "❌ :capacitor-android missing" && exit 1)
+          # Must be ../node_modules, NOT node_modules
+          if grep -q 'project(":capacitor-android").projectDir = File("node_modules' android/settings.gradle.kts; then echo "❌ FAIL: Wrong path without ../" && exit 1; fi
+          grep -q 'project(":capacitor-android").projectDir = File("../node_modules' android/settings.gradle.kts && echo "✅ Path is ../node_modules - CORRECT"
           echo "✅ All post-sync fixes applied"
 
-      - name: VERIFY Capacitor projects are real - Not empty
+      # NEW VERIFY - Auto-detect, NOT hardcoded path
+      - name: Build and verify Capacitor
         run: |
-          ls -lh node_modules/@capacitor/android/capacitor/build.gradle* || (echo "❌ capacitor-android build.gradle missing" && ls -R node_modules/@capacitor/android/capacitor | head -n 50 && exit 1)
-          ls -lh node_modules/@capacitor/app/android/capacitor/build.gradle* || (echo "❌ capacitor-app build.gradle missing" && exit 1)
-          echo "✅ Capacitor Gradle projects exist with build.gradle"
+          echo "=== Real layout ==="
+          find node_modules/@capacitor/app/android -maxdepth 2 -name "build.gradle*" || true
+          find node_modules/@capacitor/android -maxdepth 2 -name "build.gradle*" || true
+          ls -R node_modules/@capacitor/app/android | head -n 60
+          APP_BUILD=$(find node_modules/@capacitor/app/android -maxdepth 2 -name "build.gradle*" | head -n 1)
+          if [ -z "$APP_BUILD" ]; then
+            echo "❌ REAL FAIL: @capacitor/app has no build.gradle at all"
+            ls -R node_modules/@capacitor/app | head -n 100
+            exit 1
+          fi
+          echo "✅ Found @capacitor/app build file at: $APP_BUILD"
+          # Verify every projectDir in settings actually exists and has a build file
+          python3 << 'PYEOF'
+          import pathlib, re
+          t = pathlib.Path("android/settings.gradle.kts").read_text()
+          for m in re.finditer(r'project\("([^"]+)"\)\.projectDir = File\("([^"]+)"\)', t):
+              mod, path = m.groups()
+              # path is relative to android/
+              full = pathlib.Path("android") / path
+              print(f"{mod} -> {path} -> exists={full.exists()} files={list(full.glob('build.gradle*')) if full.exists() else []}")
+              assert full.exists(), f"Missing dir for {mod}: {full}"
+              assert list(full.glob("build.gradle*")), f"No build.gradle* in {full} for {mod}"
+          print("✅ All Capacitor projectDirs are REAL")
+          PYEOF
 
       - name: Gradle Help - Validate Gradle can configure project
         run: |
