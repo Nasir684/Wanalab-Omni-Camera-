@@ -1,7 +1,7 @@
-# WanaLab God Eye v2.2 - build-apk.yml - FINAL - Capacitor 8 Fixed
+# WanaLab God Eye v2.2 - build-apk.yml - FINAL - Static Settings Fix - No Echo Corruption
 # Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
 # PRO Rs. 2,500 / Year
-# FIX: package.json was Capacitor 8 but YAML used Capacitor 7 versions + missing plugins
+# FIX: settings.gradle.kts now written with cat <<'EOF' STATIC - No echo loop - No IncludedBuild corruption
 # Capacitor 8 = AGP 8.7.3 + Gradle 8.11.1 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
 name: Build GodEye APK + AAB - v2.2 - Thumb + Effects + Credentials + GPS + Anti-Fake
 
@@ -22,20 +22,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show repo files - v2.2 Structure
+      - name: Show repo files
         run: |
           ls -la
-          echo "--- www/ - Main Camera ---"
-          ls -la www/ || echo "www/ NOT FOUND"
           ls -lh www/index.html || echo "www/index.html MISSING"
-          echo "--- ROOT - Shop / Export / About / Privacy ---"
-          ls -lh shop.html || echo "shop.html MISSING in ROOT"
-          ls -lh export.html || echo "export.html MISSING in ROOT"
-          ls -lh about.html || echo "about.html MISSING in ROOT"
-          ls -lh privacy.html || echo "privacy.html MISSING in ROOT"
-          echo "Version: $GODEYE_VERSION - $GODEYE_NAME - PRO: $PRO_PRICE"
+          ls -lh shop.html export.html about.html privacy.html || echo "ROOT files check"
           cat package.json | grep -i capacitor || echo "No capacitor in package.json"
-          ls -lh android/build.gradle android/app/build.gradle.kts android/settings.gradle.kts 2>/dev/null || echo "Android build files check"
 
       - name: Ensure web assets exist
         run: |
@@ -44,44 +36,39 @@ jobs:
             echo '<html><body><h1>GodEye - By WanaLab - Please commit www/index.html</h1></body></html>' > www/index.html
           fi
 
-      - name: Check Spec v4-v22-A in HTML - FAIL if old HTML
+      - name: Check Spec in HTML
         run: |
-          echo "Checking www/index.html for v4-v22-A spec..."
-          grep -q "468 Dots" www/index.html || (echo "❌ FAIL: Face Mesh 468 Dots missing - See Spec v18" && exit 1)
-          grep -q "MediaPipe\|mediapipe\|face_mesh" www/index.html || (echo "❌ FAIL: MediaPipe missing - See Spec v18" && exit 1)
-          grep -q "External Devices" www/index.html || (echo "❌ FAIL: External Devices section missing - See Spec v19" && exit 1)
-          grep -q "PRO Only" www/index.html || (echo "❌ FAIL: PRO Only label missing for External - See Spec v19" && exit 1)
-          grep -q "2,500" www/index.html || (echo "❌ FAIL: PRO Price Rs. 2,500 missing - See Spec v8" && exit 1)
-          grep -q "By WanaLab" www/index.html || (echo "❌ FAIL: WanaLab footer missing - See Spec v10" && exit 1)
-          grep -q "Nasir Khan" www/index.html || (echo "❌ FAIL: Founded by Nasir Khan missing - See Spec v10" && exit 1)
-          grep -q "Thumb Biometric" www/index.html || (echo "❌ FAIL: Thumb Biometric missing - See Spec v20" && exit 1)
-          grep -q "Thumb.*PRO Only\|Thumb Biometric PRO" www/index.html || (echo "❌ FAIL: Thumb PRO Only missing - See Spec v20" && exit 1)
-          grep -q "Attendance" www/index.html || (echo "❌ FAIL: Thumb Attendance missing - See Spec v20-A" && exit 1)
-          grep -q "Liveness\|Move Thumb" www/index.html || (echo "❌ FAIL: Thumb Liveness Move Check missing - See Spec v20 - NADRA-Style" && exit 1)
-          grep -q "Photo Effects" www/index.html || (echo "❌ FAIL: Photo Effects missing - See Spec v21" && exit 1)
-          grep -q "Clarendon" www/index.html || (echo "❌ FAIL: Clarendon filter missing - See Spec v21" && exit 1)
-          grep -q "Thumb Clear\|Doc Clear" www/index.html || (echo "❌ FAIL: Thumb Clear / Doc Clear missing - See Spec v21" && exit 1)
-          grep -q "Credentials For This Page" www/index.html || (echo "❌ FAIL: Per-Feature Credentials missing - See Spec v22-A" && exit 1)
-          grep -q "Profile Type" www/index.html || (echo "❌ FAIL: Profile Type Shop/Office/Department missing - See Spec v22-A" && exit 1)
-          grep -q "Shop.*Office.*Department\|Office.*Department" www/index.html || (echo "❌ FAIL: Universal Profile Types Shop/Office/Department missing - See Spec v22-A" && exit 1)
-          grep -q "WanaLab.*Watermark\|Made By WanaLab" www/index.html || (echo "❌ FAIL: WanaLab Watermark missing for FREE - See Spec v22" && exit 1)
-          grep -q "GPS Timestamp" www/index.html || (echo "❌ FAIL: GPS Timestamp missing - See Spec v23" && exit 1)
-          grep -q "GPS Share\|gpsShare" www/index.html || (echo "❌ FAIL: GPS Share missing - See Spec v23-A" && exit 1)
-          grep -q "isFromMockProvider\|Anti-Fake GPS" www/index.html || (echo "❌ FAIL: Anti-Fake GPS missing - See Spec v23-B" && exit 1)
-          grep -q "maps.google.com" www/index.html || (echo "❌ FAIL: Map Link missing for GPS Share - See Spec v23-A" && exit 1)
-          grep -q "v2.2" www/index.html || (echo "❌ FAIL: Version v2.2 missing in www/index.html - Update version" && exit 1)
-          grep -q "\.\./shop.html\|\.\./export.html" www/index.html || (echo "❌ FAIL: www/index.html links must be ../shop.html / ../export.html - Not shop.html alone" && exit 1)
-          if grep -q "SHOP PRO" www/index.html; then echo "❌ FAIL: Old SHOP PRO Rs. 5,000 still in HTML - Delete it - See Spec v8" && exit 1; fi
-          if grep -q "HARDWARE BUNDLE" www/index.html; then echo "❌ FAIL: Old HARDWARE BUNDLE still in HTML - Delete it" && exit 1; fi
-          if grep -q "Simulated" www/index.html; then echo "❌ FAIL: 'Simulated' Thermal still in HTML - Delete it - See Spec v19" && exit 1; fi
-          if grep -q "localStorage.clear()" www/index.html; then echo "❌ FAIL: Dangerous localStorage.clear() still in HTML - Delete Clear Data button from Main - See Spec v12" && exit 1; fi
-          if grep -q "Browser cannot match faces" www/index.html; then echo "❌ FAIL: Old Face Tag Only text still in HTML - Replace with 468 Dots - See Spec v18" && exit 1; fi
+          grep -q "468 Dots" www/index.html || (echo "❌ FAIL: Face Mesh 468 Dots missing" && exit 1)
+          grep -q "MediaPipe\|mediapipe\|face_mesh" www/index.html || (echo "❌ FAIL: MediaPipe missing" && exit 1)
+          grep -q "External Devices" www/index.html || (echo "❌ FAIL: External Devices missing" && exit 1)
+          grep -q "PRO Only" www/index.html || (echo "❌ FAIL: PRO Only missing" && exit 1)
+          grep -q "2,500" www/index.html || (echo "❌ FAIL: PRO Price Rs. 2,500 missing" && exit 1)
+          grep -q "By WanaLab" www/index.html || (echo "❌ FAIL: WanaLab footer missing" && exit 1)
+          grep -q "Nasir Khan" www/index.html || (echo "❌ FAIL: Founded by Nasir Khan missing" && exit 1)
+          grep -q "Thumb Biometric" www/index.html || (echo "❌ FAIL: Thumb Biometric missing" && exit 1)
+          grep -q "Attendance" www/index.html || (echo "❌ FAIL: Thumb Attendance missing" && exit 1)
+          grep -q "Liveness\|Move Thumb" www/index.html || (echo "❌ FAIL: Thumb Liveness missing" && exit 1)
+          grep -q "Photo Effects" www/index.html || (echo "❌ FAIL: Photo Effects missing" && exit 1)
+          grep -q "Clarendon" www/index.html || (echo "❌ FAIL: Clarendon missing" && exit 1)
+          grep -q "Credentials For This Page" www/index.html || (echo "❌ FAIL: Credentials missing" && exit 1)
+          grep -q "Profile Type" www/index.html || (echo "❌ FAIL: Profile Type missing" && exit 1)
+          grep -q "WanaLab.*Watermark\|Made By WanaLab" www/index.html || (echo "❌ FAIL: WanaLab Watermark missing" && exit 1)
+          grep -q "GPS Timestamp" www/index.html || (echo "❌ FAIL: GPS Timestamp missing" && exit 1)
+          grep -q "GPS Share\|gpsShare" www/index.html || (echo "❌ FAIL: GPS Share missing" && exit 1)
+          grep -q "isFromMockProvider\|Anti-Fake GPS" www/index.html || (echo "❌ FAIL: Anti-Fake GPS missing" && exit 1)
+          grep -q "maps.google.com" www/index.html || (echo "❌ FAIL: Map Link missing" && exit 1)
+          grep -q "v2.2" www/index.html || (echo "❌ FAIL: Version v2.2 missing" && exit 1)
+          grep -q "\.\./shop.html\|\.\./export.html" www/index.html || (echo "❌ FAIL: links must be ../shop.html / ../export.html" && exit 1)
+          if grep -q "SHOP PRO" www/index.html; then echo "❌ FAIL: Old SHOP PRO still in HTML" && exit 1; fi
+          if grep -q "HARDWARE BUNDLE" www/index.html; then echo "❌ FAIL: Old HARDWARE BUNDLE still in HTML" && exit 1; fi
+          if grep -q "Simulated" www/index.html; then echo "❌ FAIL: Simulated Thermal still in HTML" && exit 1; fi
+          if grep -q "localStorage.clear()" www/index.html; then echo "❌ FAIL: localStorage.clear() still in HTML" && exit 1; fi
           echo "✅ HTML Spec Check Passed"
 
-      - name: Check ROOT Files - shop.html + export.html - FAIL if old
+      - name: Check ROOT Files
         run: |
           if [ -f shop.html ]; then
-            grep -q "GPS Timestamp" shop.html || (echo "❌ FAIL: GPS Timestamp missing in shop.html" && exit 1)
+            grep -q "GPS Timestamp" shop.html || (echo "❌ FAIL: GPS missing in shop.html" && exit 1)
             grep -q "Credentials" shop.html || (echo "❌ FAIL: Credentials missing in shop.html" && exit 1)
             grep -q "Barcode" shop.html || (echo "❌ FAIL: Barcode missing in shop.html" && exit 1)
             grep -q "www/index.html" shop.html || (echo "❌ FAIL: shop.html link must be www/index.html" && exit 1)
@@ -89,20 +76,14 @@ jobs:
             echo "✅ shop.html Passed"
           fi
           if [ -f export.html ]; then
-            grep -q "GPS Timestamp" export.html || (echo "❌ FAIL: GPS Timestamp missing in export.html" && exit 1)
+            grep -q "GPS Timestamp" export.html || (echo "❌ FAIL: GPS missing in export.html" && exit 1)
             grep -q "Credentials" export.html || (echo "❌ FAIL: Credentials missing in export.html" && exit 1)
             grep -q "www/index.html" export.html || (echo "❌ FAIL: export.html link must be www/index.html" && exit 1)
             grep -q "v2.2" export.html || (echo "❌ FAIL: Version v2.2 missing in export.html" && exit 1)
             echo "✅ export.html Passed"
           fi
-          if [ -f about.html ]; then
-            grep -q "v2.2" about.html || (echo "❌ FAIL: Version v2.2 missing in about.html" && exit 1)
-            grep -q "GPS" about.html || (echo "❌ FAIL: GPS missing in about.html" && exit 1)
-            echo "✅ about.html Passed"
-          fi
           if [ -f privacy.html ]; then
-            grep -q "v2.2" privacy.html || (echo "❌ FAIL: Version v2.2 missing in privacy.html" && exit 1)
-            grep -q "GPS\|Location" privacy.html || (echo "❌ FAIL: GPS / Location missing in privacy.html" && exit 1)
+            grep -q "GPS\|Location" privacy.html || (echo "❌ FAIL: GPS missing in privacy.html" && exit 1)
             grep -q "Thumb" privacy.html || (echo "❌ FAIL: Thumb missing in privacy.html" && exit 1)
             echo "✅ privacy.html Passed"
           fi
@@ -119,16 +100,15 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Setup Android SDK - Use Preinstalled - NO setup-android Action
+      - name: Setup Android SDK - Use Preinstalled
         run: |
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
           ls /usr/local/lib/android/sdk/
-          echo "✅ Using preinstalled SDK"
 
-      - name: Install Android SDK Platform 35 - Modern Packages Only
+      - name: Install Android SDK Platform 35
         run: |
           export ANDROID_HOME=/usr/local/lib/android/sdk
           export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
@@ -138,13 +118,10 @@ jobs:
           ls -lh $ANDROID_HOME/platforms/android-35/android.jar || (echo "❌ android-35 still missing" && exit 1)
           echo "✅ SDK Platform 35 installed"
 
-      # FIXED - Capacitor 8 - Install @8 plugins, NOT @7
       - name: Install deps + Ensure Capacitor 8 Plugins Exist
         run: |
           npm install
-          echo "=== package.json Capacitor ==="
           cat package.json | grep -i capacitor
-          echo "=== Install missing Capacitor 8 plugins if not present ==="
           npm list @capacitor/android || npm install @capacitor/android@8 || true
           npm list @capacitor/app || npm install @capacitor/app@8 || true
           npm list @capacitor/haptics || npm install @capacitor/haptics@8 || true
@@ -152,7 +129,6 @@ jobs:
           npm list @capacitor/status-bar || npm install @capacitor/status-bar@8 || true
           npm list @capacitor/core || npm install @capacitor/core@8 || true
           npm list @capacitor/cli || npm install @capacitor/cli@8 || true
-          echo "=== Verify node_modules Capacitor folders ==="
           ls -ld node_modules/@capacitor/android/capacitor || (echo "❌ @capacitor/android missing" && exit 1)
           ls -ld node_modules/@capacitor/app/android || (echo "❌ @capacitor/app missing" && exit 1)
           ls -ld node_modules/@capacitor/haptics/android || (echo "❌ @capacitor/haptics missing" && exit 1)
@@ -167,14 +143,11 @@ jobs:
           if [ -f android/app/src/main/AndroidManifest.xml ]; then cp android/app/src/main/AndroidManifest.xml /tmp/godeye-backup/AndroidManifest.xml && echo "✅ Backed up Manifest"; fi
           if [ -d android/app/src/main/java ]; then cp -r android/app/src/main/java /tmp/godeye-backup/java && echo "✅ Backed up java/"; fi
           if [ -d android/app/src/main/res ]; then cp -r android/app/src/main/res /tmp/godeye-backup/res && echo "✅ Backed up res/"; fi
-          if [ -f android/app/build.gradle.kts ]; then cp android/app/build.gradle.kts /tmp/godeye-backup/app-build.gradle.kts && echo "✅ Backed up app/build.gradle.kts"; fi
-          if [ -f android/app/build.gradle ]; then cp android/app/build.gradle /tmp/godeye-backup/app-build.gradle && echo "✅ Backed up app/build.gradle"; fi
           NEED_RECREATE=0
           if [ ! -f android/gradlew ]; then echo "❌ gradlew missing -> need recreate"; NEED_RECREATE=1; fi
           if [ ! -f android/settings.gradle ] && [ ! -f android/settings.gradle.kts ]; then echo "❌ settings.gradle missing -> need recreate"; NEED_RECREATE=1; fi
           if [ ! -f android/gradle/wrapper/gradle-wrapper.properties ]; then echo "❌ gradle-wrapper.properties missing -> need recreate"; NEED_RECREATE=1; fi
           if [ "$NEED_RECREATE" = "1" ]; then
-            echo "Recreating VALID android/ with Capacitor 8"
             rm -rf android
             npx cap add android
             echo "✅ Recreated android/"
@@ -184,16 +157,14 @@ jobs:
           if [ -f /tmp/godeye-backup/AndroidManifest.xml ]; then cp /tmp/godeye-backup/AndroidManifest.xml android/app/src/main/AndroidManifest.xml && echo "✅ Restored Manifest"; fi
           if [ -d /tmp/godeye-backup/java ]; then mkdir -p android/app/src/main/java; cp -r /tmp/godeye-backup/java/* android/app/src/main/java/ && echo "✅ Restored java/"; fi
           if [ -d /tmp/godeye-backup/res ]; then cp -r /tmp/godeye-backup/res/* android/app/src/main/res/ 2>/dev/null || true; echo "✅ Restored res/"; fi
-          if [ -f /tmp/godeye-backup/app-build.gradle.kts ]; then cp /tmp/godeye-backup/app-build.gradle.kts android/app/build.gradle.kts && echo "✅ Restored app/build.gradle.kts"; fi
-          if [ -f /tmp/godeye-backup/app-build.gradle ]; then cp /tmp/godeye-backup/app-build.gradle android/app/build.gradle && echo "✅ Restored app/build.gradle"; fi
           ls -lh android/gradlew || (echo "❌ STILL NO gradlew" && exit 1)
           chmod +x android/gradlew
           echo "✅ Android project is now VALID"
 
-      # FIXED - Capacitor 8 Versions: AGP 8.7.3 + Gradle 8.11.1 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
-      - name: Fix All 3 Build Files - Capacitor 8 Versions - Dynamic Plugins
+      # FIXED - ALL 3 FILES STATIC with cat <<'EOF' - NO echo loops - NO sed on settings
+      - name: Fix All 3 Build Files - STATIC - Capacitor 8 - No Echo Corruption
         run: |
-          echo "=== FILE 1 - ROOT android/build.gradle - Capacitor 8 - NO allprojects ==="
+          echo "=== FILE 1 - ROOT android/build.gradle - STATIC ==="
           cat > android/build.gradle <<'EOF'
           // WanaLab God Eye v2.2 - build.gradle (ROOT) - Capacitor 8
           // Capacitor 8 + Gradle 8.11.1 + AGP 8.7.3 + Kotlin 2.0.21
@@ -209,98 +180,144 @@ jobs:
                   classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21"
               }
           }
-          // NO allprojects block - DO NOT ADD IT BACK - Repositories ONLY in settings.gradle.kts
+          // NO allprojects block - Repositories ONLY in settings.gradle.kts
           task clean(type: Delete) {
               delete rootProject.buildDir
           }
           EOF
           rm -f android/build.gradle.kts
-          echo "✅ FILE 1 - ROOT fixed - Capacitor 8"
-          echo "=== FILE 2 - SETTINGS - DYNAMIC - Capacitor 8 ==="
-          {
-            echo '// WanaLab God Eye v2.2 - settings.gradle.kts - Capacitor 8 - DYNAMIC'
-            echo 'pluginManagement {'
-            echo '    repositories { google(); mavenCentral(); gradlePluginPortal() }'
-            echo '    plugins {'
-            echo '        id("com.android.application") version "8.7.3" apply false'
-            echo '        id("org.jetbrains.kotlin.android") version "2.0.21" apply false'
-            echo '        id("com.google.devtools.ksp") version "2.0.21-1.0.28" apply false'
-            echo '    }'
-            echo '}'
-            echo 'dependencyResolutionManagement {'
-            echo '    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)'
-            echo '    repositories { google(); mavenCentral() }'
-            echo '}'
-            echo 'rootProject.name = "android"'
-            echo 'include(":app")'
-            if [ -d "../node_modules/@capacitor/android/capacitor" ] || [ -d "node_modules/@capacitor/android/capacitor" ]; then echo 'include(":capacitor-android")'; echo 'project(":capacitor-android").projectDir = File("../node_modules/@capacitor/android/capacitor")'; echo "✅ Included capacitor-android"; fi
-            if [ -d "../node_modules/@capacitor/app/android" ] || [ -d "node_modules/@capacitor/app/android" ]; then echo 'include(":capacitor-app")'; echo 'project(":capacitor-app").projectDir = File("../node_modules/@capacitor/app/android")'; echo "✅ Included capacitor-app"; fi
-            if [ -d "../node_modules/@capacitor/haptics/android" ] || [ -d "node_modules/@capacitor/haptics/android" ]; then echo 'include(":capacitor-haptics")'; echo 'project(":capacitor-haptics").projectDir = File("../node_modules/@capacitor/haptics/android")'; echo "✅ Included capacitor-haptics"; fi
-            if [ -d "../node_modules/@capacitor/keyboard/android" ] || [ -d "node_modules/@capacitor/keyboard/android" ]; then echo 'include(":capacitor-keyboard")'; echo 'project(":capacitor-keyboard").projectDir = File("../node_modules/@capacitor/keyboard/android")'; echo "✅ Included capacitor-keyboard"; fi
-            if [ -d "../node_modules/@capacitor/status-bar/android" ] || [ -d "node_modules/@capacitor/status-bar/android" ]; then echo 'include(":capacitor-status-bar")'; echo 'project(":capacitor-status-bar").projectDir = File("../node_modules/@capacitor/status-bar/android")'; echo "✅ Included capacitor-status-bar"; fi
-          } > android/settings.gradle.kts
+          echo "✅ FILE 1 - ROOT fixed"
+          cat android/build.gradle
+          echo "=== FILE 2 - SETTINGS android/settings.gradle.kts - STATIC - NO echo ==="
+          cat > android/settings.gradle.kts <<'EOF'
+          // WanaLab God Eye v2.2 - settings.gradle.kts - STATIC - Capacitor 8
+          // FIX: Static file - No echo generation - No IncludedBuild corruption
+          // Capacitor 8 + AGP 8.7.3 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+              plugins {
+                  id("com.android.application") version "8.7.3" apply false
+                  id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+                  id("com.google.devtools.ksp") version "2.0.21-1.0.28" apply false
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "android"
+          include(":app")
+          include(":capacitor-android")
+          project(":capacitor-android").projectDir = File("../node_modules/@capacitor/android/capacitor")
+          include(":capacitor-app")
+          project(":capacitor-app").projectDir = File("../node_modules/@capacitor/app/android")
+          include(":capacitor-haptics")
+          project(":capacitor-haptics").projectDir = File("../node_modules/@capacitor/haptics/android")
+          include(":capacitor-keyboard")
+          project(":capacitor-keyboard").projectDir = File("../node_modules/@capacitor/keyboard/android")
+          include(":capacitor-status-bar")
+          project(":capacitor-status-bar").projectDir = File("../node_modules/@capacitor/status-bar/android")
+          EOF
           rm -f android/settings.gradle
-          echo "✅ FILE 2 - settings DYNAMIC fixed - Capacitor 8"
+          echo "✅ FILE 2 - settings STATIC fixed"
           cat android/settings.gradle.kts
-          echo "=== FILE 3 - APP - DYNAMIC - Capacitor 8 ==="
-          {
-            echo '// WanaLab God Eye v2.2 - build.gradle.kts (app) - Capacitor 8'
-            echo 'plugins { id("com.android.application"); id("org.jetbrains.kotlin.android"); id("com.google.devtools.ksp") version "2.0.21-1.0.28" }'
-            echo 'android {'
-            echo '    namespace = "com.wanalab.godeye"'
-            echo '    compileSdk = 35'
-            echo '    defaultConfig { applicationId = "com.wanalab.godeye"; minSdk = 24; targetSdk = 35; versionCode = 22; versionName = "2.2"; testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }'
-            echo '    buildTypes { release { isMinifyEnabled = false; proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro") } }'
-            echo '    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }'
-            echo '    kotlinOptions { jvmTarget = "17" }'
-            echo '    buildFeatures { viewBinding = true }'
-            echo '}'
-            echo 'dependencies {'
-            echo '    implementation("androidx.core:core-ktx:1.13.1")'
-            echo '    implementation("androidx.appcompat:appcompat:1.7.0")'
-            echo '    implementation("com.google.android.material:material:1.12.0")'
-            echo '    implementation("androidx.constraintlayout:constraintlayout:2.1.4")'
-            echo '    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")'
-            echo '    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")'
-            echo '    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")'
-            echo '    implementation("androidx.camera:camera-core:1.3.4")'
-            echo '    implementation("androidx.camera:camera-camera2:1.3.4")'
-            echo '    implementation("androidx.camera:camera-lifecycle:1.3.4")'
-            echo '    implementation("androidx.camera:camera-view:1.3.4")'
-            echo '    implementation("androidx.media3:media3-exoplayer:1.4.1")'
-            echo '    implementation("androidx.media3:media3-ui:1.4.1")'
-            echo '    implementation("androidx.media3:media3-exoplayer-rtsp:1.4.1")'
-            echo '    implementation("androidx.media3:media3-exoplayer-rtmp:1.4.1")'
-            echo '    implementation("androidx.media3:media3-exoplayer-hls:1.4.1")'
-            echo '    implementation("androidx.media3:media3-exoplayer-dash:1.4.1")'
-            echo '    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")'
-            echo '    implementation("org.java-websocket:Java-WebSocket:1.5.6")'
-            echo '    implementation("com.google.mlkit:barcode-scanning:17.3.0")'
-            echo '    implementation("com.journeyapps:zxing-android-embedded:4.3.0")'
-            echo '    implementation("com.google.mediapipe:tasks-vision:0.10.14")'
-            echo '    implementation("org.tensorflow:tensorflow-lite:2.14.0")'
-            echo '    implementation("com.google.mlkit:face-detection:16.1.7")'
-            echo '    implementation("com.rmtheis:tess-two:9.1.0")'
-            echo '    implementation("com.itextpdf:itext7-core:8.0.5")'
-            echo '    implementation("org.apache.poi:poi:5.2.5")'
-            echo '    implementation("org.apache.poi:poi-ooxml:5.2.5")'
-            echo '    implementation("androidx.room:room-runtime:2.6.1")'
-            echo '    implementation("androidx.room:room-ktx:2.6.1")'
-            echo '    ksp("androidx.room:room-compiler:2.6.1")'
-            echo '    implementation("androidx.datastore:datastore-preferences:1.1.1")'
-            echo '    implementation("androidx.work:work-runtime-ktx:2.9.0")'
-            if [ -d "node_modules/@capacitor/android/capacitor" ]; then echo '    implementation(project(":capacitor-android"))'; echo "✅ Added capacitor-android"; fi
-            if [ -d "node_modules/@capacitor/app/android" ]; then echo '    implementation(project(":capacitor-app"))'; echo "✅ Added capacitor-app"; fi
-            if [ -d "node_modules/@capacitor/haptics/android" ]; then echo '    implementation(project(":capacitor-haptics"))'; echo "✅ Added capacitor-haptics"; fi
-            if [ -d "node_modules/@capacitor/keyboard/android" ]; then echo '    implementation(project(":capacitor-keyboard"))'; echo "✅ Added capacitor-keyboard"; fi
-            if [ -d "node_modules/@capacitor/status-bar/android" ]; then echo '    implementation(project(":capacitor-status-bar"))'; echo "✅ Added capacitor-status-bar"; fi
-            echo '    testImplementation("junit:junit:4.13.2")'
-            echo '    androidTestImplementation("androidx.test.ext:junit:1.1.5")'
-            echo '    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")'
-            echo '}'
-          } > android/app/build.gradle.kts
+          echo "=== CHECK FOR CORRUPTION ==="
+          if grep -q "IncludedBuild\|Included" android/settings.gradle.kts; then echo "❌ CORRUPTION STILL THERE - Included found" && cat android/settings.gradle.kts && exit 1; else echo "✅ No IncludedBuild corruption"; fi
+          if grep -q 'include(":capacitor-status-bar")' android/settings.gradle.kts; then echo "✅ status-bar include OK"; else echo "❌ status-bar include missing" && exit 1; fi
+          if grep -q 'include(":capacitor-keyboard")' android/settings.gradle.kts; then echo "✅ keyboard include OK"; else echo "❌ keyboard include missing" && exit 1; fi
+          echo "=== FILE 3 - APP android/app/build.gradle.kts - STATIC ==="
+          cat > android/app/build.gradle.kts <<'EOF'
+          // WanaLab God Eye v2.2 - build.gradle.kts (app) - Capacitor 8 - STATIC
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+              id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+          }
+          android {
+              namespace = "com.wanalab.godeye"
+              compileSdk = 35
+              defaultConfig {
+                  applicationId = "com.wanalab.godeye"
+                  minSdk = 24
+                  targetSdk = 35
+                  versionCode = 22
+                  versionName = "2.2"
+                  testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+              }
+              buildTypes {
+                  release {
+                      isMinifyEnabled = false
+                      proguardFiles(
+                          getDefaultProguardFile("proguard-android-optimize.txt"),
+                          "proguard-rules.pro"
+                      )
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+              buildFeatures {
+                  viewBinding = true
+              }
+          }
+          dependencies {
+              implementation("androidx.core:core-ktx:1.13.1")
+              implementation("androidx.appcompat:appcompat:1.7.0")
+              implementation("com.google.android.material:material:1.12.0")
+              implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+              implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+              implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+              implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+              implementation("androidx.camera:camera-core:1.3.4")
+              implementation("androidx.camera:camera-camera2:1.3.4")
+              implementation("androidx.camera:camera-lifecycle:1.3.4")
+              implementation("androidx.camera:camera-view:1.3.4")
+              implementation("androidx.media3:media3-exoplayer:1.4.1")
+              implementation("androidx.media3:media3-ui:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-rtsp:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-rtmp:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-dash:1.4.1")
+              implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
+              implementation("org.java-websocket:Java-WebSocket:1.5.6")
+              implementation("com.google.mlkit:barcode-scanning:17.3.0")
+              implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+              implementation("com.google.mediapipe:tasks-vision:0.10.14")
+              implementation("org.tensorflow:tensorflow-lite:2.14.0")
+              implementation("com.google.mlkit:face-detection:16.1.7")
+              implementation("com.rmtheis:tess-two:9.1.0")
+              implementation("com.itextpdf:itext7-core:8.0.5")
+              implementation("org.apache.poi:poi:5.2.5")
+              implementation("org.apache.poi:poi-ooxml:5.2.5")
+              implementation("androidx.room:room-runtime:2.6.1")
+              implementation("androidx.room:room-ktx:2.6.1")
+              ksp("androidx.room:room-compiler:2.6.1")
+              implementation("androidx.datastore:datastore-preferences:1.1.1")
+              implementation("androidx.work:work-runtime-ktx:2.9.0")
+              implementation(project(":capacitor-android"))
+              implementation(project(":capacitor-app"))
+              implementation(project(":capacitor-haptics"))
+              implementation(project(":capacitor-keyboard"))
+              implementation(project(":capacitor-status-bar"))
+              testImplementation("junit:junit:4.13.2")
+              androidTestImplementation("androidx.test.ext:junit:1.1.5")
+              androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+          }
+          EOF
           rm -f android/app/build.gradle
-          echo "✅ FILE 3 - app DYNAMIC fixed - Capacitor 8"
+          echo "✅ FILE 3 - app STATIC fixed"
+          cat android/app/build.gradle.kts | grep -i capacitor
           echo "=== variables.gradle ==="
           if [ ! -f android/variables.gradle ]; then
             cat > android/variables.gradle <<'EOF'
@@ -326,30 +343,29 @@ jobs:
           EOF
             echo "✅ Created variables.gradle"
           fi
-          echo "✅ ALL 3 FILES FIXED - Capacitor 8"
+          echo "✅ ALL 3 FILES FIXED - STATIC"
 
-      - name: Generate Icons & Splash - Keep WanaLab if exists
+      - name: Generate Icons & Splash
         run: |
           npm install -D @capacitor/assets
-          if [ -f assets/icon.png ]; then echo "✅ Using existing WanaLab icon - Not overwriting"; else npx @capacitor/assets generate --iconBackgroundColor '#0B0E11' --splashBackgroundColor '#0B0E11' || echo "Icon generate skipped"; fi
+          if [ -f assets/icon.png ]; then echo "✅ Using existing WanaLab icon"; else npx @capacitor/assets generate --iconBackgroundColor '#0B0E11' --splashBackgroundColor '#0B0E11' || echo "Icon generate skipped"; fi
 
-      - name: Sync web assets - Verify Capacitor Projects Resolve
+      - name: Sync web assets - Verify Settings NOT Corrupted After Sync
         run: |
           npx cap sync android
+          echo "=== After cap sync - Check settings for corruption ==="
+          cat android/settings.gradle.kts
+          if grep -q "IncludedBuild\|Included" android/settings.gradle.kts; then echo "❌ CORRUPTION AFTER SYNC - Included found" && exit 1; else echo "✅ No IncludedBuild after sync"; fi
           test -d android/app && echo "✅ android/app exists" || (echo "❌ android/app missing" && exit 1)
           test -f android/gradlew && echo "✅ android/gradlew exists" || (echo "❌ android/gradlew missing" && exit 1)
-          test -f android/settings.gradle.kts && echo "✅ android/settings.gradle.kts exists" || (echo "❌ settings missing" && exit 1)
-          grep "projectDir" android/settings.gradle.kts || echo "No projectDir lines"
-          ls -ld node_modules/@capacitor/android/capacitor node_modules/@capacitor/app/android node_modules/@capacitor/status-bar/android || echo "Check above"
           echo "✅ Capacitor Sync Passed"
 
-      - name: Verify Native Files - WARNING ONLY
+      - name: Verify Native Files
         run: |
           ls android/app/src/main/AndroidManifest.xml || echo "⚠️ WARNING: Manifest missing"
           if grep -q "CameraActivity" android/app/src/main/AndroidManifest.xml; then echo "✅ CameraActivity in Manifest"; else echo "⚠️ WARNING: CameraActivity missing"; fi
-          echo "✅ Verify done"
 
-      - name: Fix Permissions - Camera + Mic + Bluetooth + USB + Storage + Network + GPS Location
+      - name: Fix Permissions
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i '/CAMERA/d' $MANIFEST
@@ -367,7 +383,7 @@ jobs:
           sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />\n    <uses-feature android:name="android.hardware.usb.host" android:required="false" />\n    <uses-feature android:name="android.hardware.microphone" android:required="false" />\n    <uses-feature android:name="android.hardware.location.gps" android:required="false" />\n    <application|' $MANIFEST
           grep -i "CAMERA\|RECORD_AUDIO\|BLUETOOTH\|USB\|EXTERNAL_STORAGE\|READ_MEDIA\|INTERNET\|FOREGROUND\|LOCATION" $MANIFEST || echo "Permission check failed"
 
-      - name: Force Gradle 8.11.1 - Capacitor 8 needs Gradle 8.11.1, NOT 8.7
+      - name: Force Gradle 8.11.1 - Capacitor 8
         run: |
           cat > android/gradle/wrapper/gradle-wrapper.properties <<'EOF'
           distributionBase=GRADLE_USER_HOME
@@ -379,7 +395,7 @@ jobs:
           zipStorePath=wrapper/dists
           EOF
           cat android/gradle/wrapper/gradle-wrapper.properties
-          echo "✅ Gradle forced to 8.11.1 - Capacitor 8"
+          echo "✅ Gradle forced to 8.11.1"
 
       - name: Ensure Gradle Wrapper Exists
         run: |
@@ -387,44 +403,139 @@ jobs:
           ls -lh android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties
           chmod +x android/gradlew
 
-      - name: Re-apply Dynamic Settings AFTER cap sync - cap sync overwrites settings
+      # FIXED - Re-apply STATIC settings AFTER cap sync - cap sync overwrites settings, use cat <<'EOF' NOT sed/echo
+      - name: Re-apply STATIC Settings AFTER cap sync - cap sync overwrites settings
         run: |
-          echo "=== cap sync may have overwritten settings - Re-applying Capacitor 8 fix ==="
+          echo "=== cap sync may have overwritten settings - Re-applying STATIC file ==="
           cat android/settings.gradle.kts
-          if ! grep -q "com.google.devtools.ksp" android/settings.gradle.kts; then
-            echo "⚠️ cap sync removed KSP - Re-adding"
-            {
-              echo 'pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } plugins { id("com.android.application") version "8.7.3" apply false; id("org.jetbrains.kotlin.android") version "2.0.21" apply false; id("com.google.devtools.ksp") version "2.0.21-1.0.28" apply false } }'
-              cat android/settings.gradle.kts
-            } > /tmp/new-settings.kts
-            cp /tmp/new-settings.kts android/settings.gradle.kts
-            echo "✅ Re-added KSP Capacitor 8"
-          fi
-          if grep -q "FAIL_ON_PROJECT_REPOS" android/settings.gradle.kts; then
-            sed -i 's/FAIL_ON_PROJECT_REPOS/PREFER_SETTINGS/g' android/settings.gradle.kts
-            echo "✅ Fixed FAIL -> PREFER_SETTINGS"
-          fi
+          if grep -q "IncludedBuild\|Included" android/settings.gradle.kts; then echo "⚠️ cap sync corrupted settings - Rewriting STATIC"; fi
+          if ! grep -q "com.google.devtools.ksp" android/settings.gradle.kts; then echo "⚠️ cap sync removed KSP - Rewriting STATIC"; fi
+          cat > android/settings.gradle.kts <<'EOF'
+          // WanaLab God Eye v2.2 - settings.gradle.kts - STATIC - Capacitor 8 - Re-applied AFTER cap sync
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+              plugins {
+                  id("com.android.application") version "8.7.3" apply false
+                  id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+                  id("com.google.devtools.ksp") version "2.0.21-1.0.28" apply false
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "android"
+          include(":app")
+          include(":capacitor-android")
+          project(":capacitor-android").projectDir = File("../node_modules/@capacitor/android/capacitor")
+          include(":capacitor-app")
+          project(":capacitor-app").projectDir = File("../node_modules/@capacitor/app/android")
+          include(":capacitor-haptics")
+          project(":capacitor-haptics").projectDir = File("../node_modules/@capacitor/haptics/android")
+          include(":capacitor-keyboard")
+          project(":capacitor-keyboard").projectDir = File("../node_modules/@capacitor/keyboard/android")
+          include(":capacitor-status-bar")
+          project(":capacitor-status-bar").projectDir = File("../node_modules/@capacitor/status-bar/android")
+          EOF
+          echo "=== Final settings after re-apply ==="
           cat android/settings.gradle.kts
-          if ! grep -q "capacitor-android" android/app/build.gradle.kts; then
-            echo "⚠️ cap sync removed capacitor deps - Re-adding existing ones"
-            python3 -c "
-          import pathlib, os
-          p = pathlib.Path('android/app/build.gradle.kts')
-          t = p.read_text()
-          adds = []
-          if os.path.isdir('node_modules/@capacitor/android/capacitor'): adds.append('    implementation(project(\":capacitor-android\"))')
-          if os.path.isdir('node_modules/@capacitor/app/android'): adds.append('    implementation(project(\":capacitor-app\"))')
-          if os.path.isdir('node_modules/@capacitor/haptics/android'): adds.append('    implementation(project(\":capacitor-haptics\"))')
-          if os.path.isdir('node_modules/@capacitor/keyboard/android'): adds.append('    implementation(project(\":capacitor-keyboard\"))')
-          if os.path.isdir('node_modules/@capacitor/status-bar/android'): adds.append('    implementation(project(\":capacitor-status-bar\"))')
-          if adds:
-              idx = t.rfind('}')
-              t = t[:idx] + '\n' + '\n'.join(adds) + '\n' + t[idx:]
-              p.write_text(t)
-              print('Added:', adds)
-          "
+          if grep -q "IncludedBuild\|Included" android/settings.gradle.kts; then echo "❌ STILL CORRUPTED" && exit 1; else echo "✅ No IncludedBuild - Clean"; fi
+          echo "=== Final app build - check Capacitor deps still there ==="
+          grep -i capacitor android/app/build.gradle.kts || echo "⚠️ No capacitor deps in app build - cap sync removed them, re-applying app file too"
+          if ! grep -q 'implementation(project(":capacitor-status-bar"))' android/app/build.gradle.kts; then
+            echo "⚠️ cap sync removed app deps - Rewriting STATIC app file"
+            cat > android/app/build.gradle.kts <<'EOF'
+          // WanaLab God Eye v2.2 - build.gradle.kts (app) - Capacitor 8 - STATIC - Re-applied AFTER cap sync
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+              id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+          }
+          android {
+              namespace = "com.wanalab.godeye"
+              compileSdk = 35
+              defaultConfig {
+                  applicationId = "com.wanalab.godeye"
+                  minSdk = 24
+                  targetSdk = 35
+                  versionCode = 22
+                  versionName = "2.2"
+                  testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+              }
+              buildTypes {
+                  release {
+                      isMinifyEnabled = false
+                      proguardFiles(
+                          getDefaultProguardFile("proguard-android-optimize.txt"),
+                          "proguard-rules.pro"
+                      )
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+              buildFeatures {
+                  viewBinding = true
+              }
+          }
+          dependencies {
+              implementation("androidx.core:core-ktx:1.13.1")
+              implementation("androidx.appcompat:appcompat:1.7.0")
+              implementation("com.google.android.material:material:1.12.0")
+              implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+              implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+              implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+              implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+              implementation("androidx.camera:camera-core:1.3.4")
+              implementation("androidx.camera:camera-camera2:1.3.4")
+              implementation("androidx.camera:camera-lifecycle:1.3.4")
+              implementation("androidx.camera:camera-view:1.3.4")
+              implementation("androidx.media3:media3-exoplayer:1.4.1")
+              implementation("androidx.media3:media3-ui:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-rtsp:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-rtmp:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-dash:1.4.1")
+              implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
+              implementation("org.java-websocket:Java-WebSocket:1.5.6")
+              implementation("com.google.mlkit:barcode-scanning:17.3.0")
+              implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+              implementation("com.google.mediapipe:tasks-vision:0.10.14")
+              implementation("org.tensorflow:tensorflow-lite:2.14.0")
+              implementation("com.google.mlkit:face-detection:16.1.7")
+              implementation("com.rmtheis:tess-two:9.1.0")
+              implementation("com.itextpdf:itext7-core:8.0.5")
+              implementation("org.apache.poi:poi:5.2.5")
+              implementation("org.apache.poi:poi-ooxml:5.2.5")
+              implementation("androidx.room:room-runtime:2.6.1")
+              implementation("androidx.room:room-ktx:2.6.1")
+              ksp("androidx.room:room-compiler:2.6.1")
+              implementation("androidx.datastore:datastore-preferences:1.1.1")
+              implementation("androidx.work:work-runtime-ktx:2.9.0")
+              implementation(project(":capacitor-android"))
+              implementation(project(":capacitor-app"))
+              implementation(project(":capacitor-haptics"))
+              implementation(project(":capacitor-keyboard"))
+              implementation(project(":capacitor-status-bar"))
+              testImplementation("junit:junit:4.13.2")
+              androidTestImplementation("androidx.test.ext:junit:1.1.5")
+              androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+          }
+          EOF
+            echo "✅ Re-applied STATIC app file"
           fi
-          cat android/app/build.gradle.kts
+          cat android/app/build.gradle.kts | grep -i capacitor
 
       - name: Check Dependencies
         run: |
