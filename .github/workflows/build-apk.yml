@@ -122,7 +122,6 @@ jobs:
           if grep -q "2.0.21" android/build.gradle && grep -q "2.0.21" android/settings.gradle.kts && grep -q "2.0.21" android/app/build.gradle.kts; then echo "✅ Kotlin/KSP 2.0.21 consistent"; else echo "❌ FAIL: Kotlin/KSP mismatch" && exit 1; fi
           echo "✅ Versions consistent"
 
-      # FIXED - Keep /tmp Gradle until end, use --no-daemon, stop daemon before help
       - name: Fix Wrapper Path - ROOT to android + Generate jar if missing
         run: |
           echo "=== Search wrapper ==="
@@ -167,34 +166,72 @@ jobs:
           if ! grep -q "com.google.devtools.ksp" android/settings.gradle.kts; then echo "⚠️ cap sync removed KSP" && exit 1; fi
           echo "✅ Settings still valid after sync"
 
-      # NEW FIX 1 - AndroidX must be in android/gradle.properties, AFTER cap sync
-      - name: Fix AndroidX - android/gradle.properties
+      - name: FIX - AndroidX + Media3 1.4.1 -> 1.3.1 - AFTER SYNC
         run: |
+          echo "=== BEFORE ==="
+          cat android/gradle.properties || echo "no gradle.properties"
+          echo "--- app/build.gradle.kts media3 lines ---"
+          grep -n "media3" android/app/build.gradle.kts || echo "no media3 in app/build.gradle.kts"
+          grep -rn "media3" android/app/build.gradle* || true
+
+          # 1. AndroidX - MUST be in android/gradle.properties, not root
           touch android/gradle.properties
           grep -q "android.useAndroidX=true" android/gradle.properties || echo "android.useAndroidX=true" >> android/gradle.properties
           grep -q "android.enableJetifier=true" android/gradle.properties || echo "android.enableJetifier=true" >> android/gradle.properties
           grep -q "org.gradle.jvmargs" android/gradle.properties || echo "org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8" >> android/gradle.properties
-          # Remove wrong root copy if it confuses build
-          rm -f gradle.properties || true
+
+          # 2. Media3 FIX - Python, NOT sed. Sed failed before because of escaping / pattern.
+          # This replaces ALL 1.4.1 -> 1.3.1 in the app file, covers rtmp + hls + dash
+          python3 -c "
+          import pathlib, re
+          for p in [pathlib.Path('android/app/build.gradle.kts'), pathlib.Path('android/app/build.gradle')]:
+              if not p.exists():
+                  continue
+              t = p.read_text()
+              t2 = t.replace('1.4.1', '1.3.1')
+              # Also fix if version is defined as variable: media3Version = \"1.4.1\"
+              t2 = re.sub(r'(media3[^=]*=\s*[\"\\'])1\.4\.1', r'\g<1>1.3.1', t2)
+              p.write_text(t2)
+              print(f'Fixed {p}')
+          "
+
+          # 3. If still no media3 lines, force-add the 3 correct ones
+          if ! grep -q "media3-exoplayer-rtmp:1.3.1" android/app/build.gradle.kts; then
+            echo "⚠️ rtmp 1.3.1 still missing - appending correct deps"
+            python3 -c "
+          import pathlib
+          p = pathlib.Path('android/app/build.gradle.kts')
+          t = p.read_text()
+          # Remove any remaining 1.4.1 media3 lines
+          lines = [l for l in t.splitlines() if 'media3' not in l or '1.4.1' not in l]
+          t = '\n'.join(lines)
+          # Insert before last closing brace of dependencies block, or just append
+          t += '\n// Fixed by CI - Media3 1.3.1\n'
+          # We append inside dependencies if possible - simplest: add at end, Gradle will still pick it if inside dependencies is needed, so insert before final }
+          # Instead, ensure they are inside dependencies block:
+          if 'media3-exoplayer-rtmp' not in t:
+              t = t.replace('dependencies {', 'dependencies {\n    implementation(\"androidx.media3:media3-exoplayer-rtmp:1.3.1\")\n    implementation(\"androidx.media3:media3-exoplayer-hls:1.3.1\")\n    implementation(\"androidx.media3:media3-exoplayer-dash:1.3.1\")', 1)
+          p.write_text(t)
+          print('Appended media3 1.3.1')
+          "
+          fi
+
+          echo "=== AFTER ==="
           cat android/gradle.properties
-          echo "✅ AndroidX fixed"
+          grep -n "media3" android/app/build.gradle.kts
 
-      # NEW FIX 2 - media3-exoplayer-rtmp:1.4.1 DOES NOT EXIST - RTMP removed in 1.4.0, force 1.3.1
-      - name: Fix Media3 RTMP - Force 1.3.1
-        run: |
-          echo "=== Before ==="
-          grep -r "media3" android/app/build.gradle.kts android/app/build.gradle android/build.gradle 2>/dev/null || echo "No media3 in app files"
-          # Fix all 1.4.x media3 to 1.3.1 in every gradle file
-          find android -name "*.gradle" -o -name "*.gradle.kts" | xargs sed -i 's/media3[^:]*:1\.4\.[0-9]/media3:1.3.1/g' || true
-          find android -name "*.gradle" -o -name "*.gradle.kts" | xargs sed -i 's/:1\.4\.1/:1.3.1/g' || true
-          find android -name "*.gradle" -o -name "*.gradle.kts" | xargs sed -i 's/media3Version.*=.*1\.4.*/media3Version = "1.3.1"/g' || true
-          find android -name "*.gradle" -o -name "*.gradle.kts" | xargs sed -i 's/1\.4\.1/1.3.1/g' || true
-          echo "=== After ==="
-          grep -r "media3" android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || echo "No media3 left"
-          if grep -r "media3.*1\.4\.1" android/ --include="*.gradle" --include="*.kts" 2>/dev/null; then echo "❌ Still 1.4.1 found" && exit 1; fi
-          echo "✅ Media3 forced to 1.3.1 - RTMP exists in 1.3.1"
+          # 4. FINAL VERIFY - Must fail if any 1.4.1 remains in media3
+          if grep -q "media3.*1\.4\.1" android/app/build.gradle.kts; then
+            echo "❌ FAIL: Still found media3 1.4.1"
+            grep -n "media3" android/app/build.gradle.kts
+            exit 1
+          fi
+          grep -q "media3-exoplayer-rtmp:1.3.1" android/app/build.gradle.kts || (echo "❌ FAIL: rtmp 1.3.1 missing" && exit 1)
+          grep -q "media3-exoplayer-hls:1.3.1" android/app/build.gradle.kts || (echo "❌ FAIL: hls 1.3.1 missing" && exit 1)
+          grep -q "media3-exoplayer-dash:1.3.1" android/app/build.gradle.kts || (echo "❌ FAIL: dash 1.3.1 missing" && exit 1)
+          grep -q "android.useAndroidX=true" android/gradle.properties || (echo "❌ FAIL: useAndroidX missing" && exit 1)
+          echo "✅ AndroidX + Media3 1.3.1 FIXED"
 
-      # FIXED - Stop daemon, clear stale wrapper cache, use --no-daemon
       - name: Gradle Help - Validate Gradle can configure project
         run: |
           chmod +x android/gradlew
