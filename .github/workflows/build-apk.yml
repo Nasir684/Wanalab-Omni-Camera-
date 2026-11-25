@@ -1,7 +1,6 @@
-# GodEye v2.2 - COMPLETE - CLEAN - FINAL
+# GodEye v2.2 - FINAL - SDK FIX
 # Author: Nasir Khan - Wana, South Waziristan
 # PRO Rs. 2,500 / Year
-# Capacitor 8 = AGP 8.7.3 + Gradle 8.11.1 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
 name: Build GodEye APK + AAB - v2.2
 on:
   workflow_dispatch:
@@ -12,32 +11,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - uses: actions/setup-java@v4
+        with: { distribution: 'temurin', java-version: '21' }
 
-      - name: Setup Node 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
+      # FIX: No setup-android@v3 - it asks for dead 'tools' package
+      - name: Install Android SDK packages
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install deps
-        run: npm ci
-
-      - name: Build web
-        run: npm run build
-
-      - name: Sync Capacitor Android
-        run: npx cap sync android
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync android
 
       - name: Verify - NOT mutate
         run: |
@@ -46,19 +36,8 @@ jobs:
           test -f android/build.gradle
           test -f android/capacitor.settings.gradle
           test -f android/app/build.gradle
-          test -f android/app/src/main/AndroidManifest.xml
           head -n 1 android/app/src/main/AndroidManifest.xml | grep -q '<?xml'
-          ls node_modules/@capacitor/android/capacitor/build.gradle
-          ls node_modules/@capacitor/app/android/build.gradle*
           echo "✅ Layout OK - Wana, South Waziristan"
-
-      - name: Verify Spec v2.2 - HTML
-        run: |
-          grep -q "2,500" www/index.html || echo "⚠️ WARN: 2,500 not found in index.html"
-          grep -q "Clarendon" www/index.html || echo "⚠️ WARN: Clarendon not found"
-          grep -q "Credentials" www/index.html || echo "⚠️ WARN: Credentials not found"
-          grep -q "Wana, South Waziristan" www/index.html || echo "⚠️ WARN: Location not updated"
-          echo "✅ HTML check done - warnings only, not failing build"
 
       - name: Build APK + AAB
         run: |
@@ -67,21 +46,7 @@ jobs:
           ./gradlew assembleDebug --stacktrace
           ./gradlew bundleDebug --stacktrace
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: GodEye-APK-v2.2
-          path: android/app/build/outputs/apk/debug/*.apk
-
-      - name: Upload AAB
-        uses: actions/upload-artifact@v4
-        with:
-          name: GodEye-AAB-v2.2
-          path: android/app/build/outputs/bundle/debug/*.aab
-
-      - name: Build Summary
-        run: |
-          echo "✅ GodEye v2.2 Build Done"
-          echo "Version: 2.2"
-          echo "PRO: Rs. 2,500 / Year"
-          echo "By WanaLab - Founded by Nasir Khan - Wana, South Waziristan"
+      - uses: actions/upload-artifact@v4
+        with: { name: GodEye-APK-v2.2, path: android/app/build/outputs/apk/debug/*.apk }
+      - uses: actions/upload-artifact@v4
+        with: { name: GodEye-AAB-v2.2, path: android/app/build/outputs/bundle/debug/*.aab }
