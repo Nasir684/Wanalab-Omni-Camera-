@@ -139,10 +139,19 @@ jobs:
       - name: Install deps
         run: npm install
 
-      - name: Create Android project
+      # FIXED v2.2 - DO NOT DELETE android/ - This was deleting all 50+ files
+      - name: Create Android project - DO NOT DELETE if exists
         run: |
-          if [ -d android ]; then rm -rf android; fi
-          npx cap add android
+          if [ ! -d android ]; then
+            echo "android/ NOT FOUND - Creating fresh Capacitor Android project"
+            npx cap add android
+          else
+            echo "✅ android/ EXISTS - KEEPING your 50+ files - NOT deleting"
+            echo "--- Manifest ---"
+            ls -lh android/app/src/main/AndroidManifest.xml || echo "Manifest MISSING"
+            echo "--- Native Kotlin files ---"
+            find android/app/src/main/java -name "*.kt" | head -n 50 || echo "No Kotlin files found"
+          fi
 
       - name: Generate Icons & Splash - Keep WanaLab if exists
         run: |
@@ -151,6 +160,17 @@ jobs:
 
       - name: Sync web assets
         run: npx cap sync android
+
+      # NEW - Verify native files survived sync - FAIL if deleted
+      - name: Verify Native Files Survived - FAIL if deleted
+        run: |
+          echo "Checking native files survived..."
+          ls android/app/src/main/AndroidManifest.xml || (echo "❌ FAIL: Manifest deleted" && exit 1)
+          grep -q "CameraActivity" android/app/src/main/AndroidManifest.xml || (echo "❌ FAIL: CameraActivity missing from Manifest - android/ was deleted" && exit 1)
+          grep -q "FaceEnrollActivity" android/app/src/main/AndroidManifest.xml || (echo "❌ FAIL: FaceEnrollActivity missing from Manifest" && exit 1)
+          find android/app/src/main/java -name "CameraActivity.kt" | grep -q "CameraActivity" || (echo "❌ FAIL: CameraActivity.kt missing - android/ was deleted" && exit 1)
+          find android/app/src/main/java -name "FaceEngine.kt" | grep -q "FaceEngine" || (echo "⚠️ FaceEngine.kt not found - Check path, continuing" )
+          echo "✅ Native files survived - Manifest + Activities OK"
 
       # v19 + v23: ALL PERMISSIONS - Internal + External + GPS Location
       - name: Fix Permissions - Camera + Mic + Bluetooth + USB + Storage + Network + GPS Location
