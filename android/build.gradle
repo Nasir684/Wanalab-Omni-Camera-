@@ -1,18 +1,31 @@
-// WanaLab God Eye v2.2 - build.gradle (ROOT) - Capacitor 8 - COMMITTED - CI does NOT rewrite this
-// Single source of truth: AGP 8.7.3 + Kotlin 2.0.21 + Gradle 8.11.1
+// WanaLab GodEye v2.2 - Top-level build file
+// Author: Nasir Khan - Wana, South Waziristan - 2026-11-23
+// PRO Rs. 2,500 / Year
+// Capacitor 8 = AGP 8.7.3 + Gradle 8.11.1 + Kotlin 2.0.21
+// DO NOT convert to .kts - Capacitor 8 is Groovy-first
+// This file is COMMITTED - NOT generated in CI
+
 buildscript {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.3'
-        classpath 'com.google.gms:google-services:4.4.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21"
-    }
+  repositories {
+    google()
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:8.7.3'
+    classpath 'com.google.gms:google-services:4.4.2'
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21'
+  }
 }
-// NO allprojects block - Repositories ONLY in settings.gradle.kts
+
+apply from: "variables.gradle"
+
+allprojects {
+  repositories {
+    google()
+    mavenCentral()
+  }
+}
+
 task clean(type: Delete) {
-    delete rootProject.buildDir
+  delete rootProject.buildDir
 }
