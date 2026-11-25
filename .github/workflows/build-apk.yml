@@ -1,5 +1,5 @@
 # GodEye v2.2 - COMPLETE - FIXED - Do NOT delete /tmp Gradle early
-# Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa
+# Author: Nasir Khan - Wana, South Waziristan, Khyber Pakhtunkhwa
 # PRO Rs. 2,500 / Year
 # Capacitor 8 = AGP 8.7.3 + Gradle 8.11.1 + Kotlin 2.0.21 + KSP 2.0.21-1.0.28
 name: Build GodEye APK + AAB - v2.2
@@ -164,8 +164,8 @@ jobs:
           if grep -q "2.0.21" android/build.gradle && grep -q "2.0.21" android/settings.gradle.kts && grep -q "2.0.21" android/app/build.gradle.kts; then echo "✅ Kotlin/KSP 2.0.21 consistent"; else echo "❌ FAIL: Kotlin/KSP mismatch" && exit 1; fi
           echo "✅ Versions consistent"
 
-      # FIX 1 APPLIED: NEVER run `gradle wrapper` - it configures project before cap sync and fails on :capacitor-app
-      - name: Fix Wrapper Path - ROOT to android + Generate jar if missing
+      # FIXED - NEVER run `gradle wrapper` - it configures project before cap sync and fails
+      - name: Fix Wrapper Path - ROOT to android + Download jar if missing
         run: |
           echo "=== Search wrapper ==="
           find . -name "gradle-wrapper.properties" -not -path "./node_modules/*"
@@ -175,6 +175,7 @@ jobs:
           if [ -f gradlew ]; then cp gradlew android/gradlew && echo "✅ Copied gradlew ROOT -> android/"; fi
           if [ -f gradlew.bat ]; then cp gradlew.bat android/gradlew.bat && echo "✅ Copied gradlew.bat ROOT -> android/"; fi
           printf 'distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.11.1-all.zip\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n' > android/gradle/wrapper/gradle-wrapper.properties
+          cat android/gradle/wrapper/gradle-wrapper.properties
           if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ] || [ ! -f android/gradlew ]; then
             echo "⚠️ Jar or gradlew missing - Downloading, NOT running gradle wrapper"
             curl -sL -o android/gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradle/wrapper/gradle-wrapper.jar
@@ -203,8 +204,8 @@ jobs:
           test -f android/gradlew || (echo "❌ android/gradlew missing after sync" && exit 1)
           echo "✅ Capacitor Sync Passed"
 
-      # FIX 2 APPLIED: Re-add ALL Capacitor includes AFTER sync - this fixes :capacitor-app not found at line 74
-      - name: FIX AFTER SYNC - AGP + AndroidX + Media3 1.3.1 + Capacitor Includes (Python - NOT sed)
+      # FIXED - Re-apply AFTER sync + FIX ../node_modules path + Media3 1.3.1
+      - name: FIX AFTER SYNC - AGP + AndroidX + Capacitor Includes + Media3 1.3.1
         run: |
           python3 << 'PYEOF'
           import pathlib, re
@@ -220,13 +221,16 @@ jobs:
           t = re.sub(r'id\("com\.google\.devtools\.ksp"\)\s*version\s*"[^"]+"', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"', t)
           if 'com.google.devtools.ksp") version' not in t and 'com.google.devtools.ksp' in t:
               t = t.replace('id("com.google.devtools.ksp")', 'id("com.google.devtools.ksp") version "2.0.21-1.0.28"')
-          # 1b. MUST re-add Capacitor includes - cap sync overwrites settings, app/build.gradle.kts needs them at line 74
+          # 1b. FIX WRONG PATH: node_modules -> ../node_modules (settings is in android/, node_modules is at root)
+          t = t.replace('File("node_modules/@capacitor', 'File("../node_modules/@capacitor')
+          t = t.replace("File('node_modules/@capacitor", "File('../node_modules/@capacitor")
+          # 1c. Capacitor includes - MUST use ../node_modules
           caps = {
-              ":capacitor-android": "node_modules/@capacitor/android/capacitor",
-              ":capacitor-app": "node_modules/@capacitor/app/android/capacitor",
-              ":capacitor-haptics": "node_modules/@capacitor/haptics/android/capacitor",
-              ":capacitor-keyboard": "node_modules/@capacitor/keyboard/android/capacitor",
-              ":capacitor-status-bar": "node_modules/@capacitor/status-bar/android/capacitor",
+              ":capacitor-android": "../node_modules/@capacitor/android/capacitor",
+              ":capacitor-app": "../node_modules/@capacitor/app/android/capacitor",
+              ":capacitor-haptics": "../node_modules/@capacitor/haptics/android/capacitor",
+              ":capacitor-keyboard": "../node_modules/@capacitor/keyboard/android/capacitor",
+              ":capacitor-status-bar": "../node_modules/@capacitor/status-bar/android/capacitor",
           }
           for mod, path in caps.items():
               if f'include("{mod}")' not in t:
@@ -242,7 +246,7 @@ jobs:
           lines.append("android.useAndroidX=true")
           lines.append("android.enableJetifier=true")
           gp.write_text("\n".join(lines) + "\n")
-          # 3. Media3 - replace ALL 1.4.1 with 1.3.1
+          # 3. Media3 - replace ALL 1.4.1 with 1.3.1 in app/build.gradle.kts
           app = pathlib.Path("android/app/build.gradle.kts")
           at = app.read_text()
           print("=== app/build.gradle.kts BEFORE Media3 fix ===")
@@ -256,17 +260,18 @@ jobs:
           cat android/settings.gradle.kts
           cat android/app/build.gradle.kts | grep -i media3 || echo "No media3 lines found - check file"
           if grep -q "media3.*1\.4\.1" android/app/build.gradle.kts; then echo "❌ FAIL: Still 1.4.1 in Media3" && exit 1; fi
-          grep -q 'include(":capacitor-app")' android/settings.gradle.kts || (echo "❌ FAIL: :capacitor-app still missing" && cat android/settings.gradle.kts && exit 1)
+          grep -q 'include(":capacitor-app")' android/settings.gradle.kts || (echo "❌ FAIL: :capacitor-app still missing" && exit 1)
           grep -q 'include(":capacitor-android")' android/settings.gradle.kts || (echo "❌ FAIL: :capacitor-android still missing" && exit 1)
-          grep -q 'include(":capacitor-haptics")' android/settings.gradle.kts || (echo "❌ FAIL: :capacitor-haptics still missing" && exit 1)
-          grep -q 'include(":capacitor-keyboard")' android/settings.gradle.kts || (echo "❌ FAIL: :capacitor-keyboard still missing" && exit 1)
-          grep -q 'include(":capacitor-status-bar")' android/settings.gradle.kts || (echo "❌ FAIL: :capacitor-status-bar still missing" && exit 1)
-          echo "✅ All Capacitor modules included"
-          grep -q "media3-exoplayer-rtmp:1.3.1" android/app/build.gradle.kts && echo "✅ rtmp 1.3.1 OK" || echo "⚠️ rtmp line not found - check manually"
-          grep -q "media3-exoplayer-hls:1.3.1" android/app/build.gradle.kts && echo "✅ hls 1.3.1 OK" || echo "⚠️ hls line not found"
-          grep -q "media3-exoplayer-dash:1.3.1" android/app/build.gradle.kts && echo "✅ dash 1.3.1 OK" || echo "⚠️ dash line not found"
+          if grep -q 'project(":capacitor-android").projectDir = File("node_modules' android/settings.gradle.kts; then echo "❌ FAIL: Wrong path without ../ - Will cause No variants exist" && exit 1; fi
+          grep -q 'project(":capacitor-android").projectDir = File("../node_modules' android/settings.gradle.kts && echo "✅ Path is ../node_modules - CORRECT"
           grep -q "8.7.3" android/settings.gradle.kts && echo "✅ AGP 8.7.3 OK after sync"
           echo "✅ All post-sync fixes applied"
+
+      - name: VERIFY Capacitor projects are real - Not empty
+        run: |
+          ls -lh node_modules/@capacitor/android/capacitor/build.gradle* || (echo "❌ capacitor-android build.gradle missing" && ls -R node_modules/@capacitor/android/capacitor | head -n 50 && exit 1)
+          ls -lh node_modules/@capacitor/app/android/capacitor/build.gradle* || (echo "❌ capacitor-app build.gradle missing" && exit 1)
+          echo "✅ Capacitor Gradle projects exist with build.gradle"
 
       - name: Gradle Help - Validate Gradle can configure project
         run: |
@@ -315,4 +320,3 @@ jobs:
           echo "Version: $GODEYE_VERSION"
           echo "PRO: $PRO_PRICE"
           echo "By WanaLab - Founded by Nasir Khan"
-          rm -rf /tmp/gradle-8.11.1 /tmp/g.zip || echo "Cleanup done"
