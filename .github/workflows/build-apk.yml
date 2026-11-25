@@ -41,6 +41,10 @@ jobs:
       - name: Restore Android resources if missing
         run: |
           RES=android/app/src/main/res
+          # FIX 1: Delete broken adaptive icon - causes mergeDebugResources Index -1
+          rm -rf $RES/mipmap-anydpi-v26
+          # FIX 2: Delete ALL old corrupt icons - force regenerate
+          rm -rf $RES/mipmap-hdpi $RES/mipmap-mdpi $RES/mipmap-xhdpi $RES/mipmap-xxhdpi $RES/mipmap-xxxhdpi
           mkdir -p $RES/values $RES/xml $RES/mipmap-hdpi $RES/mipmap-mdpi $RES/mipmap-xhdpi $RES/mipmap-xxhdpi $RES/mipmap-xxxhdpi
           if [ ! -f $RES/values/strings.xml ]; then cat > $RES/values/strings.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
@@ -52,24 +56,38 @@ jobs:
           </resources>
           EOF
           echo "✅ Created strings.xml"; fi
-          if [ ! -f $RES/values/styles.xml ]; then cat > $RES/values/styles.xml <<'EOF'
+          cat > $RES/values/colors.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
-              <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-                  <item name="colorPrimary">#000000</item>
-                  <item name="colorPrimaryDark">#000000</item>
-                  <item name="colorAccent">#00E676</item>
-              </style>
-              <style name="AppTheme.NoActionBar">
+              <color name="colorPrimary">#000000</color>
+              <color name="colorPrimaryDark">#000000</color>
+              <color name="colorAccent">#00E676</color>
+          </resources>
+          EOF
+          echo "✅ Created colors.xml - fixes crash"
+          cat > $RES/values/styles.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+                  <item name="colorPrimary">@color/colorPrimary</item>
+                  <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+                  <item name="colorAccent">@color/colorAccent</item>
+                  <item name="android:windowBackground">@color/colorPrimary</item>
                   <item name="windowActionBar">false</item>
                   <item name="windowNoTitle">true</item>
               </style>
-              <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
-                  <item name="android:background">#000000</item>
+              <style name="AppTheme.NoActionBar" parent="AppTheme">
+                  <item name="windowActionBar">false</item>
+                  <item name="windowNoTitle">true</item>
+              </style>
+              <style name="AppTheme.NoActionBarLaunch" parent="AppTheme">
+                  <item name="android:background">@color/colorPrimary</item>
+                  <item name="windowActionBar">false</item>
+                  <item name="windowNoTitle">true</item>
               </style>
           </resources>
           EOF
-          echo "✅ Created styles.xml"; fi
+          echo "✅ Fixed styles.xml - Capacitor 7 NoActionBar - fixes crash"
           if [ ! -f $RES/xml/file_paths.xml ]; then cat > $RES/xml/file_paths.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <paths xmlns:android="http://schemas.android.com/apk/res/android">
@@ -93,8 +111,7 @@ jobs:
           for folder in ['mipmap-hdpi','mipmap-mdpi','mipmap-xhdpi','mipmap-xxhdpi','mipmap-xxxhdpi']:
               for name in ['ic_launcher.png','ic_launcher_round.png']:
                   p = f'android/app/src/main/res/{folder}/{name}'
-                  if not os.path.exists(p):
-                      png(p, 0, 230, 118)
+                  png(p, 0, 230, 118)
           "
           ls -l $RES/values/ $RES/xml/ $RES/mipmap-xxxhdpi/
           echo "✅ All Android resources restored"
