@@ -161,8 +161,6 @@ jobs:
           echo "Checking native files..."
           ls android/app/src/main/AndroidManifest.xml || echo "⚠️ WARNING: Manifest missing"
           if grep -q "CameraActivity" android/app/src/main/AndroidManifest.xml; then echo "✅ CameraActivity in Manifest"; else echo "⚠️ WARNING: CameraActivity missing from Manifest - Commit android/ folder from PC"; fi
-          if grep -q "FaceEnrollActivity" android/app/src/main/AndroidManifest.xml; then echo "✅ FaceEnrollActivity in Manifest"; else echo "⚠️ WARNING: FaceEnrollActivity missing from Manifest"; fi
-          if find android/app/src/main -name "CameraActivity.kt" 2>/dev/null | grep -q "CameraActivity"; then echo "✅ CameraActivity.kt found"; else echo "⚠️ WARNING: CameraActivity.kt not in GitHub yet - Commit android/ folder"; fi
           echo "✅ Verify done - Continuing build (WARNING ONLY)"
 
       # v19 + v23: ALL PERMISSIONS
@@ -191,40 +189,58 @@ jobs:
           sed -i "s/versionName .*/versionName \"$GODEYE_VERSION\"/" $GRADLE || echo "versionName not in gradle - OK, set in Capacitor config"
           grep -i "versionName" $GRADLE || echo "versionName check skipped"
 
-      # FIXED - REGENERATE gradlew IF MISSING - This was the chmod failure
-      - name: Ensure Gradle Wrapper Exists - FIX for chmod gradlew missing
+      # FIXED 25 Nov - Generate wrapper in /tmp, NOT inside android/ - No gradle wrapper command, no curl
+      - name: Ensure Gradle Wrapper Exists - Generate in /tmp and Copy
         run: |
-          echo "Checking android/gradlew..."
-          ls -lh android/gradlew || echo "⚠️ gradlew MISSING - Will regenerate"
-          ls -lh android/gradlew.bat || echo "⚠️ gradlew.bat MISSING"
-          ls -lh android/gradle/wrapper/gradle-wrapper.jar || echo "⚠️ gradle-wrapper.jar MISSING"
-          if [ ! -f android/gradlew ]; then
-            echo "Regenerating Gradle Wrapper from Capacitor template..."
-            # Try 1: Use Capacitor to restore wrapper files from template
-            npx cap sync android || true
-            # Try 2: If still missing, download wrapper from Gradle distribution
-            if [ ! -f android/gradlew ]; then
-              echo "Downloading Gradle Wrapper 8.7..."
-              cd android
-              # Use system gradle if available, else download wrapper scripts
-              if command -v gradle >/dev/null 2>&1; then
-                gradle wrapper --gradle-version 8.7 || true
-              else
-                # Fallback: Create wrapper from official Gradle repo
-                mkdir -p gradle/wrapper
-                curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar || echo "curl jar failed - trying alternative"
-                curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew || echo "curl gradlew failed"
-                curl -L -o gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew.bat || echo "curl gradlew.bat failed"
-                curl -L -o gradle/wrapper/gradle-wrapper.properties https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.properties || true
-              fi
-              cd ..
-            fi
+          echo "=== 1. Check current android/ ==="
+          ls -lh android/gradlew 2>&1 || echo "gradlew MISSING"
+          ls -lh android/settings.gradle 2>&1 || echo "settings.gradle MISSING"
+          ls -lh android/settings.gradle.kts 2>&1 || echo "settings.gradle.kts not used - OK"
+          ls -lh android/gradle/wrapper/gradle-wrapper.jar 2>&1 || echo "gradle-wrapper.jar MISSING"
+          ls -lh android/gradle/wrapper/gradle-wrapper.properties 2>&1 || echo "gradle-wrapper.properties MISSING"
+          echo "=== 2. If any wrapper file missing, generate fresh project in /tmp ==="
+          if [ ! -f android/gradlew ] || [ ! -f android/gradle/wrapper/gradle-wrapper.jar ] || [ ! -f android/settings.gradle ]; then
+            echo "Wrapper incomplete - Generating fresh Capacitor Android in /tmp..."
+            rm -rf /tmp/cap-fix
+            mkdir -p /tmp/cap-fix
+            cd /tmp/cap-fix
+            npm init -y >/dev/null 2>&1 || true
+            # Use SAME Capacitor version as your project
+            CAP_VER=$(node -p "require('$GITHUB_WORKSPACE/package.json').dependencies['@capacitor/cli'] || 'latest'" 2>/dev/null || echo "latest")
+            echo "Capacitor version: $CAP_VER"
+            npm install @capacitor/cli@$CAP_VER @capacitor/core@$CAP_VER @capacitor/android@$CAP_VER --no-audit --no-fund || npm install @capacitor/cli @capacitor/core @capacitor/android --no-audit --no-fund
+            mkdir -p www
+            echo '<html><body>temp</body></html>' > www/index.html
+            npx cap init "GodEyeTemp" "com.wanalab.godeye.temp" --web-dir=www || true
+            npx cap add android || echo "cap add failed in /tmp"
+            echo "--- /tmp files generated ---"
+            ls -lh /tmp/cap-fix/android/gradlew || echo "FAILED to generate gradlew in /tmp"
+            ls -lh /tmp/cap-fix/android/settings.gradle || echo "FAILED to generate settings.gradle in /tmp"
+            ls -lh /tmp/cap-fix/android/gradle/wrapper/ || echo "FAILED to generate wrapper folder in /tmp"
+            cd $GITHUB_WORKSPACE
+            echo "--- Copying ONLY missing wrapper files, NOT overwriting your Manifest / Kotlin ---"
+            cp -n /tmp/cap-fix/android/gradlew android/gradlew || cp /tmp/cap-fix/android/gradlew android/gradlew
+            cp -n /tmp/cap-fix/android/gradlew.bat android/gradlew.bat || cp /tmp/cap-fix/android/gradlew.bat android/gradlew.bat
+            mkdir -p android/gradle/wrapper
+            cp -n /tmp/cap-fix/android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar || cp /tmp/cap-fix/android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar
+            cp -n /tmp/cap-fix/android/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties || cp /tmp/cap-fix/android/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties
+            if [ ! -f android/settings.gradle ]; then echo "settings.gradle missing - copying from /tmp"; cp /tmp/cap-fix/android/settings.gradle android/settings.gradle; fi
+            if [ ! -f android/build.gradle ]; then echo "build.gradle missing - copying from /tmp"; cp /tmp/cap-fix/android/build.gradle android/build.gradle; fi
+            if [ ! -f android/gradle.properties ]; then echo "gradle.properties missing - copying from /tmp"; cp /tmp/cap-fix/android/gradle.properties android/gradle.properties; fi
+            rm -rf /tmp/cap-fix
+          else
+            echo "✅ All wrapper files already exist - No generation needed"
           fi
-          echo "--- Final check ---"
-          ls -lh android/gradlew
-          ls -lh android/gradle/wrapper/ || echo "wrapper folder missing"
+          echo "=== 3. Re-sync to create android/capacitor-android ==="
+          npx cap sync android || echo "cap sync warning - continuing"
+          ls -ld android/capacitor-android || echo "⚠️ capacitor-android still missing after sync - Check package.json has @capacitor/android"
+          echo "=== 4. Final check - MUST exist ==="
+          ls -lh android/gradlew || (echo "❌ STILL MISSING android/gradlew after /tmp generation" && exit 1)
+          ls -lh android/settings.gradle || (echo "❌ STILL MISSING android/settings.gradle" && exit 1)
+          ls -lh android/gradle/wrapper/gradle-wrapper.jar || (echo "❌ STILL MISSING gradle-wrapper.jar" && exit 1)
+          ls -lh android/gradle/wrapper/gradle-wrapper.properties || (echo "❌ STILL MISSING gradle-wrapper.properties" && exit 1)
           chmod +x android/gradlew
-          echo "✅ gradlew ready"
+          echo "✅ gradlew + settings.gradle + wrapper ready"
 
       - name: Build APK - Debug for Testing
         run: |
