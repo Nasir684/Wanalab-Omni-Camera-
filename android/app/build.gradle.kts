@@ -1,26 +1,21 @@
-// WanaLab God Eye v2.2 - build.gradle.kts (app)
-// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
-// PRO Rs. 2,500 / Year
+// WanaLab God Eye v2.2 - build.gradle.kts (app) - COMMITTED - Capacitor 8
+// Single source of truth: KSP 2.0.21-1.0.28 - Must match settings.gradle.kts
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp") version "2.0.0-1.0.24"
+    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
 }
-
 android {
     namespace = "com.wanalab.godeye"
     compileSdk = 35
-
     defaultConfig {
         applicationId = "com.wanalab.godeye"
         minSdk = 24
         targetSdk = 35
         versionCode = 22
         versionName = "2.2"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -41,7 +36,6 @@ android {
         viewBinding = true
     }
 }
-
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
@@ -76,7 +70,6 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
-    // Capacitor - Loads www/index.html
     implementation(project(":capacitor-android"))
     implementation(project(":capacitor-app"))
     implementation(project(":capacitor-haptics"))
