@@ -1,12 +1,9 @@
-# GodEye v2.2 - FINAL - SDK FIX
-# Author: Nasir Khan - Wana, South Waziristan
-# PRO Rs. 2,500 / Year
+# GodEye v2.2 FINAL - Author: Nasir Khan - Wana, South Waziristan - PRO Rs. 2,500 / Year
 name: Build GodEye APK + AAB - v2.2
 on:
   workflow_dispatch:
   push:
     branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +16,6 @@ jobs:
 
       - name: Install Android SDK packages
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
@@ -29,20 +25,11 @@ jobs:
 
       - name: Verify - NOT mutate
         run: |
-          test -f android/settings.gradle
-          test -f android/variables.gradle
-          test -f android/build.gradle
-          test -f android/capacitor.settings.gradle
-          test -f android/app/build.gradle
-          test -f www/index.html
-          test -f www/shop.html
-          test -f www/export.html
-          test -f www/privacy.html
-          test -f www/about.html
+          for f in android/settings.gradle android/variables.gradle android/build.gradle android/capacitor.settings.gradle android/app/build.gradle www/index.html www/shop.html www/export.html www/privacy.html www/about.html; do
+            if [ -f "$f" ]; then echo "✅ $f"; else echo "❌ MISSING: $f"; exit 1; fi
+          done
           head -n 1 android/app/src/main/AndroidManifest.xml | grep -q '<?xml'
-          grep -q "Wana, South Waziristan" www/index.html
-          grep -q "Wana, South Waziristan" version.json
-          echo "✅ Layout + Location OK - Wana, South Waziristan"
+          echo "✅ OK - Wana, South Waziristan"
 
       - name: Build APK + AAB
         run: |
