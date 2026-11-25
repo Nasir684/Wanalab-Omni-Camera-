@@ -1,4 +1,4 @@
-# WanaLab God Eye v2.2 - build-apk.yml - FINAL
+# WanaLab God Eye v2.2 - build-apk.yml - FINAL FIXED - Capacitor Sync Check
 # Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
 # PRO Rs. 2,500 / Year
 name: Build GodEye APK + AAB - v2.2 - Thumb + Effects + Credentials + GPS + Anti-Fake
@@ -145,9 +145,6 @@ jobs:
           if [ -d android/app/src/main/res ]; then cp -r android/app/src/main/res /tmp/godeye-backup/res && echo "✅ Backed up res/"; fi
           if [ -f android/app/build.gradle.kts ]; then cp android/app/build.gradle.kts /tmp/godeye-backup/app-build.gradle.kts && echo "✅ Backed up app/build.gradle.kts"; fi
           if [ -f android/app/build.gradle ]; then cp android/app/build.gradle /tmp/godeye-backup/app-build.gradle && echo "✅ Backed up app/build.gradle"; fi
-          if [ -f android/settings.gradle.kts ]; then cp android/settings.gradle.kts /tmp/godeye-backup/settings.gradle.kts && echo "✅ Backed up settings.gradle.kts"; fi
-          if [ -f android/settings.gradle ]; then cp android/settings.gradle /tmp/godeye-backup/settings.gradle && echo "✅ Backed up settings.gradle"; fi
-          if [ -f android/build.gradle ]; then cp android/build.gradle /tmp/godeye-backup/root-build.gradle && echo "✅ Backed up root build.gradle"; fi
           echo "=== 2. Check if android/ is valid ==="
           NEED_RECREATE=0
           if [ ! -f android/gradlew ]; then echo "❌ gradlew missing -> need recreate"; NEED_RECREATE=1; fi
@@ -160,7 +157,7 @@ jobs:
             rm -rf android
             npx cap add android
             echo "✅ Recreated android/"
-            ls -lh android/gradlew android/settings.gradle android/gradle/wrapper/gradle-wrapper.properties
+            ls -lh android/gradlew android/settings.gradle* android/gradle/wrapper/gradle-wrapper.properties
           else
             echo "✅ android/ looks valid - keeping it, NOT deleting"
           fi
@@ -179,10 +176,10 @@ jobs:
           chmod +x android/gradlew
           echo "✅ Android project is now VALID"
 
-      # FINAL FIX - ALL 3 FILES - ROOT + SETTINGS + APP - KSP FIX
-      - name: Fix All 3 Build Files - ROOT + SETTINGS + APP - KSP Fixed
+      # FINAL FIX - ALL 3 FILES - CORRECTED Capacitor Paths
+      - name: Fix All 3 Build Files - ROOT + SETTINGS + APP - KSP Fixed - Capacitor node_modules Paths
         run: |
-          echo "=== FILE 1 - ROOT android/build.gradle - Overwrite ONLY ROOT ==="
+          echo "=== FILE 1 - ROOT android/build.gradle ==="
           cat > android/build.gradle <<'EOF'
           // WanaLab God Eye v2.2 - build.gradle (ROOT)
           // Capacitor 7 + Gradle 8.7 + AGP 8.5.2 + Kotlin 2.0.0
@@ -208,12 +205,12 @@ jobs:
           }
           EOF
           rm -f android/build.gradle.kts
-          echo "✅ FILE 1 - ROOT build.gradle fixed - Removed conflicting .kts"
-          cat android/build.gradle
-          echo "=== FILE 2 - SETTINGS android/settings.gradle.kts - Overwrite with KSP pluginManagement ==="
+          echo "✅ FILE 1 - ROOT build.gradle fixed"
+          echo "=== FILE 2 - SETTINGS android/settings.gradle.kts - CORRECTED to node_modules ==="
           cat > android/settings.gradle.kts <<'EOF'
           // WanaLab God Eye v2.2 - settings.gradle.kts
           // FIX: KSP plugin not found - pluginManagement + gradlePluginPortal + KSP 2.0.0-1.0.24
+          // FIX: Capacitor paths - Real location is ../node_modules/@capacitor/... NOT android/capacitor-android
           pluginManagement {
               repositories {
                   google()
@@ -236,20 +233,20 @@ jobs:
           rootProject.name = "android"
           include(":app")
           include(":capacitor-android")
-          project(":capacitor-android").projectDir = File("capacitor-android")
+          project(":capacitor-android").projectDir = File("../node_modules/@capacitor/android/capacitor")
           include(":capacitor-app")
-          project(":capacitor-app").projectDir = File("capacitor-android/capacitor-app")
+          project(":capacitor-app").projectDir = File("../node_modules/@capacitor/app/android")
           include(":capacitor-haptics")
-          project(":capacitor-haptics").projectDir = File("capacitor-android/capacitor-haptics")
+          project(":capacitor-haptics").projectDir = File("../node_modules/@capacitor/haptics/android")
           include(":capacitor-keyboard")
-          project(":capacitor-keyboard").projectDir = File("capacitor-android/capacitor-keyboard")
+          project(":capacitor-keyboard").projectDir = File("../node_modules/@capacitor/keyboard/android")
           include(":capacitor-status-bar")
-          project(":capacitor-status-bar").projectDir = File("capacitor-android/capacitor-status-bar")
+          project(":capacitor-status-bar").projectDir = File("../node_modules/@capacitor/status-bar/android")
           EOF
           rm -f android/settings.gradle
-          echo "✅ FILE 2 - settings.gradle.kts fixed - Removed conflicting Groovy settings.gradle"
+          echo "✅ FILE 2 - settings.gradle.kts fixed - node_modules paths"
           cat android/settings.gradle.kts
-          echo "=== FILE 3 - APP android/app/build.gradle.kts - Overwrite with KSP version ==="
+          echo "=== FILE 3 - APP android/app/build.gradle.kts - KSP version ==="
           cat > android/app/build.gradle.kts <<'EOF'
           // WanaLab God Eye v2.2 - build.gradle.kts (app)
           plugins {
@@ -333,8 +330,7 @@ jobs:
           }
           EOF
           rm -f android/app/build.gradle
-          echo "✅ FILE 3 - app/build.gradle.kts fixed - KSP 2.0.0-1.0.24 - Removed conflicting Groovy app build.gradle"
-          head -n 10 android/app/build.gradle.kts
+          echo "✅ FILE 3 - app/build.gradle.kts fixed - KSP 2.0.0-1.0.24"
           echo "=== variables.gradle ==="
           if [ ! -f android/variables.gradle ]; then
             cat > android/variables.gradle <<'EOF'
@@ -367,11 +363,17 @@ jobs:
           npm install -D @capacitor/assets
           if [ -f assets/icon.png ]; then echo "✅ Using existing WanaLab icon - Not overwriting"; else npx @capacitor/assets generate --iconBackgroundColor '#0B0E11' --splashBackgroundColor '#0B0E11' || echo "Icon generate skipped"; fi
 
-      - name: Sync web assets - Creates android/capacitor-android
+      # FIXED - Capacitor Sync Check - Was checking android/capacitor-android which does NOT exist
+      - name: Sync web assets - FIXED Check
         run: |
           npx cap sync android
-          ls -ld android/capacitor-android || (echo "❌ capacitor-android still missing after sync - Check package.json has @capacitor/android" && exit 1)
-          echo "✅ capacitor-android exists"
+          echo "=== FIXED Validation - Check what actually exists ==="
+          test -d android/app && echo "✅ android/app exists" || (echo "❌ android/app missing" && exit 1)
+          test -f android/gradlew && echo "✅ android/gradlew exists" || (echo "❌ android/gradlew missing" && exit 1)
+          test -f android/settings.gradle.kts && echo "✅ android/settings.gradle.kts exists" || test -f android/settings.gradle && echo "✅ android/settings.gradle exists" || (echo "❌ settings.gradle missing" && exit 1)
+          test -d node_modules/@capacitor/android && echo "✅ node_modules/@capacitor/android exists - Real Capacitor location" || (echo "❌ node_modules/@capacitor/android missing - Check package.json has @capacitor/android" && exit 1)
+          ls -lh android/app/build.gradle.kts || ls -lh android/app/build.gradle
+          echo "✅ Capacitor Sync Passed - FIXED Check"
 
       - name: Verify Native Files - WARNING ONLY
         run: |
