@@ -1,4 +1,4 @@
-# WanaLab God Eye v2.2 - build-apk.yml - FINAL FIXED - Capacitor Sync Check
+# WanaLab God Eye v2.2 - build-apk.yml - FINAL - Line 16 Fixed + Gradle 8.7 Fixed
 # Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
 # PRO Rs. 2,500 / Year
 name: Build GodEye APK + AAB - v2.2 - Thumb + Effects + Credentials + GPS + Anti-Fake
@@ -176,17 +176,19 @@ jobs:
           chmod +x android/gradlew
           echo "✅ Android project is now VALID"
 
-      # FINAL FIX - ALL 3 FILES - CORRECTED Capacitor Paths
-      - name: Fix All 3 Build Files - ROOT + SETTINGS + APP - KSP Fixed - Capacitor node_modules Paths
+      # FINAL FIX - ALL 3 FILES - Line 16 Fixed + PREFER_SETTINGS + Gradle 8.7
+      - name: Fix All 3 Build Files - ROOT No allprojects + SETTINGS PREFER_SETTINGS + APP KSP
         run: |
-          echo "=== FILE 1 - ROOT android/build.gradle ==="
+          echo "=== FILE 1 - ROOT android/build.gradle - NO allprojects - FIX Line 16 ==="
           cat > android/build.gradle <<'EOF'
-          // WanaLab God Eye v2.2 - build.gradle (ROOT)
+          // WanaLab God Eye v2.2 - build.gradle (ROOT) - FIXED Line 16
+          // FIX: Removed allprojects { repositories } - Repositories ONLY in settings.gradle.kts
           // Capacitor 7 + Gradle 8.7 + AGP 8.5.2 + Kotlin 2.0.0
           buildscript {
               repositories {
                   google()
                   mavenCentral()
+                  gradlePluginPortal()
               }
               dependencies {
                   classpath 'com.android.tools.build:gradle:8.5.2'
@@ -194,23 +196,20 @@ jobs:
                   classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0"
               }
           }
-          allprojects {
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
+          // NO allprojects block - DO NOT ADD IT BACK
           task clean(type: Delete) {
               delete rootProject.buildDir
           }
           EOF
           rm -f android/build.gradle.kts
-          echo "✅ FILE 1 - ROOT build.gradle fixed"
-          echo "=== FILE 2 - SETTINGS android/settings.gradle.kts - CORRECTED to node_modules ==="
+          echo "✅ FILE 1 - ROOT fixed - No allprojects"
+          cat android/build.gradle
+          echo "=== FILE 2 - SETTINGS android/settings.gradle.kts - PREFER_SETTINGS ==="
           cat > android/settings.gradle.kts <<'EOF'
-          // WanaLab God Eye v2.2 - settings.gradle.kts
+          // WanaLab God Eye v2.2 - settings.gradle.kts - FIXED Line 16
+          // FIX: PREFER_SETTINGS not FAIL_ON_PROJECT_REPOS - So build.gradle won't fail
           // FIX: KSP plugin not found - pluginManagement + gradlePluginPortal + KSP 2.0.0-1.0.24
-          // FIX: Capacitor paths - Real location is ../node_modules/@capacitor/... NOT android/capacitor-android
+          // FIX: Capacitor paths - ../node_modules/@capacitor/... NOT android/capacitor-android
           pluginManagement {
               repositories {
                   google()
@@ -224,7 +223,7 @@ jobs:
               }
           }
           dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
               repositories {
                   google()
                   mavenCentral()
@@ -244,7 +243,7 @@ jobs:
           project(":capacitor-status-bar").projectDir = File("../node_modules/@capacitor/status-bar/android")
           EOF
           rm -f android/settings.gradle
-          echo "✅ FILE 2 - settings.gradle.kts fixed - node_modules paths"
+          echo "✅ FILE 2 - settings fixed - PREFER_SETTINGS"
           cat android/settings.gradle.kts
           echo "=== FILE 3 - APP android/app/build.gradle.kts - KSP version ==="
           cat > android/app/build.gradle.kts <<'EOF'
@@ -330,7 +329,7 @@ jobs:
           }
           EOF
           rm -f android/app/build.gradle
-          echo "✅ FILE 3 - app/build.gradle.kts fixed - KSP 2.0.0-1.0.24"
+          echo "✅ FILE 3 - app fixed - KSP 2.0.0-1.0.24"
           echo "=== variables.gradle ==="
           if [ ! -f android/variables.gradle ]; then
             cat > android/variables.gradle <<'EOF'
@@ -363,7 +362,6 @@ jobs:
           npm install -D @capacitor/assets
           if [ -f assets/icon.png ]; then echo "✅ Using existing WanaLab icon - Not overwriting"; else npx @capacitor/assets generate --iconBackgroundColor '#0B0E11' --splashBackgroundColor '#0B0E11' || echo "Icon generate skipped"; fi
 
-      # FIXED - Capacitor Sync Check - Was checking android/capacitor-android which does NOT exist
       - name: Sync web assets - FIXED Check
         run: |
           npx cap sync android
@@ -400,6 +398,23 @@ jobs:
           sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />\n    <uses-feature android:name="android.hardware.usb.host" android:required="false" />\n    <uses-feature android:name="android.hardware.microphone" android:required="false" />\n    <uses-feature android:name="android.hardware.location.gps" android:required="false" />\n    <application|' $MANIFEST
           echo "--- Permissions in Manifest ---"
           grep -i "CAMERA\|RECORD_AUDIO\|BLUETOOTH\|USB\|EXTERNAL_STORAGE\|READ_MEDIA\|INTERNET\|FOREGROUND\|LOCATION" $MANIFEST || echo "Permission check failed"
+
+      - name: Force Gradle 8.7 - AGP 8.5.2 needs Gradle 8.7, NOT 8.14
+        run: |
+          echo "=== BEFORE - Gradle Wrapper ==="
+          cat android/gradle/wrapper/gradle-wrapper.properties || echo "No wrapper properties"
+          cat > android/gradle/wrapper/gradle-wrapper.properties <<'EOF'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-all.zip
+          networkTimeout=10000
+          validateDistributionUrl=true
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+          echo "=== AFTER - Forced to 8.7 ==="
+          cat android/gradle/wrapper/gradle-wrapper.properties
+          echo "✅ Gradle forced to 8.7 - Compatible with AGP 8.5.2"
 
       - name: Ensure Gradle Wrapper Exists - Simple Check Only
         run: |
