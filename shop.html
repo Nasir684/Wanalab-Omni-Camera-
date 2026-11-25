@@ -1,3 +1,4 @@
+<!-- WanaLab GodEye v2.2 - shop.html - Author: Nasir Khan - Wana, South Waziristan - 2026-11-23 - PRO Rs. 2,500 / Year -->
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shop Hub v2.2 FINAL - GodEye v2.2 - By WanaLab</title>
 <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
@@ -6,7 +7,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 </head><body style="background:#000;color:#fff;font-family:system-ui;padding:14px;max-width:900px;margin:auto">
 <h2>🏪 Shop Hub v2.2 FINAL - Barcode + Count + POS - GodEye v2.2</h2>
-<p><a href="www/index.html" style="color:#0f8">← Camera v2.2</a> | <a href="./export.html" style="color:#0f8">Export Hub v2.2 →</a> | <a href="./about.html" style="color:#0f8">About</a> | <span id="net" style="color:#ffcc00"></span> | <span id="proBadgeShop" style="color:#FFC107">FREE</span> | <span id="shopLimit" style="color:#aaa">FREE: Bill 5 / 5 • Scan 5 / 5 • Count 5 / 5</span></p>
+<p><a href="./index.html" style="color:#0f8">← Camera v2.2</a> | <a href="./export.html" style="color:#0f8">Export Hub v2.2 →</a> | <a href="./about.html" style="color:#0f8">About</a> | <span id="net" style="color:#ffcc00"></span> | <span id="proBadgeShop" style="color:#FFC107">FREE</span> | <span id="shopLimit" style="color:#aaa">FREE: Bill 5 / 5 • Scan 5 / 5 • Count 5 / 5</span></p>
 
 <!-- v22-A: Credentials For This Shop - ROOT File -->
 <div style="background:#111;border:2px solid #FFC107;border-radius:14px;padding:12px">
@@ -25,10 +26,10 @@
 <p style="font-size:12px;color:#aaa">FREE: Shows Name + Phone + Made By WanaLab Watermark • PRO: No Watermark + Logo + Signature - PRO Rs. 2,500 / Year</p>
 </div>
 
-<!-- v23 + v23-B: GPS Timestamp + Anti-Fake GPS -->
+<!-- v23 + v23-B: GPS Timestamp + Anti-Fake GPS - GPS OFF by default -->
 <div style="background:#111;border:2px solid #00E676;border-radius:14px;padding:12px;margin-top:12px">
 <h3 style="margin:0">📍 GPS Timestamp - Location + Time - Proof</h3>
-<p style="font-size:12px;color:#fff">GPS: <b id="gpsLabel">📍 Getting GPS...</b> | <span id="gpsStatus" style="color:#FFC107">Checking GPS...</span></p>
+<p style="font-size:12px;color:#fff">GPS: <b id="gpsLabel">📍 GPS: OFF - Tap Get GPS</b> | <span id="gpsStatus" style="color:#FFC107">GPS OFF - Tap Get GPS to Enable</span></p>
 <p style="font-size:12px;color:#aaa">GPS Timestamp on every Scan / Count / Bill • Map Link included • Anti-Fake GPS: Block GPS Emulator / Fake GPS / Mock Location</p>
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button onclick="refreshGPS()" style="padding:10px;background:#00E676;color:#000;border:none;border-radius:8px;font-weight:800">🔄 Get GPS Now</button><button onclick="gpsShare()" style="padding:10px;background:#00C853;color:#fff;border:none;border-radius:8px;font-weight:800">📍 GPS Share - Photo + Location + Map Link</button><button onclick="shareLocationOnly()" style="padding:10px;background:#222;color:#fff;border:1px solid #00E676;border-radius:8px">📍 Location Only</button><label style="font-size:12px"><input type="checkbox" id="t_gps" checked> ✅ Include GPS On Bill / Export</label><label style="font-size:12px"><input type="checkbox" id="t_antifake" checked> 🛡️ Anti-Fake GPS - Block Mock / Fake GPS</label></div>
 </div>
@@ -120,7 +121,7 @@
 </div>
 <div id="protoLog" style="margin-top:8px;font-size:12px;color:#0f8;background:#000;padding:8px;border-radius:8px;max-height:120px;overflow:auto">Protocol Log: Ready</div>
 </div>
-<p style="color:#666;font-size:12px;text-align:center;margin-top:16px">By WanaLab • Founded by Nasir Khan • GodEye v2.2 • Shop Hub v2.2 FINAL • GPS + Anti-Fake GPS + Credentials • <a href="www/index.html" style="color:#0f8">Back to Camera</a></p>
+<p style="color:#666;font-size:12px;text-align:center;margin-top:16px">By WanaLab • Founded by Nasir Khan • GodEye v2.2 • Shop Hub v2.2 FINAL • GPS + Anti-Fake GPS + Credentials • <a href="./index.html" style="color:#0f8">Back to Camera</a> • <a href="./privacy.html" style="color:#0f8">Privacy</a></p>
 
 <script>
 let isPro = localStorage.getItem('godeye_pro')==='1';
@@ -197,7 +198,7 @@ function shareLocationOnly(){
   if(!currentGPS){ refreshGPS(); return; }
   window.open('https://wa.me/?text='+encodeURIComponent('📍 I Am Here - GodEye v2.2\n'+getCredHeader().header+'\n📍 '+getGPSLine()),'_blank');
 }
-refreshGPS();
+// GPS OFF by default - DO NOT auto-call refreshGPS() on load - v2.2 spec
 function updateShopLimits(){
   var b=parseInt(localStorage.getItem('god_bill_count')||'0'), s=scans.length, c=countTotal;
   if(isPro) document.getElementById('shopLimit').innerText='PRO ✅ Unlimited - Bill / Scan / Count';
