@@ -1,8 +1,5 @@
-// WanaLab God Eye v2.2 - build.gradle (ROOT) - FIXED for Line 16
-// FIX: Removed allprojects { repositories } - Repositories are ONLY in settings.gradle.kts
-// Because settings uses FAIL_ON_PROJECT_REPOS, allprojects repositories = BUILD FAILED line 16
-// Capacitor 7 + Gradle 8.7 + AGP 8.5.2 + Kotlin 2.0.0
-
+// WanaLab God Eye v2.2 - build.gradle (ROOT) - Capacitor 8 - COMMITTED - CI does NOT rewrite this
+// Single source of truth: AGP 8.7.3 + Kotlin 2.0.21 + Gradle 8.11.1
 buildscript {
     repositories {
         google()
@@ -10,15 +7,12 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.2'
+        classpath 'com.android.tools.build:gradle:8.7.3'
         classpath 'com.google.gms:google-services:4.4.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21"
     }
 }
-
-// NO allprojects block here - DO NOT ADD IT BACK
-// Repositories are defined in settings.gradle.kts -> dependencyResolutionManagement
-
+// NO allprojects block - Repositories ONLY in settings.gradle.kts
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
