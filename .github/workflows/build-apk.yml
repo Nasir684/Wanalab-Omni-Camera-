@@ -79,20 +79,13 @@ jobs:
           </paths>
           EOF
           echo "✅ Created file_paths.xml"; fi
-          python3 -c "
-          from PIL import Image, ImageDraw
-          import os
-          for size, folder in [(72,'mipmap-hdpi'),(48,'mipmap-mdpi'),(96,'mipmap-xhdpi'),(144,'mipmap-xxhdpi'),(192,'mipmap-xxxhdpi')]:
-              for name in ['ic_launcher.png','ic_launcher_round.png']:
-                  p=f'android/app/src/main/res/{folder}/{name}'
-                  if not os.path.exists(p):
-                      img=Image.new('RGB',(size,size),(0,0,0))
-                      d=ImageDraw.Draw(img)
-                      d.ellipse([size*0.15,size*0.25,size*0.85,size*0.75],fill=(0,230,118),outline=(255,255,255),width=3)
-                      d.ellipse([size*0.42,size*0.42,size*0.58,size*0.58],fill=(0,0,0))
-                      img.save(p)
-                      print(f'Created {p}')
-          "
+          PNG_B64="[STRIPPED 96 bytes]"
+          for folder in mipmap-hdpi mipmap-mdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+            for name in ic_launcher.png ic_launcher_round.png; do
+              p="$RES/$folder/$name"
+              if [ ! -f "$p" ]; then echo "$PNG_B64" | base64 -d > "$p"; echo "✅ Created $p"; fi
+            done
+          done
           ls -l $RES/values/ $RES/xml/ $RES/mipmap-xxxhdpi/
           echo "✅ All Android resources restored"
       - name: Generate gradlew if missing
