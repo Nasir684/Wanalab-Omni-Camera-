@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- WanaLab God Eye v2.2 - ic_launcher.xml - Adaptive Icon -->
-<!-- Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23 -->
-<!-- PRO Rs. 2,500 / Year -->
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
-</adaptive-icon>
