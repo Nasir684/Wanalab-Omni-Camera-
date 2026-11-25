@@ -4,8 +4,6 @@ const config = {
   appId: 'com.wanalab.godeye',
   appName: 'GodEye',
   webDir: 'www',
-  server: {
-    androidScheme: 'https'
-  }
+  server: { androidScheme: 'https' }
 };
 module.exports = config;
