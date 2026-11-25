@@ -1,31 +1,12 @@
-// WanaLab GodEye v2.2 - Top-level build file
-// Author: Nasir Khan - Wana, South Waziristan - 2026-11-23
-// PRO Rs. 2,500 / Year
-// Capacitor 8 = AGP 8.7.3 + Gradle 8.11.1 + Kotlin 2.0.21
-// DO NOT convert to .kts - Capacitor 8 is Groovy-first
-// This file is COMMITTED - NOT generated in CI
-
+// Top-level - WanaLab GodEye v2.2 - Wana, South Waziristan
 buildscript {
-  repositories {
-    google()
-    mavenCentral()
-  }
+  repositories { google(); mavenCentral() }
   dependencies {
     classpath 'com.android.tools.build:gradle:8.7.3'
-    classpath 'com.google.gms:google-services:4.4.2'
+    classpath 'com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.0.21-1.0.28'
     classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21'
   }
 }
-
 apply from: "variables.gradle"
-
-allprojects {
-  repositories {
-    google()
-    mavenCentral()
-  }
-}
-
-task clean(type: Delete) {
-  delete rootProject.buildDir
-}
+allprojects { repositories { google(); mavenCentral() } }
+task clean(type: Delete) { delete rootProject.buildDir }
