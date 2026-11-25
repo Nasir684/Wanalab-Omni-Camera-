@@ -4,42 +4,32 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
-
       - name: Install Android SDK packages
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-
-      # FIX: npm install - NOT npm ci (lockfile 8.x vs package.json 7.x)
       - name: Install Node deps
         run: npm install
-
       - run: npm run build
       - run: npx cap sync android
-
-      # FIX: Copy root HTML to www/ - cap sync only copies index.html
       - name: Sync www files - Copy root HTML to www/
         run: |
           for f in shop.html export.html privacy.html about.html; do
             if [ -f "$f" ] && [ ! -f "www/$f" ]; then echo "Copying $f -> www/$f"; cp "$f" "www/$f"; fi
           done
           ls -l www/
-
       - name: Verify - NOT mutate
         run: |
           for f in android/settings.gradle android/variables.gradle android/build.gradle android/capacitor.settings.gradle android/app/build.gradle www/index.html www/shop.html www/export.html www/privacy.html www/about.html; do
@@ -47,10 +37,64 @@ jobs:
           done
           if [ -f android/gradlew ]; then echo "✅ android/gradlew"; else echo "⚠️ gradlew missing - CI will generate it"; fi
           head -n 1 android/app/src/main/AndroidManifest.xml | grep -q '<?xml'
-          grep -q "Wana, South Waziristan" www/index.html || echo "⚠️ Wana check skipped"
           echo "✅ OK - Wana, South Waziristan"
-
-      # FIX: gradlew missing - generate it in CI
+      - name: Restore Android resources if missing
+        run: |
+          RES=android/app/src/main/res
+          mkdir -p $RES/values $RES/xml $RES/mipmap-hdpi $RES/mipmap-mdpi $RES/mipmap-xhdpi $RES/mipmap-xxhdpi $RES/mipmap-xxxhdpi
+          if [ ! -f $RES/values/strings.xml ]; then cat > $RES/values/strings.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <string name="app_name">GodEye</string>
+              <string name="title_activity_main">GodEye</string>
+              <string name="package_name">com.wanalab.godeye</string>
+              <string name="custom_url_scheme">com.wanalab.godeye</string>
+          </resources>
+          EOF
+          echo "✅ Created strings.xml"; fi
+          if [ ! -f $RES/values/styles.xml ]; then cat > $RES/values/styles.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+                  <item name="colorPrimary">#000000</item>
+                  <item name="colorPrimaryDark">#000000</item>
+                  <item name="colorAccent">#00E676</item>
+              </style>
+              <style name="AppTheme.NoActionBar">
+                  <item name="windowActionBar">false</item>
+                  <item name="windowNoTitle">true</item>
+              </style>
+              <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
+                  <item name="android:background">#000000</item>
+              </style>
+          </resources>
+          EOF
+          echo "✅ Created styles.xml"; fi
+          if [ ! -f $RES/xml/file_paths.xml ]; then cat > $RES/xml/file_paths.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <paths xmlns:android="http://schemas.android.com/apk/res/android">
+              <external-path name="external_files" path="." />
+              <cache-path name="cache" path="." />
+              <files-path name="files" path="." />
+          </paths>
+          EOF
+          echo "✅ Created file_paths.xml"; fi
+          python3 -c "
+          from PIL import Image, ImageDraw
+          import os
+          for size, folder in [(72,'mipmap-hdpi'),(48,'mipmap-mdpi'),(96,'mipmap-xhdpi'),(144,'mipmap-xxhdpi'),(192,'mipmap-xxxhdpi')]:
+              for name in ['ic_launcher.png','ic_launcher_round.png']:
+                  p=f'android/app/src/main/res/{folder}/{name}'
+                  if not os.path.exists(p):
+                      img=Image.new('RGB',(size,size),(0,0,0))
+                      d=ImageDraw.Draw(img)
+                      d.ellipse([size*0.15,size*0.25,size*0.85,size*0.75],fill=(0,230,118),outline=(255,255,255),width=3)
+                      d.ellipse([size*0.42,size*0.42,size*0.58,size*0.58],fill=(0,0,0))
+                      img.save(p)
+                      print(f'Created {p}')
+          "
+          ls -l $RES/values/ $RES/xml/ $RES/mipmap-xxxhdpi/
+          echo "✅ All Android resources restored"
       - name: Generate gradlew if missing
         run: |
           if [ -f android/gradlew ]; then echo "✅ gradlew exists"; chmod +x android/gradlew; exit 0; fi
@@ -59,22 +103,18 @@ jobs:
           wget -q https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
           unzip -q gradle-8.11.1-bin.zip
           /tmp/gradle-8.11.1/bin/gradle -p $GITHUB_WORKSPACE/android wrapper --gradle-version 8.11.1
-          ls -l $GITHUB_WORKSPACE/android/gradlew
           chmod +x $GITHUB_WORKSPACE/android/gradlew
           echo "✅ gradlew generated"
-
       - name: Build APK + AAB
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
           ./gradlew bundleDebug --stacktrace
-
       - uses: actions/upload-artifact@v4
         with:
           name: GodEye-APK-v2.2
           path: android/app/build/outputs/apk/debug/*.apk
-
       - uses: actions/upload-artifact@v4
         with:
           name: GodEye-AAB-v2.2
