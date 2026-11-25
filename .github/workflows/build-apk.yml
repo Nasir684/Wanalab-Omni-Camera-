@@ -1,4 +1,4 @@
-# WanaLab God Eye v2.2 - build.yml - GitHub Actions
+# WanaLab God Eye v2.2 - build-apk.yml - FINAL
 # Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
 # PRO Rs. 2,500 / Year
 name: Build GodEye APK + AAB - v2.2 - Thumb + Effects + Credentials + GPS + Anti-Fake
@@ -32,6 +32,10 @@ jobs:
           ls -lh about.html || echo "about.html MISSING in ROOT"
           ls -lh privacy.html || echo "privacy.html MISSING in ROOT"
           echo "Version: $GODEYE_VERSION - $GODEYE_NAME - PRO: $PRO_PRICE"
+          echo "--- Android build files ---"
+          ls -lh android/build.gradle android/build.gradle.kts 2>/dev/null || echo "Root build file check"
+          ls -lh android/app/build.gradle android/app/build.gradle.kts 2>/dev/null || echo "App build file check"
+          ls -lh android/settings.gradle android/settings.gradle.kts 2>/dev/null || echo "Settings file check"
 
       - name: Ensure web assets exist
         run: |
@@ -40,7 +44,6 @@ jobs:
             echo '<html><body><h1>GodEye - By WanaLab - Please commit www/index.html</h1></body></html>' > www/index.html
           fi
 
-      # v4-v22-A CHECK: HTML must contain full spec - FAIL if old HTML
       - name: Check Spec v4-v22-A in HTML - FAIL if old HTML
         run: |
           echo "Checking www/index.html for v4-v22-A spec..."
@@ -75,7 +78,6 @@ jobs:
           if grep -q "Browser cannot match faces" www/index.html; then echo "❌ FAIL: Old Face Tag Only text still in HTML - Replace with 468 Dots - See Spec v18" && exit 1; fi
           echo "✅ HTML Spec Check Passed - v4-v23-B - Thumb + Effects + Credentials + GPS + Anti-Fake"
 
-      # ROOT Files Checks - Shop + Export + About + Privacy - NEW v2.2
       - name: Check ROOT Files - shop.html + export.html - FAIL if old
         run: |
           echo "Checking ROOT files..."
@@ -133,29 +135,244 @@ jobs:
       - name: Install deps
         run: npm install
 
-      # FIXED v2.2 - DO NOT DELETE android/ - This was deleting all 50+ files
-      - name: Create Android project - DO NOT DELETE if exists
+      - name: Fix Android Project - Backup, Recreate Valid, Restore
         run: |
-          if [ ! -d android ]; then
-            echo "android/ NOT FOUND - Creating fresh Capacitor Android project"
+          echo "=== 1. Backup your custom files ==="
+          rm -rf /tmp/godeye-backup
+          mkdir -p /tmp/godeye-backup
+          if [ -f android/app/src/main/AndroidManifest.xml ]; then cp android/app/src/main/AndroidManifest.xml /tmp/godeye-backup/AndroidManifest.xml && echo "✅ Backed up AndroidManifest.xml"; else echo "⚠️ No Manifest to backup"; fi
+          if [ -d android/app/src/main/java ]; then cp -r android/app/src/main/java /tmp/godeye-backup/java && echo "✅ Backed up java/ - $(find /tmp/godeye-backup/java -name '*.kt' | wc -l) Kotlin files"; else echo "⚠️ No java/ to backup"; fi
+          if [ -d android/app/src/main/res ]; then cp -r android/app/src/main/res /tmp/godeye-backup/res && echo "✅ Backed up res/"; fi
+          if [ -f android/app/build.gradle.kts ]; then cp android/app/build.gradle.kts /tmp/godeye-backup/app-build.gradle.kts && echo "✅ Backed up app/build.gradle.kts"; fi
+          if [ -f android/app/build.gradle ]; then cp android/app/build.gradle /tmp/godeye-backup/app-build.gradle && echo "✅ Backed up app/build.gradle"; fi
+          if [ -f android/settings.gradle.kts ]; then cp android/settings.gradle.kts /tmp/godeye-backup/settings.gradle.kts && echo "✅ Backed up settings.gradle.kts"; fi
+          if [ -f android/settings.gradle ]; then cp android/settings.gradle /tmp/godeye-backup/settings.gradle && echo "✅ Backed up settings.gradle"; fi
+          if [ -f android/build.gradle ]; then cp android/build.gradle /tmp/godeye-backup/root-build.gradle && echo "✅ Backed up root build.gradle"; fi
+          echo "=== 2. Check if android/ is valid ==="
+          NEED_RECREATE=0
+          if [ ! -f android/gradlew ]; then echo "❌ gradlew missing -> need recreate"; NEED_RECREATE=1; fi
+          if [ ! -f android/settings.gradle ] && [ ! -f android/settings.gradle.kts ]; then echo "❌ settings.gradle missing -> need recreate"; NEED_RECREATE=1; fi
+          if [ ! -f android/gradle/wrapper/gradle-wrapper.properties ]; then echo "❌ gradle-wrapper.properties missing -> need recreate"; NEED_RECREATE=1; fi
+          echo "NEED_RECREATE=$NEED_RECREATE"
+          echo "=== 3. Recreate if invalid ==="
+          if [ "$NEED_RECREATE" = "1" ]; then
+            echo "Recreating VALID android/ with Capacitor"
+            rm -rf android
             npx cap add android
+            echo "✅ Recreated android/"
+            ls -lh android/gradlew android/settings.gradle android/gradle/wrapper/gradle-wrapper.properties
           else
-            echo "✅ android/ EXISTS - KEEPING your 50+ files - NOT deleting"
-            echo "--- Manifest ---"
-            ls -lh android/app/src/main/AndroidManifest.xml || echo "Manifest MISSING"
-            echo "--- Native Kotlin files ---"
-            find android/app/src/main -name "*.kt" 2>/dev/null | head -n 50 || echo "No Kotlin files found"
+            echo "✅ android/ looks valid - keeping it, NOT deleting"
           fi
+          echo "=== 4. Restore your custom files on top of valid project ==="
+          if [ -f /tmp/godeye-backup/AndroidManifest.xml ]; then cp /tmp/godeye-backup/AndroidManifest.xml android/app/src/main/AndroidManifest.xml && echo "✅ Restored AndroidManifest.xml"; fi
+          if [ -d /tmp/godeye-backup/java ]; then
+            mkdir -p android/app/src/main/java
+            cp -r /tmp/godeye-backup/java/* android/app/src/main/java/ && echo "✅ Restored java/ Kotlin files"
+          fi
+          if [ -d /tmp/godeye-backup/res ]; then cp -r /tmp/godeye-backup/res/* android/app/src/main/res/ 2>/dev/null || true; echo "✅ Restored res/"; fi
+          if [ -f /tmp/godeye-backup/app-build.gradle.kts ]; then cp /tmp/godeye-backup/app-build.gradle.kts android/app/build.gradle.kts && echo "✅ Restored app/build.gradle.kts"; fi
+          if [ -f /tmp/godeye-backup/app-build.gradle ]; then cp /tmp/godeye-backup/app-build.gradle android/app/build.gradle && echo "✅ Restored app/build.gradle"; fi
+          echo "=== 5. Final validation ==="
+          ls -lh android/gradlew || (echo "❌ STILL NO gradlew - cap add failed" && exit 1)
+          ls -lh android/settings.gradle android/gradle/wrapper/gradle-wrapper.properties || ls -lh android/settings.gradle.kts || (echo "❌ STILL NO settings.gradle" && exit 1)
+          chmod +x android/gradlew
+          echo "✅ Android project is now VALID"
+
+      # FINAL FIX - ALL 3 FILES - ROOT + SETTINGS + APP - KSP FIX
+      - name: Fix All 3 Build Files - ROOT + SETTINGS + APP - KSP Fixed
+        run: |
+          echo "=== FILE 1 - ROOT android/build.gradle - Overwrite ONLY ROOT ==="
+          cat > android/build.gradle <<'EOF'
+          // WanaLab God Eye v2.2 - build.gradle (ROOT)
+          // Capacitor 7 + Gradle 8.7 + AGP 8.5.2 + Kotlin 2.0.0
+          buildscript {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.5.2'
+                  classpath 'com.google.gms:google-services:4.4.2'
+                  classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0"
+              }
+          }
+          allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          task clean(type: Delete) {
+              delete rootProject.buildDir
+          }
+          EOF
+          rm -f android/build.gradle.kts
+          echo "✅ FILE 1 - ROOT build.gradle fixed - Removed conflicting .kts"
+          cat android/build.gradle
+          echo "=== FILE 2 - SETTINGS android/settings.gradle.kts - Overwrite with KSP pluginManagement ==="
+          cat > android/settings.gradle.kts <<'EOF'
+          // WanaLab God Eye v2.2 - settings.gradle.kts
+          // FIX: KSP plugin not found - pluginManagement + gradlePluginPortal + KSP 2.0.0-1.0.24
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+              plugins {
+                  id("com.android.application") version "8.5.2" apply false
+                  id("org.jetbrains.kotlin.android") version "2.0.0" apply false
+                  id("com.google.devtools.ksp") version "2.0.0-1.0.24" apply false
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "android"
+          include(":app")
+          include(":capacitor-android")
+          project(":capacitor-android").projectDir = File("capacitor-android")
+          include(":capacitor-app")
+          project(":capacitor-app").projectDir = File("capacitor-android/capacitor-app")
+          include(":capacitor-haptics")
+          project(":capacitor-haptics").projectDir = File("capacitor-android/capacitor-haptics")
+          include(":capacitor-keyboard")
+          project(":capacitor-keyboard").projectDir = File("capacitor-android/capacitor-keyboard")
+          include(":capacitor-status-bar")
+          project(":capacitor-status-bar").projectDir = File("capacitor-android/capacitor-status-bar")
+          EOF
+          rm -f android/settings.gradle
+          echo "✅ FILE 2 - settings.gradle.kts fixed - Removed conflicting Groovy settings.gradle"
+          cat android/settings.gradle.kts
+          echo "=== FILE 3 - APP android/app/build.gradle.kts - Overwrite with KSP version ==="
+          cat > android/app/build.gradle.kts <<'EOF'
+          // WanaLab God Eye v2.2 - build.gradle.kts (app)
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+              id("com.google.devtools.ksp") version "2.0.0-1.0.24"
+          }
+          android {
+              namespace = "com.wanalab.godeye"
+              compileSdk = 35
+              defaultConfig {
+                  applicationId = "com.wanalab.godeye"
+                  minSdk = 24
+                  targetSdk = 35
+                  versionCode = 22
+                  versionName = "2.2"
+                  testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+              }
+              buildTypes {
+                  release {
+                      isMinifyEnabled = false
+                      proguardFiles(
+                          getDefaultProguardFile("proguard-android-optimize.txt"),
+                          "proguard-rules.pro"
+                      )
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+              buildFeatures {
+                  viewBinding = true
+              }
+          }
+          dependencies {
+              implementation("androidx.core:core-ktx:1.13.1")
+              implementation("androidx.appcompat:appcompat:1.7.0")
+              implementation("com.google.android.material:material:1.12.0")
+              implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+              implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+              implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+              implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+              implementation("androidx.camera:camera-core:1.3.4")
+              implementation("androidx.camera:camera-camera2:1.3.4")
+              implementation("androidx.camera:camera-lifecycle:1.3.4")
+              implementation("androidx.camera:camera-view:1.3.4")
+              implementation("androidx.media3:media3-exoplayer:1.4.1")
+              implementation("androidx.media3:media3-ui:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-rtsp:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-rtmp:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
+              implementation("androidx.media3:media3-exoplayer-dash:1.4.1")
+              implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
+              implementation("org.java-websocket:Java-WebSocket:1.5.6")
+              implementation("com.google.mlkit:barcode-scanning:17.3.0")
+              implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+              implementation("com.google.mediapipe:tasks-vision:0.10.14")
+              implementation("org.tensorflow:tensorflow-lite:2.14.0")
+              implementation("com.google.mlkit:face-detection:16.1.7")
+              implementation("com.rmtheis:tess-two:9.1.0")
+              implementation("com.itextpdf:itext7-core:8.0.5")
+              implementation("org.apache.poi:poi:5.2.5")
+              implementation("org.apache.poi:poi-ooxml:5.2.5")
+              implementation("androidx.room:room-runtime:2.6.1")
+              implementation("androidx.room:room-ktx:2.6.1")
+              ksp("androidx.room:room-compiler:2.6.1")
+              implementation("androidx.datastore:datastore-preferences:1.1.1")
+              implementation("androidx.work:work-runtime-ktx:2.9.0")
+              implementation(project(":capacitor-android"))
+              implementation(project(":capacitor-app"))
+              implementation(project(":capacitor-haptics"))
+              implementation(project(":capacitor-keyboard"))
+              implementation(project(":capacitor-status-bar"))
+              testImplementation("junit:junit:4.13.2")
+              androidTestImplementation("androidx.test.ext:junit:1.1.5")
+              androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+          }
+          EOF
+          rm -f android/app/build.gradle
+          echo "✅ FILE 3 - app/build.gradle.kts fixed - KSP 2.0.0-1.0.24 - Removed conflicting Groovy app build.gradle"
+          head -n 10 android/app/build.gradle.kts
+          echo "=== variables.gradle ==="
+          if [ ! -f android/variables.gradle ]; then
+            cat > android/variables.gradle <<'EOF'
+          ext {
+              minSdkVersion = 26
+              compileSdkVersion = 35
+              targetSdkVersion = 35
+              androidxActivityVersion = '1.9.0'
+              androidxAppCompatVersion = '1.7.0'
+              androidxCoordinatorLayoutVersion = '1.2.0'
+              androidxCoreVersion = '1.13.1'
+              androidxFragmentVersion = '1.8.2'
+              androidxMaterialVersion = '1.12.0'
+              androidxWebkitVersion = '1.12.1'
+              coreSplashScreenVersion = '1.0.1'
+              firebaseMessagingVersion = '23.4.0'
+              playServicesLocationVersion = '21.3.0'
+              junitVersion = '4.13.2'
+              androidxJunitVersion = '1.2.1'
+              androidxEspressoCoreVersion = '3.6.1'
+              cordovaAndroidVersion = '10.1.1'
+          }
+          EOF
+            echo "✅ Created variables.gradle"
+          fi
+          echo "✅ ALL 3 FILES FIXED"
 
       - name: Generate Icons & Splash - Keep WanaLab if exists
         run: |
           npm install -D @capacitor/assets
           if [ -f assets/icon.png ]; then echo "✅ Using existing WanaLab icon - Not overwriting"; else npx @capacitor/assets generate --iconBackgroundColor '#0B0E11' --splashBackgroundColor '#0B0E11' || echo "Icon generate skipped"; fi
 
-      - name: Sync web assets
-        run: npx cap sync android
+      - name: Sync web assets - Creates android/capacitor-android
+        run: |
+          npx cap sync android
+          ls -ld android/capacitor-android || (echo "❌ capacitor-android still missing after sync - Check package.json has @capacitor/android" && exit 1)
+          echo "✅ capacitor-android exists"
 
-      # CHANGED TO WARNING ONLY - Will NOT fail build
       - name: Verify Native Files - WARNING ONLY
         run: |
           echo "Checking native files..."
@@ -163,7 +380,6 @@ jobs:
           if grep -q "CameraActivity" android/app/src/main/AndroidManifest.xml; then echo "✅ CameraActivity in Manifest"; else echo "⚠️ WARNING: CameraActivity missing from Manifest - Commit android/ folder from PC"; fi
           echo "✅ Verify done - Continuing build (WARNING ONLY)"
 
-      # v19 + v23: ALL PERMISSIONS
       - name: Fix Permissions - Camera + Mic + Bluetooth + USB + Storage + Network + GPS Location
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
@@ -183,64 +399,12 @@ jobs:
           echo "--- Permissions in Manifest ---"
           grep -i "CAMERA\|RECORD_AUDIO\|BLUETOOTH\|USB\|EXTERNAL_STORAGE\|READ_MEDIA\|INTERNET\|FOREGROUND\|LOCATION" $MANIFEST || echo "Permission check failed"
 
-      - name: Set Version v2.2 in Build Gradle
+      - name: Ensure Gradle Wrapper Exists - Simple Check Only
         run: |
-          GRADLE="android/app/build.gradle"
-          sed -i "s/versionName .*/versionName \"$GODEYE_VERSION\"/" $GRADLE || echo "versionName not in gradle - OK, set in Capacitor config"
-          grep -i "versionName" $GRADLE || echo "versionName check skipped"
-
-      # FIXED 25 Nov - Generate wrapper in /tmp, NOT inside android/ - No gradle wrapper command, no curl
-      - name: Ensure Gradle Wrapper Exists - Generate in /tmp and Copy
-        run: |
-          echo "=== 1. Check current android/ ==="
-          ls -lh android/gradlew 2>&1 || echo "gradlew MISSING"
-          ls -lh android/settings.gradle 2>&1 || echo "settings.gradle MISSING"
-          ls -lh android/settings.gradle.kts 2>&1 || echo "settings.gradle.kts not used - OK"
-          ls -lh android/gradle/wrapper/gradle-wrapper.jar 2>&1 || echo "gradle-wrapper.jar MISSING"
-          ls -lh android/gradle/wrapper/gradle-wrapper.properties 2>&1 || echo "gradle-wrapper.properties MISSING"
-          echo "=== 2. If any wrapper file missing, generate fresh project in /tmp ==="
-          if [ ! -f android/gradlew ] || [ ! -f android/gradle/wrapper/gradle-wrapper.jar ] || [ ! -f android/settings.gradle ]; then
-            echo "Wrapper incomplete - Generating fresh Capacitor Android in /tmp..."
-            rm -rf /tmp/cap-fix
-            mkdir -p /tmp/cap-fix
-            cd /tmp/cap-fix
-            npm init -y >/dev/null 2>&1 || true
-            # Use SAME Capacitor version as your project
-            CAP_VER=$(node -p "require('$GITHUB_WORKSPACE/package.json').dependencies['@capacitor/cli'] || 'latest'" 2>/dev/null || echo "latest")
-            echo "Capacitor version: $CAP_VER"
-            npm install @capacitor/cli@$CAP_VER @capacitor/core@$CAP_VER @capacitor/android@$CAP_VER --no-audit --no-fund || npm install @capacitor/cli @capacitor/core @capacitor/android --no-audit --no-fund
-            mkdir -p www
-            echo '<html><body>temp</body></html>' > www/index.html
-            npx cap init "GodEyeTemp" "com.wanalab.godeye.temp" --web-dir=www || true
-            npx cap add android || echo "cap add failed in /tmp"
-            echo "--- /tmp files generated ---"
-            ls -lh /tmp/cap-fix/android/gradlew || echo "FAILED to generate gradlew in /tmp"
-            ls -lh /tmp/cap-fix/android/settings.gradle || echo "FAILED to generate settings.gradle in /tmp"
-            ls -lh /tmp/cap-fix/android/gradle/wrapper/ || echo "FAILED to generate wrapper folder in /tmp"
-            cd $GITHUB_WORKSPACE
-            echo "--- Copying ONLY missing wrapper files, NOT overwriting your Manifest / Kotlin ---"
-            cp -n /tmp/cap-fix/android/gradlew android/gradlew || cp /tmp/cap-fix/android/gradlew android/gradlew
-            cp -n /tmp/cap-fix/android/gradlew.bat android/gradlew.bat || cp /tmp/cap-fix/android/gradlew.bat android/gradlew.bat
-            mkdir -p android/gradle/wrapper
-            cp -n /tmp/cap-fix/android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar || cp /tmp/cap-fix/android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.jar
-            cp -n /tmp/cap-fix/android/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties || cp /tmp/cap-fix/android/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties
-            if [ ! -f android/settings.gradle ]; then echo "settings.gradle missing - copying from /tmp"; cp /tmp/cap-fix/android/settings.gradle android/settings.gradle; fi
-            if [ ! -f android/build.gradle ]; then echo "build.gradle missing - copying from /tmp"; cp /tmp/cap-fix/android/build.gradle android/build.gradle; fi
-            if [ ! -f android/gradle.properties ]; then echo "gradle.properties missing - copying from /tmp"; cp /tmp/cap-fix/android/gradle.properties android/gradle.properties; fi
-            rm -rf /tmp/cap-fix
-          else
-            echo "✅ All wrapper files already exist - No generation needed"
-          fi
-          echo "=== 3. Re-sync to create android/capacitor-android ==="
-          npx cap sync android || echo "cap sync warning - continuing"
-          ls -ld android/capacitor-android || echo "⚠️ capacitor-android still missing after sync - Check package.json has @capacitor/android"
-          echo "=== 4. Final check - MUST exist ==="
-          ls -lh android/gradlew || (echo "❌ STILL MISSING android/gradlew after /tmp generation" && exit 1)
-          ls -lh android/settings.gradle || (echo "❌ STILL MISSING android/settings.gradle" && exit 1)
-          ls -lh android/gradle/wrapper/gradle-wrapper.jar || (echo "❌ STILL MISSING gradle-wrapper.jar" && exit 1)
-          ls -lh android/gradle/wrapper/gradle-wrapper.properties || (echo "❌ STILL MISSING gradle-wrapper.properties" && exit 1)
+          ls -lh android/gradlew
+          ls -lh android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties
           chmod +x android/gradlew
-          echo "✅ gradlew + settings.gradle + wrapper ready"
+          echo "✅ gradlew ready - Created by Capacitor, not by curl"
 
       - name: Build APK - Debug for Testing
         run: |
