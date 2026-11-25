@@ -1,4 +1,4 @@
-<!-- WanaLab God Eye v2.2 - www/index.html - Author: Nasir Khan - Dera Ismail Khan - 2026-11-23 - PRO Rs. 2,500 / Year -->
+<!-- WanaLab God Eye v2.2 - www/index.html - Author: Nasir Khan - Wana, South Waziristan - 2026-11-23 - PRO Rs. 2,500 / Year -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,8 +73,8 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <div class="mini"><label>Faces</label><b id="statFace">0</b><small id="statFaceSub">468 Dots • FREE: 2 / 2 Left</small></div>
   <div class="mini"><label>Thumb / Attendance</label><b id="statThumb">0</b><small id="statThumbSub">Thumb Biometric PRO Only</small></div>
 </div>
-<!-- v23: GPS Timestamp Bar - On Top - Always Visible -->
-<div style="max-width:1100px;margin:10px auto 0;padding:0 16px"><div class="gpsBox" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><b>📍 GPS Timestamp - Location + Time</b><br><small id="gpsLabel">📍 GPS: Getting... - Tap Get GPS</small><br><small id="gpsStatus">GPS Status: Checking...</small></div><div style="display:flex;gap:6px"><button class="primary" onclick="refreshGPS()">🔄 Get GPS</button><button onclick="gpsShare()">📍 GPS Share</button></div></div></div>
+<!-- v23: GPS Timestamp Bar - On Top - Always Visible - GPS OFF by default -->
+<div style="max-width:1100px;margin:10px auto 0;padding:0 16px"><div class="gpsBox" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><b>📍 GPS Timestamp - Location + Time</b><br><small id="gpsLabel">📍 GPS: OFF - Tap Get GPS</small><br><small id="gpsStatus">GPS Status: OFF - Tap Get GPS to Enable</small></div><div style="display:flex;gap:6px"><button class="primary" onclick="refreshGPS()">🔄 Get GPS</button><button onclick="gpsShare()">📍 GPS Share</button></div></div></div>
 
 <div id="wrap">
 <div id="offlineBar">📴 OFFLINE MODE - Camera / Voice / Bill / Scan / Face work without internet</div>
@@ -104,7 +104,6 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <button onclick="openThumb()" style="border-color:#673AB7">👍<b>Thumb Biometric PRO</b><span>Thumb Biometric PRO Only • NADRA-Style • Liveness • Move Thumb</span></button>
   <button onclick="openAttendance()" style="border-color:#673AB7">📅<b>Thumb Attendance</b><span>Attendance • Check-In / Check-Out • PRO Only</span></button>
   <button onclick="openEffects()" style="border-color:#FF00FF">✨<b>Photo Effects PRO</b><span id="effectsLimit">FREE: 5 / 5 Left • Clarendon • Thumb Clear • Doc Clear</span></button>
-  <!-- v23 + v23-B: GPS Timestamp + GPS Share + Anti-Fake GPS -->
   <button onclick="openGPS()" style="border-color:#00E676">📍<b>GPS Timestamp</b><span id="gpsLimit">GPS Timestamp • FREE: City + Time • PRO: Full GPS + Map</span></button>
   <button onclick="gpsShare()" style="border-color:#00E676">📍<b>GPS Share</b><span>GPS Share - Capture + GPS Stamp + Share - Photo + Location + Map Link</span></button>
   <button onclick="openAntiFake()" style="border-color:#FF3B30">🛡️<b>Anti-Fake GPS</b><span>Anti-Fake GPS - Block Mock / Fake GPS / GPS Emulator - PRO</span></button>
@@ -128,8 +127,8 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
 
 <div style="display:flex;gap:8px"><button class="gold" style="flex:1" onclick="openPricing()">💰 Upgrade to PRO — Rs. 2,500 / Year →</button><button style="flex:1" onclick="openAbout()">ℹ️ About — WanaLab</button></div>
 <div style="text-align:center;color:#5A6575;font-size:12px;margin-top:6px">By WanaLab • Founded by Nasir Khan • GodEye • v2.2 — Face Mesh 468 Dots • External PRO • Thumb + Effects + Credentials + GPS Timestamp + GPS Share + Anti-Fake GPS</div>
-<!-- v2.2 Build Fix: Links for GitHub Actions check - www/index.html -> ROOT files -->
-<div style="text-align:center;font-size:12px;margin-top:8px"><a href="../shop.html" style="color:#00E676">🏪 Shop</a> • <a href="../export.html" style="color:#00E676">📤 Export</a> • <a href="../about.html" style="color:#8A94A3">ℹ️ About</a> • <a href="../privacy.html" style="color:#8A94A3">🔒 Privacy</a></div>
+<!-- v2.2 Build Fix: Links - www/index.html -> www/ files - ./ NOT ../ -->
+<div style="text-align:center;font-size:12px;margin-top:8px"><a href="./shop.html" style="color:#00E676">🏪 Shop</a> • <a href="./export.html" style="color:#00E676">📤 Export</a> • <a href="./about.html" style="color:#8A94A3">ℹ️ About</a> • <a href="./privacy.html" style="color:#8A94A3">🔒 Privacy</a></div>
 </div>
 
 <div id="voiceOverlay">
@@ -221,8 +220,7 @@ function openAntiFake(){
   var logs=JSON.parse(localStorage.getItem('god_fake_gps_log')||'[]');
   openPanel('<h2>🛡️ Anti-Fake GPS - Block GPS Emulator / Fake GPS</h2><p>Anti-Fake GPS - 5 Checks: Mock Provider (isFromMockProvider) + Developer Mock App + Fake GPS Apps List + GPS vs Network + GPS Jump</p><p>GPS Status: '+(gpsFake?'❌ Fake GPS Detected - '+gpsFakeReason:'✅ Real GPS - Passed')+'</p><p>Fake GPS Attempts Logged: '+logs.length+'</p><p>How To Fix Fake GPS:<br>1. Uninstall Fake GPS / GPS Emulator App<br>2. Settings > Developer Options > Select Mock Location App > None<br>3. Turn Off Developer Options<br>4. Restart Phone<br>5. Tap Check Again</p><button class="primary" onclick="refreshGPS()">🔄 Check Again - Anti-Fake GPS</button>');
 }
-refreshGPS();
-
+// GPS OFF by default - DO NOT auto-call refreshGPS() on load - v2.2 spec
 function credentialsBlock(feature){
   return '<div class="credBox"><b>🏛️ Credentials For This Page - Optional</b><br><span>Profile Type: Shop / Office / Department / School / Hospital / Factory / Personal</span><br><span id="credLabel-'+feature+'">Profile: Personal - Nasir Khan - Shop / Office / Department</span><br><button onclick="openCredentials(\''+feature+'\')">✏️ Edit Credentials For This Page</button> <button onclick="previewExport()">👁️ Preview Export</button><br><small>FREE: Shows Name + Phone + Made By WanaLab Watermark • PRO: No Watermark + Logo + Signature</small><div style="color:#8A94A3;font-size:11px;margin-top:4px">Made By WanaLab - GodEye FREE - Watermark on FREE exports</div></div><div class="gpsBox"><b>📍 GPS Timestamp For This Page</b><br>'+getGPSLine()+'<br><button onclick="gpsShare()">📍 GPS Share This Page</button></div>';
 }
@@ -285,4 +283,4 @@ function updateLimits(){
 updateProBadge(); updateLimits();
 </script>
 </body>
-                                                                              </html>
+                                                                                  </html>
