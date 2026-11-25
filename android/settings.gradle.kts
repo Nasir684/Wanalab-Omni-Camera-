@@ -1,7 +1,8 @@
-// WanaLab God Eye v2.2 - settings.gradle.kts
+// WanaLab God Eye v2.2 - settings.gradle.kts - COMPLETE
 // Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
 // PRO Rs. 2,500 / Year
-// FIX: KSP plugin not found - Added pluginManagement + gradlePluginPortal + KSP version
+// FIX 1: KSP plugin not found - pluginManagement + gradlePluginPortal + KSP 2.0.0-1.0.24
+// FIX 2: Capacitor paths - Real location is ../node_modules/@capacitor/... NOT android/capacitor-android
 
 pluginManagement {
     repositories {
@@ -27,12 +28,12 @@ dependencyResolutionManagement {
 rootProject.name = "android"
 include(":app")
 include(":capacitor-android")
-project(":capacitor-android").projectDir = File("capacitor-android")
+project(":capacitor-android").projectDir = File("../node_modules/@capacitor/android/capacitor")
 include(":capacitor-app")
-project(":capacitor-app").projectDir = File("capacitor-android/capacitor-app")
+project(":capacitor-app").projectDir = File("../node_modules/@capacitor/app/android")
 include(":capacitor-haptics")
-project(":capacitor-haptics").projectDir = File("capacitor-android/capacitor-haptics")
+project(":capacitor-haptics").projectDir = File("../node_modules/@capacitor/haptics/android")
 include(":capacitor-keyboard")
-project(":capacitor-keyboard").projectDir = File("capacitor-android/capacitor-keyboard")
+project(":capacitor-keyboard").projectDir = File("../node_modules/@capacitor/keyboard/android")
 include(":capacitor-status-bar")
-project(":capacitor-status-bar").projectDir = File("capacitor-android/capacitor-status-bar")
+project(":capacitor-status-bar").projectDir = File("../node_modules/@capacitor/status-bar/android")
