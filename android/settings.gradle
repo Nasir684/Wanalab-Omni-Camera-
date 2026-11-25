@@ -1,0 +1,8 @@
+// WanaLab GodEye v2.2 - settings.gradle
+// Author: Nasir Khan - Wana, South Waziristan - 2026-11-23
+// PRO Rs. 2,500 / Year
+// DO NOT convert to .kts - Capacitor 8 is Groovy-first
+// This file is COMMITTED - NOT generated in CI
+
+include ':app'
+apply from: 'capacitor.settings.gradle'
