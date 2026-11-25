@@ -1,4 +1,4 @@
-# WanaLab God Eye v2.2 - build-apk.yml - FINAL - Line 16 Fixed + Gradle 8.7 Fixed
+# WanaLab God Eye v2.2 - build-apk.yml - FINAL - SDK Platform 35 Fixed
 # Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
 # PRO Rs. 2,500 / Year
 name: Build GodEye APK + AAB - v2.2 - Thumb + Effects + Credentials + GPS + Anti-Fake
@@ -124,13 +124,21 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Setup Android SDK - Use Preinstalled
+      # FIXED - Install Android SDK Platform 35 - Was missing, caused compileDebugJavaWithJavac fail
+      - name: Setup Android SDK - Install Platform 35 + Build-Tools
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK Platform 35
         run: |
-          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-          ls /usr/local/lib/android/sdk/
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          ls $ANDROID_HOME/platforms/ || echo "No platforms yet"
+          echo "=== Installing Platform 35 + Build Tools 35.0.0 ==="
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-35" "build-tools;35.0.0" "platforms;android-34" || yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          echo "=== After Install ==="
+          ls -lh $ANDROID_HOME/platforms/
+          ls -lh $ANDROID_HOME/platforms/android-35/android.jar || (echo "❌ android-35 still missing" && exit 1)
+          echo "✅ SDK Platform 35 installed - android.jar exists"
 
       - name: Install deps
         run: npm install
@@ -203,7 +211,6 @@ jobs:
           EOF
           rm -f android/build.gradle.kts
           echo "✅ FILE 1 - ROOT fixed - No allprojects"
-          cat android/build.gradle
           echo "=== FILE 2 - SETTINGS android/settings.gradle.kts - PREFER_SETTINGS ==="
           cat > android/settings.gradle.kts <<'EOF'
           // WanaLab God Eye v2.2 - settings.gradle.kts - FIXED Line 16
@@ -244,7 +251,6 @@ jobs:
           EOF
           rm -f android/settings.gradle
           echo "✅ FILE 2 - settings fixed - PREFER_SETTINGS"
-          cat android/settings.gradle.kts
           echo "=== FILE 3 - APP android/app/build.gradle.kts - KSP version ==="
           cat > android/app/build.gradle.kts <<'EOF'
           // WanaLab God Eye v2.2 - build.gradle.kts (app)
@@ -423,11 +429,18 @@ jobs:
           chmod +x android/gradlew
           echo "✅ gradlew ready - Created by Capacitor, not by curl"
 
+      # NEW - Show full error if compile fails - So next log is not hidden
+      - name: Check Dependencies - Show exact unresolved dep
+        run: |
+          cd android
+          ./gradlew :app:dependencies --configuration debugCompileClasspath --info 2>&1 | tail -n 100 || echo "Dependencies check done"
+        continue-on-error: true
+
       - name: Build APK - Debug for Testing
         run: |
           chmod +x android/gradlew
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --info --stacktrace 2>&1 | tee /tmp/build.log; EXIT_CODE=${PIPESTATUS[0]}; if [ $EXIT_CODE -ne 0 ]; then echo "=== FULL ERROR - Last 200 lines ==="; tail -n 200 /tmp/build.log; echo "=== Search for FAILED / error: ==="; grep -i "error:\|FAILED\|Could not\|Unresolved\|missing" /tmp/build.log | head -n 100; exit $EXIT_CODE; fi
 
       - name: Build AAB - Debug for Play Store Test
         run: |
