@@ -1,94 +1,89 @@
-<!-- WanaLab God Eye v2.2 - AndroidManifest.xml -->
-<!-- Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23 -->
-<!-- PRO Rs. 2,500 / Year -->
 <?xml version="1.0" encoding="utf-8"?>
+<!-- WanaLab GodEye v2.2 - AndroidManifest.xml -->
+<!-- Author: Nasir Khan - Wana, South Waziristan - 2026-11-23 -->
+<!-- PRO Rs. 2,500 / Year -->
+<!-- usesCleartextTraffic=true REQUIRED for IP Cam / RTSP / ONVIF / DEPSTECH 192.168.10.1 - External Devices PRO -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Camera + Audio - Voice 38 + Face Detection -->
+    <!-- Camera / Mic / Face 468 Dots / Thumb Biometric -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
-    <!-- Internet + Network - WiFi Microscope / IP Camera / DEPSTECH -->
+    <!-- GPS Timestamp + GPS Share + Anti-Fake GPS PRO -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Storage / Export PDF / DOCX / Excel / ZIP -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <!-- WiFi Microscope + IP Camera + External Devices PRO -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
-    <!-- GPS Location - v23 - GPS Timestamp + GPS Share + Anti-Fake GPS -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
-
-    <!-- USB OTG - UVC Microscope + UVC Endoscope -->
-    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
-
-    <!-- Bluetooth - Future Thermal / BT -->
+    <!-- Bluetooth Printer / Devices - External Devices PRO -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
 
-    <!-- Alerts -->
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- USB OTG - UVC Microscope / Endoscope / USB Cam / Storage -->
+    <uses-permission android:name="android.permission.USB_PERMISSION" />
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+
+    <!-- Unknown Face Alert -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- Foreground Service - Background recording later -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-
-    <!-- Storage - Alert snapshots + Face Log - Scoped storage -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
-    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
-    <uses-feature android:name="android.hardware.microphone" android:required="false" />
-    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <application
-        android:allowBackup="false"
-        android:fullBackupContent="false"
-        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:label="God Eye - WanaLab"
+        android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true">
 
-        <!-- MAIN - ONLY LAUNCHER - Capacitor - Loads index.html -->
+        <!-- ONLY Activity in Spec v2.2 - DO NOT add others -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
             android:exported="true"
+            android:label="@string/title_activity_main"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|screenSize|keyboardHidden|keyboard|navigation">
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- USB OTG - Auto-open when UVC Microscope plugged -->
-            <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-            </intent-filter>
-            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/device_filter" />
         </activity>
 
-        <!-- v2.2 - Native Activities - NOT Launcher -->
-        <activity android:name=".CameraActivity" android:exported="false" android:screenOrientation="portrait" />
-        <activity android:name=".CameraSettingsActivity" android:exported="false" />
-        <activity android:name=".FaceEnrollActivity" android:exported="false" />
-        <activity android:name=".FaceLogActivity" android:exported="false" />
-        <activity android:name=".FaceAlertHistoryActivity" android:exported="false" />
-        <activity android:name=".HomeCameraViewerActivity" android:exported="false" />
+        <!-- DELETED in v2.2 - Do NOT re-add unless .kt file exists: -->
+        <!-- CameraActivity, CameraSettingsActivity, FaceEnrollActivity -->
+        <!-- FaceLogActivity, FaceAlertHistoryActivity, HomeCameraViewerActivity -->
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 </manifest>
