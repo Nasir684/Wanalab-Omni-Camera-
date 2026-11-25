@@ -1,5 +1,8 @@
-// Top-level build file for GodEye - By WanaLab - v2.2
+// WanaLab God Eye v2.2 - build.gradle (ROOT)
+// Author: Nasir Khan - Dera Ismail Khan, Khyber Pakhtunkhwa - 2026-11-23
+// PRO Rs. 2,500 / Year
 // Capacitor 7 + Gradle 8.7 + AGP 8.5.2 + Kotlin 2.0.0
+
 buildscript {
     repositories {
         google()
