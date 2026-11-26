@@ -9,102 +9,78 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+        with: { node-version: '22' }
       - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Install Android SDK packages
+        with: { distribution: 'temurin', java-version: '21' }
+      - name: Install Android SDK
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
       - name: Install Node deps
         run: npm install
-      - run: npm run build
+      - name: Skip web build - DO NOT overwrite www/
+        run: echo "www already exists, skipping web build"
       - run: npx cap sync android
-      - name: FIX - All missing resources - Styles + Strings + Colors
+      - name: FIX ALL - Manifest + Res + MainActivity + Gradle
         run: |
           python3 <<'PYEOF'
           import re, os
           from pathlib import Path
           base = Path('android/app/src/main/res')
-          base.joinpath('values').mkdir(parents=True, exist_ok=True)
-          base.joinpath('xml').mkdir(parents=True, exist_ok=True)
-          # 1. Write COMPLETE styles.xml - includes the missing one
-          (base/'values/styles.xml').write_text('''<?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-              <item name="colorPrimary">@color/colorPrimary</item>
-              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-              <item name="colorAccent">@color/colorAccent</item>
-            </style>
-            <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-              <item name="colorPrimary">@color/colorPrimary</item>
-              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-              <item name="colorAccent">@color/colorAccent</item>
-            </style>
-            <style name="AppTheme.NoActionBarLaunch" parent="Theme.AppCompat.Light.NoActionBar">
-              <item name="colorPrimary">@color/colorPrimary</item>
-              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-              <item name="colorAccent">@color/colorAccent</item>
-              <item name="android:windowBackground">@color/colorPrimary</item>
-            </style>
-            <style name="AppTheme.NoActionBarLaunchSplash" parent="AppTheme.NoActionBarLaunch" />
-            <style name="LaunchTheme" parent="AppTheme.NoActionBarLaunch" />
-            <style name="SplashTheme" parent="AppTheme.NoActionBarLaunch" />
-          </resources>
-          ''')
-          # 2. Strings
+          # --- A. Nuclear clean res ---
+          import shutil
+          if base.exists(): shutil.rmtree(base)
+          for d in ['values','xml','drawable','layout','mipmap-mdpi','mipmap-hdpi','mipmap-xhdpi','mipmap-xxhdpi','mipmap-xxxhdpi']:
+              (base/d).mkdir(parents=True, exist_ok=True)
+          # --- B. Complete values ---
           (base/'values/strings.xml').write_text('<?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">GodEye</string><string name="title_activity_main">GodEye</string><string name="action_settings">Settings</string><string name="hello_world">Hello World!</string></resources>')
-          # 3. Colors
           (base/'values/colors.xml').write_text('<?xml version="1.0" encoding="utf-8"?><resources><color name="colorPrimary">#2563EB</color><color name="colorPrimaryDark">#1E40AF</color><color name="colorAccent">#2563EB</color><color name="colorPrimaryVariant">#1E40AF</color><color name="colorOnPrimary">#FFFFFF</color></resources>')
-          # 4. file_paths
+          (base/'values/styles.xml').write_text('''<?xml version="1.0" encoding="utf-8"?><resources>
+          <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar"><item name="colorPrimary">@color/colorPrimary</item><item name="colorPrimaryDark">@color/colorPrimaryDark</item><item name="colorAccent">@color/colorAccent</item></style>
+          <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar"><item name="colorPrimary">@color/colorPrimary</item><item name="colorPrimaryDark">@color/colorPrimaryDark</item><item name="colorAccent">@color/colorAccent</item></style>
+          <style name="AppTheme.NoActionBarLaunch" parent="Theme.AppCompat.Light.NoActionBar"><item name="colorPrimary">@color/colorPrimary</item><item name="colorPrimaryDark">@color/colorPrimaryDark</item><item name="colorAccent">@color/colorAccent</item><item name="android:windowBackground">@color/colorPrimary</item></style>
+          <style name="AppTheme.NoActionBarLaunchSplash" parent="AppTheme.NoActionBarLaunch" />
+          <style name="LaunchTheme" parent="AppTheme.NoActionBarLaunch" />
+          <style name="SplashTheme" parent="AppTheme.NoActionBarLaunch" />
+          </resources>''')
           (base/'xml/file_paths.xml').write_text('<?xml version="1.0" encoding="utf-8"?><paths><files-path name="files" path="." /><cache-path name="cache" path="." /><external-path name="external" path="." /></paths>')
           (base/'xml/data_extraction_rules.xml').write_text('<?xml version="1.0" encoding="utf-8"?><data-extraction-rules><cloud-backup><exclude domain="root" path="." /></cloud-backup><device-transfer><exclude domain="root" path="." /></device-transfer></data-extraction-rules>')
-          # 5. AUTO-FIX: Scan Manifest for ANY @style / @string / @color / @drawable / @xml / @layout and create if missing
-          manifest = open('android/app/src/main/AndroidManifest.xml').read()
-          print("MANIFEST:")
-          print(manifest)
-          # Fix known bad refs first
-          manifest = manifest.replace('@string/title_activity_main', 'GodEye')
-          open('android/app/src/main/AndroidManifest.xml','w').write(manifest)
-          refs = set(re.findall(r'@([a-z]+)/([A-Za-z0-9_\.]+)', manifest))
-          print(f"Refs found: {refs}")
+          # --- C. MainActivity + delete omnicamera ---
+          import shutil as sh
+          sh.rmtree('android/app/src/main/java/com/wanalab/omnicamera', ignore_errors=True)
+          Path('android/app/src/main/java/com/wanalab/godeye').mkdir(parents=True, exist_ok=True)
+          Path('android/app/src/main/java/com/wanalab/godeye/MainActivity.java').write_text('package com.wanalab.godeye;\nimport com.getcapacitor.BridgeActivity;\npublic class MainActivity extends BridgeActivity {}')
+          # --- D. Manifest fixes ---
+          mp = 'android/app/src/main/AndroidManifest.xml'
+          t = open(mp).read()
+          t = t.replace('@string/title_activity_main', 'GodEye')
+          t = re.sub(r'android:icon="[^"]*"', 'android:icon="@mipmap/ic_launcher"', t)
+          t = re.sub(r'android:roundIcon="[^"]*"', 'android:roundIcon="@mipmap/ic_launcher_round"', t)
+          open(mp,'w').write(t)
+          # --- E. AUTO-FIX any other @type/name in Manifest ---
+          refs = set(re.findall(r'@([a-z]+)/([A-Za-z0-9_\.]+)', open(mp).read()))
           for typ, name in refs:
-              if typ == 'style':
-                  t = (base/'values/styles.xml').read_text()
-                  if f'name="{name}"' not in t:
-                      t = t.replace('</resources>', f'  <style name="{name}" parent="AppTheme.NoActionBarLaunch" />\n</resources>')
-                      (base/'values/styles.xml').write_text(t)
-                      print(f"✅ Auto-added style {name}")
-              elif typ == 'string':
-                  t = (base/'values/strings.xml').read_text()
-                  if f'name="{name}"' not in t:
-                      t = t.replace('</resources>', f'    <string name="{name}">GodEye</string>\n</resources>')
-                      (base/'values/strings.xml').write_text(t)
-                      print(f"✅ Auto-added string {name}")
-              elif typ == 'color':
-                  t = (base/'values/colors.xml').read_text()
-                  if f'name="{name}"' not in t:
-                      t = t.replace('</resources>', f'<color name="{name}">#2563EB</color></resources>')
-                      (base/'values/colors.xml').write_text(t)
-                      print(f"✅ Auto-added color {name}")
-          print("=== FINAL styles.xml ===")
-          print((base/'values/styles.xml').read_text())
+              if typ == 'style' and f'name="{name}"' not in (base/'values/styles.xml').read_text():
+                  cur = (base/'values/styles.xml').read_text()
+                  (base/'values/styles.xml').write_text(cur.replace('</resources>', f'  <style name="{name}" parent="AppTheme.NoActionBarLaunch" />\n</resources>'))
+                  print(f"Added style {name}")
+              if typ == 'string' and f'name="{name}"' not in (base/'values/strings.xml').read_text():
+                  cur = (base/'values/strings.xml').read_text()
+                  (base/'values/strings.xml').write_text(cur.replace('</resources>', f'    <string name="{name}">GodEye</string>\n</resources>'))
+                  print(f"Added string {name}")
+              if typ == 'color' and f'name="{name}"' not in (base/'values/colors.xml').read_text():
+                  cur = (base/'values/colors.xml').read_text()
+                  (base/'values/colors.xml').write_text(cur.replace('</resources>', f'<color name="{name}">#2563EB</color></resources>'))
+                  print(f"Added color {name}")
+          # --- F. build.gradle resValue injection ---
+          bg = 'android/app/build.gradle'
+          g = open(bg).read()
+          if 'title_activity_main' not in g:
+              g = g.replace('defaultConfig {', 'defaultConfig {\n        resValue "string", "title_activity_main", "GodEye"\n        resValue "string", "app_name", "GodEye"')
+              open(bg,'w').write(g)
+          print("✅ ALL FIXES APPLIED")
           PYEOF
-          # MainActivity + clean
-          rm -f android/app/src/main/res/xml/config.xml
-          rm -rf android/app/src/main/java/com/wanalab/omnicamera
-          rm -rf android/app/src/main/res/mipmap-anydpi-v26
-          rm -f android/app/src/main/res/values/ic_launcher_*.xml
-          mkdir -p android/app/src/main/java/com/wanalab/godeye
-          cat > android/app/src/main/java/com/wanalab/godeye/MainActivity.java <<'EOF'
-          package com.wanalab.godeye;
-          import com.getcapacitor.BridgeActivity;
-          public class MainActivity extends BridgeActivity {}
-          EOF
-      - name: Create proper launcher icons
+      - name: Create icons with Pillow
         run: |
           pip3 install Pillow --break-system-packages -q
           python3 <<'PYEOF'
@@ -117,13 +93,6 @@ jobs:
               img.save(f'{p}/ic_launcher.png')
               img.save(f'{p}/ic_launcher_round.png')
           print('✅ Icons created')
-          PYEOF
-          python3 <<'PYEOF'
-          import re
-          t = open('android/app/src/main/AndroidManifest.xml').read()
-          t = re.sub(r'android:icon="[^"]*"', 'android:icon="@mipmap/ic_launcher"', t)
-          t = re.sub(r'android:roundIcon="[^"]*"', 'android:roundIcon="@mipmap/ic_launcher_round"', t)
-          open('android/app/src/main/AndroidManifest.xml','w').write(t)
           PYEOF
       - name: Generate gradlew if missing
         run: |
@@ -140,10 +109,6 @@ jobs:
           ./gradlew assembleDebug --stacktrace
           ./gradlew bundleDebug --stacktrace
       - uses: actions/upload-artifact@v4
-        with:
-          name: GodEye-APK-v2.2
-          path: android/app/build/outputs/apk/debug/*.apk
+        with: { name: GodEye-APK-v2.2, path: android/app/build/outputs/apk/debug/*.apk }
       - uses: actions/upload-artifact@v4
-        with:
-          name: GodEye-AAB-v2.2
-          path: android/app/build/outputs/bundle/debug/*.aab
+        with: { name: GodEye-AAB-v2.2, path: android/app/build/outputs/bundle/debug/*.aab }
