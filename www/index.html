@@ -401,5 +401,31 @@ try{
   }
 }catch(e){}
   </script>
+  <style>
+/* PATCH 8 - CAMERA PRO */
+#videoWrap{position:relative!important;border:1px solid #1e3a4a!important;border-radius:12px!important;background:#000!important}
+.camTop{position:absolute!important;top:8px!important;left:8px!important;right:8px!important;display:flex!important;justify-content:space-between!important;z-index:5!important}
+.camRec{background:#ff2d55!important;color:#fff!important;font-size:10px!important;font-weight:800!important;padding:4px 8px!important;border-radius:20px!important;letter-spacing:0.5px!important}
+.camHd{background:rgba(0,0,0,0.65)!important;color:#7ee2ff!important;border:1px solid #1e5a7a!important;font-size:10px!important;font-weight:700!important;padding:4px 8px!important;border-radius:20px!important}
+.camBottom{position:absolute!important;bottom:8px!important;left:8px!important;right:8px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;z-index:5!important}
+.camTime{background:rgba(0,0,0,0.65)!important;color:#fff!important;font-family:monospace!important;font-size:11px!important;padding:4px 8px!important;border-radius:8px!important}
+.camLoc{background:rgba(0,0,0,0.65)!important;color:#5eeaa0!important;font-size:10px!important;font-weight:700!important;padding:4px 8px!important;border-radius:8px!important}
+</style>
+<script>
+/* PATCH 8 - CAMERA OVERLAY */
+try{
+  var vw = document.getElementById('videoWrap');
+  if(vw && !document.getElementById('camOverlay')){
+    var o = document.createElement('div');
+    o.id = 'camOverlay';
+    o.innerHTML = '<div class="camTop"><span class="camRec">● REC</span><span class="camHd">HD • CAM 01</span></div><div class="camBottom"><span class="camTime" id="camClock">--:--:--</span><span class="camLoc">WANA • GPS ON</span></div>';
+    vw.appendChild(o);
+    setInterval(function(){
+      var c = document.getElementById('camClock');
+      if(c) c.textContent = new Date().toLocaleTimeString('en-GB');
+    },1000);
+  }
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
