@@ -619,5 +619,37 @@ try{
   }
 }catch(e){}
 </script>
+  <style>
+/* PATCH 18 - FINAL LOCK */
+#gpsStatus{white-space:nowrap!important;font-size:11.5px!important}
+.gpsMeta{white-space:nowrap!important}
+.gpsMeta b{white-space:nowrap!important}
+#gpsLabel{font-size:12px!important}
+</style>
+<script>
+/* PATCH 18 - AUTO GPS + FIX TEXT */
+try{
+  // 1. Fix Timestamp text - force 1 line
+  document.querySelectorAll('*').forEach(function(e){
+    if(e.childNodes.length==1 && e.textContent.indexOf('Timestamp')>-1){
+      e.textContent = e.textContent.replace(/\s+/g,' ').replace('Ti mestamp','Timestamp');
+    }
+  });
+  var gs = document.getElementById('gpsStatus');
+  if(gs && gs.textContent.indexOf('OFF')>-1){
+    gs.textContent = '📍 Waiting for GPS... Tap Get GPS';
+  }
+  // 2. Auto-Start GPS after 1.5 sec
+  setTimeout(function(){
+    var btns = document.querySelectorAll('button');
+    btns.forEach(function(b){
+      if(b.textContent.indexOf('Get GPS')>-1 && !b.dataset.auto){
+        b.dataset.auto='1';
+        b.click();
+      }
+    });
+  },1500);
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
