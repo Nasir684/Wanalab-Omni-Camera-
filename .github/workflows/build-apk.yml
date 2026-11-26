@@ -25,56 +25,34 @@ jobs:
       - run: npx cap sync android
       - name: Clean ALL bad resources - FIXES mergeDebugResources
         run: |
-          echo "=== BEFORE ==="
-          find android/app/src/main/res -type f | sort || true
-          # 1. Kill Cordova leftover - #1 cause of Index -1 crash
           rm -f android/app/src/main/res/xml/config.xml
-          # 2. Kill old OmniCamera junk
           rm -rf android/app/src/main/java/com/wanalab/omnicamera
           rm -rf android/app/src/main/res/values/mipmap-anydpi-v26
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           rm -f android/app/src/main/res/values/ic_launcher_*.xml
-          # 3. Kill hidden / invalid files that break AAPT2
           find android/app/src/main/res -name ".DS_Store" -delete || true
-          find android/app/src/main/res -name "*.DS_Store" -delete || true
-          find android/app/src/main/res -name "* *" -delete || true
-          # 4. Keep ONLY valid xml in res/xml
-          mkdir -p android/app/src/main/res/xml
-          # file_paths + data_extraction_rules are valid, keep them
-          # 5. Remove bad drawables that may be corrupt
           rm -rf android/app/src/main/res/drawable-v24 || true
-          # 6. Recreate MainActivity
           mkdir -p android/app/src/main/java/com/wanalab/godeye
           cat > android/app/src/main/java/com/wanalab/godeye/MainActivity.java <<'EOF'
           package com.wanalab.godeye;
           import com.getcapacitor.BridgeActivity;
           public class MainActivity extends BridgeActivity {}
           EOF
-          echo "=== AFTER ==="
+          echo "✅ Cleaned"
           find android/app/src/main/res -type f | sort || true
-      - name: Create proper launcher icons - 512x512
+      - name: Create proper launcher icons
         run: |
+          pip3 install Pillow --break-system-packages -q
           python3 <<'PYEOF'
           import os
-          try:
-              from PIL import Image
-              # Proper 512x512 blue icon, not 1x1 - 1x1 breaks AAPT2
-              for d, size in [('mipmap-mdpi',48),('mipmap-hdpi',72),('mipmap-xhdpi',96),('mipmap-xxhdpi',144),('mipmap-xxxhdpi',192)]:
-                  p = f'android/app/src/main/res/{d}'
-                  os.makedirs(p, exist_ok=True)
-                  img = Image.new('RGB', (size, size), color=(37, 99, 235))
-                  img.save(f'{p}/ic_launcher.png')
-                  img.save(f'{p}/ic_launcher_round.png')
-              print('✅ Icons created with Pillow')
-          except Exception as e:
-              print(f'Pillow failed {e}, using fallback')
-              import base64
-              png = base64.b64decode('[STRIPPED 92 bytes]')
-              for d in ['mipmap-mdpi','mipmap-hdpi','mipmap-xhdpi','mipmap-xxhdpi','mipmap-xxxhdpi']:
-                  p = f'android/app/src/main/res/{d}'
-                  os.makedirs(p, exist_ok=True)
-                  open(f'{p}/ic_launcher.png','wb').write(png)
-                  open(f'{p}/ic_launcher_round.png','wb').write(png)
+          from PIL import Image
+          for d, size in [('mipmap-mdpi',48),('mipmap-hdpi',72),('mipmap-xhdpi',96),('mipmap-xxhdpi',144),('mipmap-xxxhdpi',192)]:
+              p = f'android/app/src/main/res/{d}'
+              os.makedirs(p, exist_ok=True)
+              img = Image.new('RGB', (size, size), color=(37, 99, 235))
+              img.save(f'{p}/ic_launcher.png')
+              img.save(f'{p}/ic_launcher_round.png')
+          print('✅ Icons created')
           PYEOF
           ls android/app/src/main/res/ | grep mipmap || true
       - name: Generate gradlew if missing
