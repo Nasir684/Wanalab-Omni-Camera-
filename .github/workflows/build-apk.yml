@@ -23,24 +23,60 @@ jobs:
         run: npm install
       - run: npm run build
       - run: npx cap sync android
-      - name: NUCLEAR - Wipe res and rebuild minimal
+      - name: DEBUG - Show what files we actually have
         run: |
-          echo "=== OLD RES - THE CULPRIT IS IN HERE ==="
-          find android/app/src/main/res -type f | sort
-          echo "=== MANIFEST REFERENCES ==="
+          echo "=== WORKFLOWS ==="
+          ls -R .github/workflows/
+          echo "=== MANIFEST SOURCE ==="
           cat android/app/src/main/AndroidManifest.xml
-          echo "=== BUILD.GRADLE ==="
-          cat android/app/build.gradle
-          # SAVE manifest, wipe everything
-          cp android/app/src/main/AndroidManifest.xml /tmp/Manifest.xml
-          rm -rf android/app/src/main/res
-          mkdir -p android/app/src/main/res/values
-          mkdir -p android/app/src/main/res/xml
-          mkdir -p android/app/src/main/res/drawable
-          # Minimal values - no duplicates, no bad XML
-          cat > android/app/src/main/res/values/strings.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources><string name="app_name">GodEye</string></resources>
+          echo "=== ALL MANIFESTS ==="
+          find android -name "AndroidManifest.xml" | xargs grep -l "title_activity_main" || echo "No manifest has title_activity_main"
+          echo "=== STRINGS ==="
+          cat android/app/src/main/res/values/strings.xml || echo "NO STRINGS FILE"
+      - name: FIX - Inject string via build.gradle + Manifest - CANNOT FAIL
+        run: |
+          python3 <<'PYEOF'
+          import re
+          # 1. Fix Manifest - replace reference with plain text
+          mp = 'android/app/src/main/AndroidManifest.xml'
+          t = open(mp).read()
+          t = t.replace('@string/title_activity_main', 'GodEye')
+          t = re.sub(r'android:icon="[^"]*"', 'android:icon="@mipmap/ic_launcher"', t)
+          t = re.sub(r'android:roundIcon="[^"]*"', 'android:roundIcon="@mipmap/ic_launcher_round"', t)
+          open(mp,'w').write(t)
+          print("Manifest fixed, title_activity_main left?", 'title_activity_main' in open(mp).read())
+          # 2. Inject via build.gradle - this creates the string at build time even if res/ is wiped
+          bg = 'android/app/build.gradle'
+          g = open(bg).read()
+          print("=== BUILD.GRADLE BEFORE ===")
+          print(g)
+          if 'title_activity_main' not in g:
+              # Insert resValue inside defaultConfig { ... }
+              g = g.replace('defaultConfig {', 'defaultConfig {\n        resValue "string", "title_activity_main", "GodEye"\n        resValue "string", "app_name", "GodEye"')
+          open(bg,'w').write(g)
+          print("=== BUILD.GRADLE AFTER ===")
+          print(open(bg).read())
+          # 3. Also create strings.xml
+          import os
+          os.makedirs('android/app/src/main/res/values', exist_ok=True)
+          open('android/app/src/main/res/values/strings.xml','w').write('<?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">GodEye</string><string name="title_activity_main">GodEye</string></resources>')
+          print("strings.xml written")
+          PYEOF
+          echo "=== VERIFY - If this still shows title_activity_main, fix did NOT run ==="
+          grep -r "title_activity_main" android/app/src/main/AndroidManifest.xml || echo "✅ GOOD - No reference left in Manifest"
+          grep -r "title_activity_main" android/app/build.gradle || echo "❌ BAD - build.gradle injection missing"
+          cat android/app/src/main/res/values/strings.xml
+      - name: Clean bad resources + MainActivity + Colors + Styles
+        run: |
+          rm -f android/app/src/main/res/xml/config.xml
+          rm -rf android/app/src/main/java/com/wanalab/omnicamera
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          rm -f android/app/src/main/res/values/ic_launcher_*.xml
+          mkdir -p android/app/src/main/java/com/wanalab/godeye
+          cat > android/app/src/main/java/com/wanalab/godeye/MainActivity.java <<'EOF'
+          package com.wanalab.godeye;
+          import com.getcapacitor.BridgeActivity;
+          public class MainActivity extends BridgeActivity {}
           EOF
           cat > android/app/src/main/res/values/colors.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
@@ -49,37 +85,13 @@ jobs:
           cat > android/app/src/main/res/values/styles.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
-            <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-              <item name="colorPrimary">@color/colorPrimary</item>
-              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-              <item name="colorAccent">@color/colorAccent</item>
-            </style>
-            <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-              <item name="colorPrimary">@color/colorPrimary</item>
-              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-              <item name="colorAccent">@color/colorAccent</item>
-            </style>
+            <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar"><item name="colorPrimary">@color/colorPrimary</item><item name="colorPrimaryDark">@color/colorPrimaryDark</item><item name="colorAccent">@color/colorAccent</item></style>
+            <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar"><item name="colorPrimary">@color/colorPrimary</item><item name="colorPrimaryDark">@color/colorPrimaryDark</item><item name="colorAccent">@color/colorAccent</item></style>
           </resources>
           EOF
           cat > android/app/src/main/res/xml/file_paths.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <paths><files-path name="files" path="." /><cache-path name="cache" path="." /><external-path name="external" path="." /></paths>
-          EOF
-          cat > android/app/src/main/res/xml/data_extraction_rules.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <data-extraction-rules><cloud-backup><exclude domain="root" path="." /></cloud-backup><device-transfer><exclude domain="root" path="." /></device-transfer></data-extraction-rules>
-          EOF
-          # Fix Manifest - remove any reference to missing resources
-          cat /tmp/Manifest.xml
-          echo "=== NEW RES ==="
-          find android/app/src/main/res -type f | sort
-          # MainActivity
-          rm -rf android/app/src/main/java/com/wanalab/omnicamera
-          mkdir -p android/app/src/main/java/com/wanalab/godeye
-          cat > android/app/src/main/java/com/wanalab/godeye/MainActivity.java <<'EOF'
-          package com.wanalab.godeye;
-          import com.getcapacitor.BridgeActivity;
-          public class MainActivity extends BridgeActivity {}
           EOF
       - name: Create proper launcher icons
         run: |
@@ -95,24 +107,6 @@ jobs:
               img.save(f'{p}/ic_launcher_round.png')
           print('✅ Icons created')
           PYEOF
-      - name: Fix Manifest to use only existing resources
-        run: |
-          python3 <<'PYEOF'
-          import re
-          p = 'android/app/src/main/AndroidManifest.xml'
-          t = open(p).read()
-          print("BEFORE MANIFEST:")
-          print(t)
-          # Force icon and theme to ones we KNOW exist
-          t = re.sub(r'android:icon="[^"]*"', 'android:icon="@mipmap/ic_launcher"', t)
-          t = re.sub(r'android:roundIcon="[^"]*"', 'android:roundIcon="@mipmap/ic_launcher_round"', t)
-          t = re.sub(r'android:theme="[^"]*"', 'android:theme="@style/AppTheme.NoActionBar"', t)
-          # Remove any reference to drawable splash / vector that we deleted
-          t = re.sub(r'android:.*?="@drawable/[^"]*"', '', t)
-          open(p,'w').write(t)
-          print("AFTER MANIFEST:")
-          print(open(p).read())
-          PYEOF
       - name: Generate gradlew if missing
         run: |
           if [ -f android/gradlew ]; then chmod +x android/gradlew; exit 0; fi
@@ -125,7 +119,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --info --stacktrace 2>&1 | tee /tmp/build.log | tail -n 200
+          ./gradlew assembleDebug --stacktrace
           ./gradlew bundleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
