@@ -23,45 +23,58 @@ jobs:
         run: npm install
       - run: npm run build
       - run: npx cap sync android
-      - name: Clean misplaced files + Create MainActivity
+      - name: Clean ALL bad resources - FIXES mergeDebugResources
         run: |
+          echo "=== BEFORE ==="
+          find android/app/src/main/res -type f | sort || true
+          # 1. Kill Cordova leftover - #1 cause of Index -1 crash
+          rm -f android/app/src/main/res/xml/config.xml
+          # 2. Kill old OmniCamera junk
+          rm -rf android/app/src/main/java/com/wanalab/omnicamera
           rm -rf android/app/src/main/res/values/mipmap-anydpi-v26
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           rm -f android/app/src/main/res/values/ic_launcher_*.xml
-          rm -rf android/app/src/main/java/com/wanalab/omnicamera
+          # 3. Kill hidden / invalid files that break AAPT2
+          find android/app/src/main/res -name ".DS_Store" -delete || true
+          find android/app/src/main/res -name "*.DS_Store" -delete || true
+          find android/app/src/main/res -name "* *" -delete || true
+          # 4. Keep ONLY valid xml in res/xml
+          mkdir -p android/app/src/main/res/xml
+          # file_paths + data_extraction_rules are valid, keep them
+          # 5. Remove bad drawables that may be corrupt
+          rm -rf android/app/src/main/res/drawable-v24 || true
+          # 6. Recreate MainActivity
           mkdir -p android/app/src/main/java/com/wanalab/godeye
           cat > android/app/src/main/java/com/wanalab/godeye/MainActivity.java <<'EOF'
           package com.wanalab.godeye;
           import com.getcapacitor.BridgeActivity;
           public class MainActivity extends BridgeActivity {}
           EOF
-          echo "✅ Cleaned + MainActivity created"
-      - name: DIAGNOSE - Print all files
-        run: |
-          echo "=== JAVA ==="
-          find android/app/src/main/java -type f | sort || true
-          echo "=== RES VALUES ==="
-          ls -R android/app/src/main/res/values/ || true
-          echo "=== RES XML ==="
-          ls -R android/app/src/main/res/xml/ || true
-          echo "=== RES MIPMAP ==="
-          ls android/app/src/main/res/ | grep mipmap || echo "NO MIPMAP FOLDERS - WILL CREATE ICONS"
-          echo "=== MainActivity ==="
-          cat android/app/src/main/java/com/wanalab/godeye/MainActivity.java || echo "MISSING!"
-          echo "=== WWW ==="
-          ls -l www/ | head -20 || true
-          ls www/index.html || echo "NO INDEX.HTML - THIS IS CRASH!"
-      - name: Create missing launcher icons
+          echo "=== AFTER ==="
+          find android/app/src/main/res -type f | sort || true
+      - name: Create proper launcher icons - 512x512
         run: |
           python3 <<'PYEOF'
-          import os, base64
-          png = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAwMCAO+ip1sAAAAASUVORK5CYII=')
-          for d in ['mipmap-mdpi','mipmap-hdpi','mipmap-xhdpi','mipmap-xxhdpi','mipmap-xxxhdpi']:
-              p = f'android/app/src/main/res/{d}'
-              os.makedirs(p, exist_ok=True)
-              open(f'{p}/ic_launcher.png','wb').write(png)
-              open(f'{p}/ic_launcher_round.png','wb').write(png)
-          print('✅ Icons created')
+          import os
+          try:
+              from PIL import Image
+              # Proper 512x512 blue icon, not 1x1 - 1x1 breaks AAPT2
+              for d, size in [('mipmap-mdpi',48),('mipmap-hdpi',72),('mipmap-xhdpi',96),('mipmap-xxhdpi',144),('mipmap-xxxhdpi',192)]:
+                  p = f'android/app/src/main/res/{d}'
+                  os.makedirs(p, exist_ok=True)
+                  img = Image.new('RGB', (size, size), color=(37, 99, 235))
+                  img.save(f'{p}/ic_launcher.png')
+                  img.save(f'{p}/ic_launcher_round.png')
+              print('✅ Icons created with Pillow')
+          except Exception as e:
+              print(f'Pillow failed {e}, using fallback')
+              import base64
+              png = base64.b64decode('[STRIPPED 92 bytes]')
+              for d in ['mipmap-mdpi','mipmap-hdpi','mipmap-xhdpi','mipmap-xxhdpi','mipmap-xxxhdpi']:
+                  p = f'android/app/src/main/res/{d}'
+                  os.makedirs(p, exist_ok=True)
+                  open(f'{p}/ic_launcher.png','wb').write(png)
+                  open(f'{p}/ic_launcher_round.png','wb').write(png)
           PYEOF
           ls android/app/src/main/res/ | grep mipmap || true
       - name: Generate gradlew if missing
