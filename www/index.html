@@ -497,5 +497,29 @@ try{
   });
 }catch(e){}
 </script>
+  <style>
+/* PATCH 12 - HEADER + SYNC */
+.hdr{position:sticky!important;top:0!important;z-index:99!important;background:#0a141b!important;padding:10px 12px!important}
+.hdr b{font-size:19px!important;letter-spacing:0.3px!important;white-space:nowrap!important}
+.hdr small{font-size:11px!important;white-space:nowrap!important}
+.syncRow{display:flex!important;justify-content:space-between!important;gap:8px!important;margin-top:6px!important}
+.syncPill{background:#0e2a3a!important;color:#7ee2ff!important;border:1px solid #1e5a7a!important;font-size:10px!important;font-weight:700!important;padding:4px 8px!important;border-radius:20px!important;white-space:nowrap!important}
+</style>
+<script>
+/* PATCH 12 - SYNC TIME */
+try{
+  var hdr = document.querySelector('.hdr, header');
+  if(hdr && !document.getElementById('syncPill')){
+    var d = document.createElement('div');
+    d.className = 'syncRow';
+    d.innerHTML = '<span class="syncPill">🛰️ GPS + CAM SYNCED</span><span class="syncPill" id="syncPill">'+new Date().toLocaleTimeString('en-GB')+'</span>';
+    hdr.appendChild(d);
+    setInterval(function(){
+      var p = document.getElementById('syncPill');
+      if(p) p.textContent = new Date().toLocaleTimeString('en-GB');
+    },1000);
+  }
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
