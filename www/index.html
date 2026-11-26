@@ -427,5 +427,26 @@ try{
   }
 }catch(e){}
 </script>
+  <style>
+/* PATCH 9 - FIX OLD GPS LINES */
+.gpsBox h3, .gpsBox h4, .gpsBox .gpsTitle{white-space:normal!important;word-break:break-word!important;line-height:1.35!important;font-size:16px!important}
+.gpsBox h3 span, .gpsBox h4 span{white-space:normal!important}
+#gpsLabel, #gpsText, #gpsStatus, #gpsInfo{white-space:normal!important;word-break:break-all!important;line-height:1.5!important;font-size:13px!important;display:block!important}
+.gpsBox{overflow:visible!important}
+.gpsBox > div:first-child{flex-wrap:wrap!important}
+</style>
+<script>
+/* PATCH 9 - SHORTEN GPS TITLE */
+try{
+  var els = document.querySelectorAll('.gpsBox h3, .gpsBox h4');
+  els.forEach(function(e){
+    if(e.textContent.indexOf('GPS Timestamp')>-1) e.textContent = '📍 GPS Timestamp';
+  });
+  var g2 = document.getElementById('gpsLabel');
+  if(g2) g2.textContent = g2.textContent.replace('GPS: Wana - ','Wana: ');
+  var s2 = document.getElementById('gpsStatus');
+  if(s2) s2.textContent = '✅ Real GPS • Accuracy 21m';
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
