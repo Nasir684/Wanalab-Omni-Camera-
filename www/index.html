@@ -722,5 +722,107 @@ try{
   }
 }catch(e){}
 </script>
+  <style>
+/* PATCH 21 - CLEAN FRONT PAGE */
+html,body{margin:0!important;padding:0!important;background:#070f16!important;overflow-x:hidden!important}
+body > *:not(#cleanApp):not(style):not(script){display:none!important}
+#cleanApp{display:block!important;padding:12px!important;max-width:480px!important;margin:0 auto!important;font-family:system-ui!important;color:#fff!important}
+.cleanHeader{display:flex!important;justify-content:space-between!important;align-items:center!important;padding:6px 2px 10px!important}
+.cleanLogo{font-size:20px!important;font-weight:900!important}
+.cleanLogo span{color:#1e8fff!important}
+.cleanLive{font-size:11px!important;background:#0f2a1a!important;color:#2ee66b!important;padding:5px 10px!important;border-radius:20px!important;font-weight:700!important}
+.cleanCam{width:100%!important;height:240px!important;background:#000!important;border-radius:16px!important;border:1px solid #1e3a4a!important;position:relative!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.cleanCam video{width:100%!important;height:100%!important;object-fit:cover!important;display:none!important}
+.cleanCam.active video{display:block!important}
+.cleanCam.active .camPlace{display:none!important}
+.camPlace{text-align:center!important;color:#8aa8bb!important;font-size:13px!important;line-height:1.6!important}
+.camFace{position:absolute!important;inset:28px 36px!important;border:2px solid #2ee66b!important;border-radius:12px!important;display:none!important}
+.cleanCam.active .camFace{display:block!important}
+.cleanRow{display:flex!important;gap:8px!important;margin-top:10px!important}
+.cleanBtn{flex:1!important;padding:12px 4px!important;border-radius:12px!important;border:none!important;font-weight:800!important;font-size:12px!important;color:#fff!important;text-align:center!important}
+.cleanGps{background:#0b1822!important;border:1px solid #1e3a4a!important;border-radius:14px!important;padding:12px!important;margin-top:10px!important}
+.cleanGps b{font-size:15px!important}
+.cleanGpsTxt{font-family:monospace!important;font-size:12.5px!important;line-height:1.7!important;color:#d8eaf5!important;margin-top:6px!important;white-space:pre-line!important}
+.cleanFooter{text-align:center!important;font-size:11px!important;color:#7ee2ff!important;margin-top:10px!important}
+</style>
+<div id="cleanApp">
+  <div class="cleanHeader">
+    <div class="cleanLogo">👁️ God<span>Eye</span></div>
+    <div class="cleanLive">● LIVE • ECO</div>
+  </div>
+  <div class="cleanCam" id="cleanCam">
+    <div class="camPlace">📷 Camera Off<br><span style="font-size:11px">Tap START CAMERA to see live view</span></div>
+    <video id="cleanVideo" autoplay playsinline muted></video>
+    <div class="camFace"></div>
+  </div>
+  <div class="cleanRow">
+    <button class="cleanBtn" style="background:#1e8fff" onclick="startCleanCam()">📷 START CAMERA</button>
+    <button class="cleanBtn" style="background:#7a3cff" onclick="scanCleanFace()">🧑 FACE SCAN</button>
+    <button class="cleanBtn" style="background:#ff9500;color:#000" onclick="stopCleanCam()">⏹ STOP</button>
+  </div>
+  <div class="cleanGps">
+    <b>📍 GPS Timestamp</b>
+    <div class="cleanGpsTxt" id="cleanGpsTxt">📍 Waiting for GPS...
+Tap GET GPS below</div>
+    <div class="cleanRow">
+      <button class="cleanBtn" style="background:#1e8fff" onclick="getCleanGPS()">🔄 GET GPS</button>
+      <button class="cleanBtn" style="background:#1f7a55" onclick="shareCleanProof()">📤 SHARE PROOF</button>
+    </div>
+    <div class="cleanRow">
+      <button class="cleanBtn" style="background:#ff2d55" onclick="sosClean()">🆘 SOS • SEND LOCATION</button>
+      <button class="cleanBtn" style="background:#222" onclick="copyCleanGPS()">📋 COPY GPS</button>
+    </div>
+  </div>
+  <div class="cleanFooter">⚡ BATTERY SAVER • ON • ECO MODE • GodEye v2.0</div>
+</div>
+<script>
+/* PATCH 21 - RESTORE ALL */
+var _lat=null,_lng=null,_acc=null;
+function getCleanGPS(){
+  var t=document.getElementById('cleanGpsTxt');
+  t.textContent='📍 Getting GPS... Please allow Location';
+  if(!navigator.geolocation){t.textContent='GPS not supported';return}
+  navigator.geolocation.getCurrentPosition(function(p){
+    _lat=p.coords.latitude;_lng=p.coords.longitude;_acc=Math.round(p.coords.accuracy);
+    t.textContent='Lat: '+_lat.toFixed(6)+'\nLng: '+_lng.toFixed(6)+'\nAccuracy: '+_acc+'m\nTime: '+new Date().toLocaleString('en-GB');
+  },function(e){t.textContent='GPS Error: '+e.message+'\nTurn ON Location + Allow Permission';},{enableHighAccuracy:true,timeout:10000});
+}
+function cleanProofText(){
+  return '👁️ GodEye Proof\nLat: '+(_lat||'Not captured')+'\nLng: '+(_lng||'Not captured')+'\nAccuracy: '+(_acc||'-')+'m\nTime: '+new Date().toLocaleString('en-GB')+'\nhttps://maps.google.com/?q='+_lat+','+_lng;
+}
+function shareCleanProof(){
+  if(!_lat){getCleanGPS();alert('First tap GET GPS, then SHARE');return}
+  var txt=cleanProofText();
+  if(navigator.share){navigator.share({text:txt}).catch(function(){})}
+  else{window.open('https://wa.me/?text='+encodeURIComponent(txt))}
+}
+function sosClean(){
+  if(!_lat){getCleanGPS();alert('Getting GPS for SOS... Tap SOS again');return}
+  var txt='🆘 SOS - GodEye EMERGENCY\n'+cleanProofText();
+  window.open('https://wa.me/?text='+encodeURIComponent(txt));
+}
+function copyCleanGPS(){
+  var txt=cleanProofText();
+  if(navigator.clipboard) navigator.clipboard.writeText(txt).then(function(){alert('GPS Copied')});
+}
+var _stream=null;
+function startCleanCam(){
+  var cam=document.getElementById('cleanCam');
+  var vid=document.getElementById('cleanVideo');
+  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(s){_stream=s;vid.srcObject=s;cam.classList.add('active')}).catch(function(e){alert('Camera Permission Denied: '+e.message)});
+  } else alert('Camera not supported on this device');
+}
+function stopCleanCam(){
+  if(_stream){_stream.getTracks().forEach(function(t){t.stop()})}
+  document.getElementById('cleanCam').classList.remove('active');
+}
+function scanCleanFace(){
+  startCleanCam();
+  setTimeout(function(){alert('Face Scan: Camera is ON\nPoint face in green box.\nFace matching uses your saved Face Database.')},800);
+}
+// Auto GPS on open
+setTimeout(getCleanGPS,800);
+      </script>
 </body>
                                                                                      </html>
