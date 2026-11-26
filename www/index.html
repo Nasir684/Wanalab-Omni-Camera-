@@ -602,5 +602,22 @@ body{background:#070f16!important}
 .stat b{color:#fff!important}
 .stat small{color:#9fb8c8!important}
   </style>
+  <style>
+/* PATCH 17 - SAVER */
+.saverRow{display:flex!important;justify-content:space-between!important;align-items:center!important;background:#0e2a3a!important;border:1px solid #1e5a7a!important;border-radius:10px!important;padding:8px 10px!important;margin-top:8px!important;font-size:12px!important;font-weight:700!important;color:#7ee2ff!important}
+.saverDot{width:9px!important;height:9px!important;border-radius:50%!important;background:#2ecc71!important;display:inline-block!important}
+</style>
+<script>
+/* PATCH 17 - SAVER MODE */
+try{
+  if(!document.getElementById('saverRow')){
+    var r = document.createElement('div');
+    r.id = 'saverRow'; r.className = 'saverRow';
+    r.innerHTML = '<span>⚡ BATTERY SAVER • ON</span><span><span class="saverDot"></span> ECO MODE</span>';
+    var gb = document.querySelector('.gpsBox');
+    if(gb) gb.appendChild(r);
+  }
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
