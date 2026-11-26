@@ -11,22 +11,26 @@
 body{background:#0B0E11;color:#E8EDF2;font-family:Inter,system-ui,Arial;padding-bottom:24px}
 button{font-family:inherit;cursor:pointer;border:0}
 #head{position:sticky;top:0;z-index:50;background:rgba(11,14,17,.97);border-bottom:1px solid #262E39;padding:13px 16px;display:flex;justify-content:space-between;align-items:center}
-#head .logo{display:flex;gap:10px;align-items:center}
-#head .mark{width:38px;height:38px;background:#00C853;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+#head .logo{display:flex;gap:10px;align-items:center;min-width:0}
+#head .mark{width:38px;height:38px;background:#00C853;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 #head b{font-size:19px;letter-spacing:.4px}
-#head small{display:block;font-size:10px;color:#8A94A3;letter-spacing:1px;text-transform:uppercase;font-weight:700}
-#head .online{display:flex;gap:6px;align-items:center;background:#12261A;border:1px solid #1E4D32;color:#7CFFB2;font-size:12px;font-weight:700;padding:7px 10px;border-radius:999px}
+#head small{display:block;font-size:10px;color:#8A94A3;letter-spacing:1px;text-transform:uppercase;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#head .online{display:flex;gap:6px;align-items:center;background:#12261A;border:1px solid #1E4D32;color:#7CFFB2;font-size:12px;font-weight:700;padding:7px 10px;border-radius:999px;flex-shrink:0}
 #head .online i{width:7px;height:7px;background:#00E676;border-radius:50%;display:block}
+/* FIXED STATS: 4 cards, no wrap, 2-line sub */
 #stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;padding:14px 16px 0;max-width:1100px;margin:0 auto}
-.mini{background:#151A21;border:1px solid #262E39;border-radius:14px;padding:12px}
-.mini label{font-size:11px;color:#8A94A3;letter-spacing:.6px;text-transform:uppercase;font-weight:700}
-.mini b{font-size:17px;display:block;margin-top:4px}
-.mini small{font-size:11px;color:#8A94A3}
+.mini{background:#151A21;border:1px solid #262E39;border-radius:14px;padding:12px;min-height:104px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.mini label{font-size:11px;color:#8A94A3;letter-spacing:.6px;text-transform:uppercase;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.mini b{font-size:17px;display:block;margin:5px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1}
+.mini small{font-size:11px;color:#8A94A3;line-height:1.3;display:block}
+.mini .sub1{display:block;font-size:11px;color:#8A94A3;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini .freePill{display:inline-block;margin-top:5px;background:#12261A;border:1px solid #1E4D32;color:#7CFFB2;font-size:10px;font-weight:700;padding:3px 7px;border-radius:999px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.mini .proPill{display:inline-block;margin-top:5px;background:#3A2A00;border:1px solid #FFC107;color:#FFC107;font-size:10px;font-weight:700;padding:3px 7px;border-radius:999px;white-space:nowrap}
 #wrap{max-width:1100px;margin:0 auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
 .card{background:#151A21;border:1px solid #262E39;border-radius:18px;overflow:hidden}
-.card-h{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #262E39}
-.card-h b{font-size:15px}
-.card-h span{font-size:12px;color:#8A94A3}
+.card-h{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #262E39}
+.card-h b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.card-h span{font-size:12px;color:#8A94A3;white-space:nowrap;flex-shrink:0}
 #camBox{position:relative;background:#000;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden}
 video{width:100%;height:100%;object-fit:cover}
 #faceCanvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9}
@@ -40,10 +44,11 @@ button:active{transform:scale(.97)}
 button.primary{background:#00C853;color:#02150A;border-color:#00C853}
 button.red{background:#2A1414;color:#FF9A94;border-color:#4A1F1F}
 button.gold{background:#FFC107;color:#000;border-color:#FFC107}
+/* FIXED TOOLS: equal height, 2-line clamp, no overflow */
 .tools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 14px 14px}
-.tools button{display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:left;padding:14px}
-.tools button span{font-size:12px;color:#8A94A3;font-weight:500;line-height:1.3}
-.tools button b{font-size:14px}
+.tools button{display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:left;padding:14px;min-height:96px;overflow:hidden}
+.tools button span{font-size:12px;color:#8A94A3;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tools button b{font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .secTitle{font-size:12px;letter-spacing:1px;color:#8A94A3;text-transform:uppercase;font-weight:800;margin:4px 2px}
 .extBox{border:2px solid #FF3B30!important}
 .extBox .card-h b{color:#FF9A94}
@@ -61,20 +66,27 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
 #voiceOverlay .vrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .credBox{background:#0B0E11;border:1px solid #FFC107;padding:10px;border-radius:12px;margin:8px 0}
 .gpsBox{background:#0B0E11;border:1px solid #00E676;padding:10px;border-radius:12px;margin:8px 0}
-@media(max-width:520px){#stats{grid-template-columns:1fr 1fr}.tools{grid-template-columns:1fr 1fr}}
+/* FIXED GPS BAR */
+.gpsBar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.gpsBar .gpsTitle{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gpsBar .gpsLine{font-size:12px;color:#8A94A3;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gpsBar .gpsStatusLine{font-size:12px;color:#FFC107;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gpsBar .gpsBtns{display:flex;gap:6px;flex-shrink:0}
+.gpsBar .gpsBtns button{white-space:nowrap}
+@media(max-width:520px){#stats{grid-template-columns:1fr 1fr}.tools{grid-template-columns:1fr 1fr}.mini{min-height:98px}.gpsBar .gpsTitle{font-size:14px}.card-h b{font-size:14px}}
 </style>
 </head>
 <body>
 <div id="head"><div class="logo"><div class="mark">👁️</div><div><b>GODEYE</b><small>WanaLab • Founded by Nasir Khan</small></div></div><div class="online"><i></i> <span id="proBadge">FREE</span></div></div>
 
 <div id="stats">
-  <div class="mini"><label>Today Sales</label><b style="color:#00E676" id="statBill">Rs. 0</b><small id="statBillSub">Bill Total • FREE: 5 / 5 Left</small></div>
-  <div class="mini"><label>Scans</label><b id="statScan">0</b><small id="statScanSub">Documents • FREE: 5 / 5 Left</small></div>
-  <div class="mini"><label>Faces</label><b id="statFace">0</b><small id="statFaceSub">468 Dots • FREE: 2 / 2 Left</small></div>
-  <div class="mini"><label>Thumb / Attendance</label><b id="statThumb">0</b><small id="statThumbSub">Thumb Biometric PRO Only</small></div>
+  <div class="mini"><label>Today Sales</label><b style="color:#00E676" id="statBill">Rs. 0</b><span class="sub1">Bill Total</span><span class="freePill" id="statBillSub">FREE: 5 / 5 Left</span></div>
+  <div class="mini"><label>Scans</label><b id="statScan">0</b><span class="sub1">Documents</span><span class="freePill" id="statScanSub">FREE: 5 / 5 Left</span></div>
+  <div class="mini"><label>Faces</label><b id="statFace">0</b><span class="sub1">468 Dots</span><span class="freePill" id="statFaceSub">FREE: 2 / 2 Left</span></div>
+  <div class="mini"><label>Thumb / Attendance</label><b id="statThumb">0</b><span class="sub1">Thumb Biometric</span><span class="proPill" id="statThumbSub">PRO Only</span></div>
 </div>
-<!-- v23: GPS Timestamp Bar - On Top - Always Visible - GPS OFF by default -->
-<div style="max-width:1100px;margin:10px auto 0;padding:0 16px"><div class="gpsBox" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><b>📍 GPS Timestamp - Location + Time</b><br><small id="gpsLabel">📍 GPS: OFF - Tap Get GPS</small><br><small id="gpsStatus">GPS Status: OFF - Tap Get GPS to Enable</small></div><div style="display:flex;gap:6px"><button class="primary" onclick="refreshGPS()">🔄 Get GPS</button><button onclick="gpsShare()">📍 GPS Share</button></div></div></div>
+<!-- v23: GPS Timestamp Bar - On Top - Always Visible - GPS OFF by default - FIXED: No duplicate line -->
+<div style="max-width:1100px;margin:10px auto 0;padding:0 16px"><div class="gpsBox"><div class="gpsBar"><div style="min-width:0"><b class="gpsTitle">📍 GPS Timestamp - Location + Time</b><br><small class="gpsLine" id="gpsLabel">📍 GPS: OFF - Tap Get GPS</small><br><small class="gpsStatusLine" id="gpsStatus">Status: OFF</small></div><div class="gpsBtns"><button class="primary" onclick="refreshGPS()">🔄 Get GPS</button><button onclick="gpsShare()">📍 GPS Share</button></div></div></div></div>
 
 <div id="wrap">
 <div id="offlineBar">📴 OFFLINE MODE - Camera / Voice / Bill / Scan / Face work without internet</div>
@@ -101,12 +113,12 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <button onclick="openFacePage()" style="border-color:#9C27B0">👤<b>Face PRO • 468 Dots</b><span id="faceLimit">FREE: 2 / 2 Left</span></button>
   <button onclick="startVoice()" style="border-color:#00BCD4">🎤<b>Voice PRO</b><span id="voiceLimit">FREE: 5 / Day</span></button>
   <button onclick="openDashboard()">📦<b>History</b><span>All Bills + Scans</span></button>
-  <button onclick="openThumb()" style="border-color:#673AB7">👍<b>Thumb Biometric PRO</b><span>Thumb Biometric PRO Only • NADRA-Style • Liveness • Move Thumb</span></button>
-  <button onclick="openAttendance()" style="border-color:#673AB7">📅<b>Thumb Attendance</b><span>Attendance • Check-In / Check-Out • PRO Only</span></button>
-  <button onclick="openEffects()" style="border-color:#FF00FF">✨<b>Photo Effects PRO</b><span id="effectsLimit">FREE: 5 / 5 Left • Clarendon • Thumb Clear • Doc Clear</span></button>
-  <button onclick="openGPS()" style="border-color:#00E676">📍<b>GPS Timestamp</b><span id="gpsLimit">GPS Timestamp • FREE: City + Time • PRO: Full GPS + Map</span></button>
-  <button onclick="gpsShare()" style="border-color:#00E676">📍<b>GPS Share</b><span>GPS Share - Capture + GPS Stamp + Share - Photo + Location + Map Link</span></button>
-  <button onclick="openAntiFake()" style="border-color:#FF3B30">🛡️<b>Anti-Fake GPS</b><span>Anti-Fake GPS - Block Mock / Fake GPS / GPS Emulator - PRO</span></button>
+  <button onclick="openThumb()" style="border-color:#673AB7">👍<b>Thumb Biometric PRO</b><span>PRO Only • NADRA-Style • Liveness</span></button>
+  <button onclick="openAttendance()" style="border-color:#673AB7">📅<b>Thumb Attendance</b><span>Check-In / Out • PRO Only</span></button>
+  <button onclick="openEffects()" style="border-color:#FF00FF">✨<b>Photo Effects PRO</b><span id="effectsLimit">FREE: 5 / 5 Left • Clarendon</span></button>
+  <button onclick="openGPS()" style="border-color:#00E676">📍<b>GPS Timestamp</b><span id="gpsLimit">FREE: City + Time • PRO: Full GPS</span></button>
+  <button onclick="gpsShare()" style="border-color:#00E676">📍<b>GPS Share</b><span>Photo + Location + Map Link</span></button>
+  <button onclick="openAntiFake()" style="border-color:#FF3B30">🛡️<b>Anti-Fake GPS</b><span>Block Mock / Fake GPS • PRO</span></button>
 </div></div>
 
 <div class="secTitle" style="color:#FF9A94">🔒 External Devices — PRO ONLY — Need Hardware + PRO</div>
@@ -120,14 +132,13 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
   <button onclick="checkProAndOpen('CCTV')">📡<b>CCTV PRO</b><span>PRO Only • DVR</span></button>
   <button onclick="openSystem()">⚙️<b>System PRO</b><span>Test • Clear Cache FREE</span></button>
   <button onclick="openManual()">📖<b>Manual</b><span>Always FREE</span></button>
-  <button onclick="openShopProfile()" style="border-color:#FFC107">🏪<b>Shop Profile</b><span>Profile Type • Shop / Office / Department • Credentials</span></button>
+  <button onclick="openShopProfile()" style="border-color:#FFC107">🏪<b>Shop Profile</b><span>Shop / Office / Dept • Credentials</span></button>
 </div></div>
 
 <div id="panel"></div>
 
 <div style="display:flex;gap:8px"><button class="gold" style="flex:1" onclick="openPricing()">💰 Upgrade to PRO — Rs. 2,500 / Year →</button><button style="flex:1" onclick="openAbout()">ℹ️ About — WanaLab</button></div>
 <div style="text-align:center;color:#5A6575;font-size:12px;margin-top:6px">By WanaLab • Founded by Nasir Khan • GodEye • v2.2 — Face Mesh 468 Dots • External PRO • Thumb + Effects + Credentials + GPS Timestamp + GPS Share + Anti-Fake GPS</div>
-<!-- v2.2 Build Fix: Links - www/index.html -> www/ files - ./ NOT ../ -->
 <div style="text-align:center;font-size:12px;margin-top:8px"><a href="./shop.html" style="color:#00E676">🏪 Shop</a> • <a href="./export.html" style="color:#00E676">📤 Export</a> • <a href="./about.html" style="color:#8A94A3">ℹ️ About</a> • <a href="./privacy.html" style="color:#8A94A3">🔒 Privacy</a></div>
 </div>
 
@@ -156,8 +167,6 @@ function getCount(k){ return parseInt(localStorage.getItem(k)||'0'); }
 function showToast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
 function openPanel(html){ var p=document.getElementById('panel'); p.style.display='block'; p.innerHTML=html+'<br><button onclick="closePanel()">← Back</button>'; p.scrollIntoView({behavior:'smooth'}); }
 function closePanel(){ document.getElementById('panel').style.display='none'; }
-
-// ===== v23 + v23-A + v23-B: GPS Timestamp + GPS Share + Anti-Fake GPS =====
 var currentGPS=null, gpsFake=false, gpsFakeReason='';
 function gpsDistance(lat1, lon1, lat2, lon2){ var R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180; var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
 function checkFakeGPS(pos){
@@ -178,20 +187,21 @@ function logFakeGPSAttempt(reason){
 }
 function refreshGPS(){
   document.getElementById('gpsLabel').innerText='📍 GPS: Getting...';
+  document.getElementById('gpsStatus').innerText='Status: Getting...';
   navigator.geolocation.getCurrentPosition((pos)=>{
     var check=checkFakeGPS(pos);
     gpsFake=check.fake; gpsFakeReason=check.reason;
     currentGPS={lat:pos.coords.latitude, lng:pos.coords.longitude, acc:pos.coords.accuracy, time:new Date().toLocaleString('en-PK'), map:'https://maps.google.com/?q='+pos.coords.latitude+','+pos.coords.longitude};
     if(check.fake){
       logFakeGPSAttempt(check.reason);
-      document.getElementById('gpsLabel').innerText='📍 GPS: '+currentGPS.lat+','+currentGPS.lng+' - FAKE - '+currentGPS.time;
-      document.getElementById('gpsStatus').innerText='❌ Fake GPS Detected - Blocked - '+check.reason+' - Turn Off Fake GPS / GPS Emulator + Developer Mock App + Restart';
+      document.getElementById('gpsLabel').innerText='📍 GPS: '+currentGPS.lat+','+currentGPS.lng+' - '+currentGPS.time;
+      document.getElementById('gpsStatus').innerText='❌ Fake GPS Detected - Blocked - '+check.reason;
       showToast('❌ Fake GPS Detected - Blocked - '+check.reason);
     } else {
-      document.getElementById('gpsLabel').innerText='📍 GPS: Wana - '+currentGPS.lat+','+currentGPS.lng+' - '+currentGPS.time+' - Accuracy '+Math.round(currentGPS.acc)+'m - GPS Timestamp';
-      document.getElementById('gpsStatus').innerText='✅ Real GPS - Accuracy '+Math.round(currentGPS.acc)+'m - GPS Timestamp Proof OK - Anti-Fake GPS: Passed';
+      document.getElementById('gpsLabel').innerText='📍 GPS: Wana - '+currentGPS.lat+','+currentGPS.lng+' - '+currentGPS.time+' - Accuracy '+Math.round(currentGPS.acc)+'m';
+      document.getElementById('gpsStatus').innerText='✅ Real GPS - Accuracy '+Math.round(currentGPS.acc)+'m - Timestamp Proof OK';
     }
-  }, (e)=>{ document.getElementById('gpsLabel').innerText='📍 GPS OFF - Tap Get GPS - GPS Timestamp Needs Location'; document.getElementById('gpsStatus').innerText='GPS OFF - Turn On Location For Proof'; }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
+  }, (e)=>{ document.getElementById('gpsLabel').innerText='📍 GPS OFF - Tap Get GPS'; document.getElementById('gpsStatus').innerText='Status: OFF - Turn On Location For Proof'; }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
 }
 function getGPSLine(){
   if(!currentGPS) return 'GPS: Not Yet - Tap Get GPS';
@@ -220,7 +230,6 @@ function openAntiFake(){
   var logs=JSON.parse(localStorage.getItem('god_fake_gps_log')||'[]');
   openPanel('<h2>🛡️ Anti-Fake GPS - Block GPS Emulator / Fake GPS</h2><p>Anti-Fake GPS - 5 Checks: Mock Provider (isFromMockProvider) + Developer Mock App + Fake GPS Apps List + GPS vs Network + GPS Jump</p><p>GPS Status: '+(gpsFake?'❌ Fake GPS Detected - '+gpsFakeReason:'✅ Real GPS - Passed')+'</p><p>Fake GPS Attempts Logged: '+logs.length+'</p><p>How To Fix Fake GPS:<br>1. Uninstall Fake GPS / GPS Emulator App<br>2. Settings > Developer Options > Select Mock Location App > None<br>3. Turn Off Developer Options<br>4. Restart Phone<br>5. Tap Check Again</p><button class="primary" onclick="refreshGPS()">🔄 Check Again - Anti-Fake GPS</button>');
 }
-// GPS OFF by default - DO NOT auto-call refreshGPS() on load - v2.2 spec
 function credentialsBlock(feature){
   return '<div class="credBox"><b>🏛️ Credentials For This Page - Optional</b><br><span>Profile Type: Shop / Office / Department / School / Hospital / Factory / Personal</span><br><span id="credLabel-'+feature+'">Profile: Personal - Nasir Khan - Shop / Office / Department</span><br><button onclick="openCredentials(\''+feature+'\')">✏️ Edit Credentials For This Page</button> <button onclick="previewExport()">👁️ Preview Export</button><br><small>FREE: Shows Name + Phone + Made By WanaLab Watermark • PRO: No Watermark + Logo + Signature</small><div style="color:#8A94A3;font-size:11px;margin-top:4px">Made By WanaLab - GodEye FREE - Watermark on FREE exports</div></div><div class="gpsBox"><b>📍 GPS Timestamp For This Page</b><br>'+getGPSLine()+'<br><button onclick="gpsShare()">📍 GPS Share This Page</button></div>';
 }
@@ -263,24 +272,33 @@ function updateLimits(){
   var b=getCount('god_bill_count'), s=getCount('god_scan_count'), c=getCount('god_count_total'), e=getCount('god_effects_count'), f=0;
   try{ f=JSON.parse(localStorage.getItem('god_faces')||'[]').length; }catch(e){}
   if(isPro){
-    document.getElementById('statBillSub').textContent='Bill Total • PRO ✅ Unlimited';
+    document.getElementById('statBillSub').textContent='PRO ✅ Unlimited';
+    document.getElementById('statBillSub').className='proPill';
     document.getElementById('billLimit').textContent='PRO ✅ Unlimited';
     document.getElementById('scanLimit').textContent='PRO ✅ Unlimited';
     document.getElementById('countLimit').textContent='PRO ✅ Unlimited';
     document.getElementById('faceLimit').textContent='PRO ✅ Unlimited';
     document.getElementById('effectsLimit').textContent='PRO ✅ Unlimited';
-    document.getElementById('statThumbSub').textContent='Thumb Biometric PRO ✅ Unlimited';
-    document.getElementById('gpsLimit').textContent='GPS Timestamp • PRO ✅ Full GPS + Map + Anti-Fake';
+    document.getElementById('statThumbSub').textContent='PRO ✅ Unlimited';
+    document.getElementById('statThumbSub').className='proPill';
+    document.getElementById('statScanSub').textContent='PRO ✅ Unlimited';
+    document.getElementById('statScanSub').className='proPill';
+    document.getElementById('statFaceSub').textContent='PRO ✅ Unlimited';
+    document.getElementById('statFaceSub').className='proPill';
+    document.getElementById('gpsLimit').textContent='PRO ✅ Full GPS + Map';
   } else {
     document.getElementById('billLimit').textContent='FREE: '+(5-b)+' / 5 Left';
     document.getElementById('scanLimit').textContent='FREE: '+(5-s)+' / 5 Left';
     document.getElementById('faceLimit').textContent='FREE: '+(2-f)+' / 2 Left';
     document.getElementById('effectsLimit').textContent='FREE: '+(5-e)+' / 5 Left • Clarendon';
-    document.getElementById('statThumbSub').textContent='Thumb Biometric PRO Only';
-    document.getElementById('gpsLimit').textContent='GPS Timestamp • FREE: City + Time • PRO: Full GPS + Map';
+    document.getElementById('statBillSub').textContent='FREE: '+(5-b)+' / 5 Left';
+    document.getElementById('statScanSub').textContent='FREE: '+(5-s)+' / 5 Left';
+    document.getElementById('statFaceSub').textContent='FREE: '+(2-f)+' / 2 Left';
+    document.getElementById('statThumbSub').textContent='PRO Only';
+    document.getElementById('gpsLimit').textContent='FREE: City + Time • PRO: Full GPS';
   }
 }
 updateProBadge(); updateLimits();
 </script>
 </body>
-                                                                                  </html>
+    </html>
