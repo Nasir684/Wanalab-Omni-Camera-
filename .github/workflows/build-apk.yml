@@ -1,3 +1,14 @@
+      - name: DEBUG - Check Capacitor Files Exist
+        run: |
+          ls -la android/
+          ls -la android/capacitor.settings.gradle || echo "MISSING capacitor.settings.gradle"
+          ls -la android/app/capacitor.build.gradle || echo "MISSING capacitor.build.gradle"
+          ls -la ../node_modules/@capacitor/android/capacitor || echo "MISSING node_modules capacitor"
+          cat android/settings.gradle
+      - name: Force Cap Sync Again If Missing
+        run: |
+          if [ ! -f android/capacitor.settings.gradle ]; then npx cap sync android; fi
+          ls -la android/*.gradle
 name: Build GodEye APK + AAB - v2.2
 on:
   workflow_dispatch:
