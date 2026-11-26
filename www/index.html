@@ -567,5 +567,29 @@ try{
   }
 }catch(e){}
 </script>
+  <style>
+/* PATCH 15 - SOS */
+.sosBtn{background:#ff2d55!important;color:#fff!important;border:none!important;font-size:14px!important;font-weight:900!important;padding:12px!important;border-radius:12px!important;width:100%!important;margin-top:8px!important;letter-spacing:1px!important;box-shadow:0 4px 18px rgba(255,45,85,0.4)!important}
+.sosBtn:active{transform:scale(0.98)!important}
+</style>
+<script>
+/* PATCH 15 - SOS */
+try{
+  if(!document.getElementById('sosBtn')){
+    var s = document.createElement('button');
+    s.id = 'sosBtn';
+    s.className = 'sosBtn';
+    s.textContent = '🆘 SOS • SEND LOCATION';
+    s.onclick = function(){
+      var gps = document.getElementById('gpsLabel') ? document.getElementById('gpsLabel').innerText : 'GPS Loading...';
+      var msg = '🆘 SOS - I NEED HELP\n' + gps + '\nTime: ' + new Date().toLocaleString('en-GB') + '\nLocation: Wana, Pakistan\nSent from GodEye App';
+      if(navigator.share){ navigator.share({title:'SOS', text:msg}).catch(function(){}); }
+      else { navigator.clipboard.writeText(msg); alert('SOS Copied ✓ Paste in WhatsApp'); }
+    };
+    var gb2 = document.querySelector('.gpsBox');
+    if(gb2) gb2.appendChild(s);
+  }
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
