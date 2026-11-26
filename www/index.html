@@ -1211,5 +1211,64 @@ try{
   var all=document.getElementById('pageAll');if(all){var g=all.querySelector('.pageGrid');if(g&&!document.getElementById('gpsAllAdded')){g.innerHTML+='<button onclick="openPage(\'pageGPS\')">📍<br>GPS</button><button onclick="openPage(\'pageVoice\')">🎤<br>Voice</button>';var d=document.createElement('div');d.id='gpsAllAdded';all.appendChild(d)}}
 }catch(e){}
 </script>
+  <style>
+/* PATCH 29 - EVERY PAGE SEPARATE - APP MODES */
+#appModeBar{display:flex!important;gap:6px!important;overflow-x:auto!important;padding:8px 10px!important;background:#0b1822!important;border:1px solid #1e3a4a!important;border-radius:12px!important;margin:8px 0!important;white-space:nowrap!important}
+.appModeChip{font-size:12px!important;padding:8px 10px!important;border-radius:20px!important;background:#222!important;color:#fff!important;border:1px solid #333!important;flex-shrink:0!important;cursor:pointer!important}
+.appModeChip.active{background:#1e8fff!important;border-color:#1e8fff!important;font-weight:800!important}
+.appModeBanner{display:none!important;padding:10px!important;text-align:center!important;background:#1e8fff!important;color:#fff!important;font-weight:800!important;border-radius:12px!important;margin:8px 0!important;font-size:13px!important}
+.appModeBanner.show{display:block!important}
+</style>
+<div id="appModeBanner" class="appModeBanner"></div>
+<script>
+/* PATCH 29 - EVERY PAGE = SEPARATE APP */
+var APP_MODES=[
+ {id:'full',name:'📱 Full App',desc:'All Features'},
+ {id:'cam',name:'📷 Camera Only',desc:'Camera + Capture Only'},
+ {id:'gps',name:'📍 GPS Only',desc:'GPS Page Only'},
+ {id:'face',name:'👤 Face App',desc:'Face Database Only'},
+ {id:'barcode',name:'📊 Barcode App',desc:'Barcode + Shop Only'},
+ {id:'camscan',name:'📄 CamScan App',desc:'CamScan Only'},
+ {id:'count',name:'🔢 Counting App',desc:'Counting Only'},
+ {id:'shop',name:'🏪 Shop App',desc:'Shop Only'},
+ {id:'gallery',name:'🖼️ Gallery App',desc:'Gallery Only'},
+ {id:'voice',name:'🎤 Voice App',desc:'Voice Only'},
+ {id:'thermal',name:'🌡️ Thermal App',desc:'Thermal Only'},
+ {id:'ipcam',name:'📹 CCTV App',desc:'IP Cam Only'}
+];
+function setAppMode(mode){
+  localStorage.setItem('godeye_app_mode',mode);
+  document.querySelectorAll('.appModeChip').forEach(function(c){c.classList.toggle('active',c.dataset.mode===mode)});
+  var banner=document.getElementById('appModeBanner');
+  var m=APP_MODES.find(function(x){return x.id===mode});
+  if(mode==='full'){banner.classList.remove('show');return}
+  banner.textContent='📱 MODE: '+(m?m.name:'')+' — '+ (m?m.desc:'');banner.classList.add('show');
+  showBotToast('📱 Switched To: '+(m?m.name:''));
+  var map={cam:null,gps:'pageGPS',face:'pageFace',barcode:'pageBarcode',camscan:'pageCamScan',count:'pageCounting',shop:'pageShop',gallery:'pageGallery',voice:'pageVoice',thermal:'pageThermal',ipcam:'pageIpCam'};
+  if(map[mode])setTimeout(function(){openPage(map[mode])},600);
+}
+function renderAppModeBar(){
+  var cam=document.getElementById('specApp');if(!cam)return;
+  var old=document.getElementById('appModeBar');if(old)old.remove();
+  var bar=document.createElement('div');bar.id='appModeBar';
+  APP_MODES.forEach(function(m){var s=document.createElement('span');s.className='appModeChip'+((localStorage.getItem('godeye_app_mode')||'full')===m.id?' active':'');s.dataset.mode=m.id;s.textContent=m.name;s.onclick=function(){setAppMode(m.id)};bar.appendChild(s)});
+  cam.insertBefore(bar,cam.querySelector('.specCamWrap')||cam.firstChild);
+}
+/* App Modes Page */
+try{
+  var all=document.getElementById('pageAll');if(all&&!document.getElementById('modeAdded')){
+    var g=all.querySelector('.pageGrid');
+    g.innerHTML+='<button onclick="openPage(\'pageModes\')">📱<br>App Modes</button>';
+    var d=document.createElement('div');d.id='modeAdded';all.appendChild(d);
+    var mp=document.createElement('div');mp.className='pageOverlay';mp.id='pageModes';mp.innerHTML='<div class="pageTop"><button onclick="closePage(\'pageModes\')">←</button><h2>📱 Every Page = Separate App</h2></div><div class="pageCard"><b>Pick One App Mode</b><p>Each Page Works Like A Separate App — Full App is Default</p></div><div id="modeList"></div>';
+    document.body.appendChild(mp);
+    var ml=document.getElementById('modeList');APP_MODES.forEach(function(m){ml.innerHTML+='<div class="pageCard"><b>'+m.name+'</b><p>'+m.desc+'</p><button class="pageBtn" onclick="setAppMode(\''+m.id+'\');closePage(\'pageModes\')">Open '+m.name+'</button></div>'});
+  }
+  // Top Buttons - Add "Modes" button next to Settings
+  var top=document.querySelector('.specTopRight');if(top&&!document.getElementById('modesTopBtn')){var b=document.createElement('button');b.id='modesTopBtn';b.textContent='📱';b.style.cssText='width:42px;height:42px;border-radius:50%;border:1px solid #1e3a4a;background:#0b1822;color:#fff;font-size:18px';b.onclick=function(){openPage('pageModes')};top.appendChild(b)}
+}catch(e){}
+setTimeout(renderAppModeBar,1200);setTimeout(renderAppModeBar,2800);
+window.addEventListener('load',function(){setTimeout(renderAppModeBar,1500)});
+</script>
 </body>
                                                                                      </html>
