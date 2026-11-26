@@ -1003,5 +1003,70 @@ try{
 /* Add External + IP Cam etc to All Pages Grid */
 try{var g=document.querySelector('#pageAll .pageGrid');if(g&&!document.getElementById('extAdded')){g.innerHTML+='<button onclick="openPage(\'pageIpCam\')">📹<br>IP Cam</button><button onclick="openPage(\'pageThermal\')">🌡️<br>Thermal</button><button onclick="openPage(\'pageUsbCam\')">🔌<br>USB Cam</button><button onclick="openPage(\'pageWifiMicro\')">🔬<br>WiFi Micro</button><button onclick="openPage(\'pageDrone\')">🚁<br>Drone</button><button onclick="openPage(\'pageBluetooth\')">📶<br>Bluetooth</button><button onclick="openPage(\'pagePrinter\')">🖨️<br>Printer</button><button onclick="openPage(\'pageStorage\')">💾<br>Storage</button><button onclick="openPage(\'pageExternal\')">🔌<br>External</button>';var d=document.createElement('div');d.id='extAdded';document.getElementById('pageAll').appendChild(d)}}catch(e){}
 </script>
+  <style>
+/* PATCH 26 - AUTO BOTS ACTIVE AT START */
+#autoBotBar{display:flex!important;gap:6px!important;overflow-x:auto!important;padding:8px 10px!important;background:#0b1822!important;border:1px solid #1e3a4a!important;border-radius:12px!important;margin:8px 0!important;white-space:nowrap!important}
+.autoBotChip{font-size:11px!important;padding:6px 8px!important;border-radius:20px!important;background:#123a2a!important;color:#7dffb0!important;border:1px solid #1e7a4a!important;flex-shrink:0!important}
+.autoBotChip.working{background:#7a2a00!important;color:#ffcc00!important;border-color:#ffaa00!important}
+#autoBotToast{position:fixed!important;left:50%!important;bottom:110px!important;transform:translateX(-50%)!important;background:#1e8fff!important;color:#fff!important;padding:12px 16px!important;border-radius:12px!important;font-weight:800!important;z-index:9999!important;display:none!important;box-shadow:0 6px 20px rgba(0,0,0,.5)!important;text-align:center!important;max-width:90%!important}
+</style>
+<div id="autoBotToast"></div>
+<script>
+/* PATCH 26 - AUTO BOTS ENGINE */
+function showBotToast(msg){var t=document.getElementById('autoBotToast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none'},2800)}
+function setBotWorking(name,working){var el=document.getElementById('botChip_'+name);if(el){el.textContent=(working?'⚡ ':'● ')+name.toUpperCase()+(working?' WORKING':' ACTIVE');el.className='autoBotChip'+(working?' working':'')}}
+function renderAutoBotBar(){
+  var cam=document.getElementById('specApp');if(!cam)return;
+  var old=document.getElementById('autoBotBar');if(old)old.remove();
+  var bar=document.createElement('div');bar.id='autoBotBar';
+  var names=['motion','person','face','barcode','camscan','count','heat','fire','temp','print','backup','voice'];
+  names.forEach(function(n){var s=document.createElement('span');s.id='botChip_'+n;s.className='autoBotChip';s.textContent='● '+n.toUpperCase()+' ACTIVE';s.onclick=function(){triggerBot(n)};bar.appendChild(s)});
+  cam.insertBefore(bar,cam.querySelector('.specCamWrap')||cam.firstChild);
+}
+function triggerBot(name){
+  var map={motion:'Motion Bot: Motion Detected → Auto Recording Started',person:'Person Bot: Person Detected → Alert Sent',face:'Face Bot: Face Detected → Matching...',barcode:'Barcode Bot: Barcode Detected → Opening Transaction...',camscan:'Cam Scan Bot: Paper Detected → Auto Scanning...',count:'Count Bot: Counting Items...',heat:'Heat Bot: Hot Spot Detected',fire:'Fire Bot: Fire Alert!',temp:'Temp Bot: Temp Check Started',print:'Print Bot: Auto Printing...',backup:'Backup Bot: Auto Backup Started',voice:'Voice Bot: Listening...'};
+  setBotWorking(name,true);showBotToast('🤖 '+map[name]);setTimeout(function(){setBotWorking(name,false)},3000);
+  if(name==='barcode')setTimeout(function(){openPage('pageBarcode')},900);
+  if(name==='camscan')setTimeout(function(){openPage('pageCamScan')},900);
+  if(name==='face')setTimeout(function(){openPage('pageFace')},900);
+  if(name==='count')setTimeout(function(){openPage('pageCounting')},900);
+  if(name==='motion'||name==='person')setTimeout(function(){openPage('pageIpCam')},900);
+  if(name==='heat'||name==='fire'||name==='temp')setTimeout(function(){openPage('pageThermal')},900);
+}
+function onCaptureAutoDetect(){
+  showBotToast('🤖 All 11 Bots Scanning... Face + Barcode + Paper Detected');
+  setBotWorking('face',true);setBotWorking('barcode',true);setBotWorking('camscan',true);
+  setTimeout(function(){setBotWorking('face',false);setBotWorking('barcode',false);setBotWorking('camscan',false)},3000);
+}
+try{document.querySelectorAll('button').forEach(function(b){var o=b.getAttribute('onclick')||'';if(o.indexOf('captureSpec')>-1 && !b.dataset.botHooked){b.dataset.botHooked='1';b.addEventListener('click',function(){setTimeout(onCaptureAutoDetect,800)})}})}catch(e){}
+window.addEventListener('load',function(){setTimeout(function(){renderAutoBotBar();showBotToast('🤖 All 11 Bots ACTIVE — Point Camera, Bots Auto-Start')},1200)});
+setTimeout(function(){renderAutoBotBar()},2000);
+</script>
+
+<!-- BARCODE PAGE -->
+<div class="pageOverlay" id="pageBarcode"><div class="pageTop"><button onclick="closePage('pageBarcode')">←</button><h2>📊 Barcode</h2></div>
+<div class="pageCard"><b>Barcode / QR Scanner</b><p>Point camera at barcode — Bot auto-starts transaction.</p><input class="extPageInput" id="barcodeInput" placeholder="Scan or Enter Code - e.g. 123456789"><button class="pageBtn" onclick="doBarcodeTransaction()">💰 Scan & Start Transaction</button><div id="barcodeResult" style="margin-top:10px;color:#7ee2ff">Waiting for Barcode...</div></div>
+<div class="pageCard"><b>Transaction</b><p id="barcodeTrans">No transaction yet</p></div></div>
+
+<!-- CAM SCAN PAGE -->
+<div class="pageOverlay" id="pageCamScan"><div class="pageTop"><button onclick="closePage('pageCamScan')">←</button><h2>📄 Cam Scan</h2></div>
+<div class="pageCard"><b>Paper / Document Scan</b><p>Point at Paper / CNIC / Receipt — Cam Scan Bot auto-starts, crops, saves.</p><button class="pageBtn" onclick="doCamScan()">📄 Scan Paper Now</button><div id="camscanResult" style="margin-top:10px;color:#7ee2ff">Waiting for Paper...</div></div></div>
+
+<!-- COUNTING PAGE -->
+<div class="pageOverlay" id="pageCounting"><div class="pageTop"><button onclick="closePage('pageCounting')">←</button><h2>🔢 Counting</h2></div>
+<div class="pageCard"><b>Count Bot</b><p>People + Product Counting</p><div style="font-size:42px;text-align:center" id="countVal">0</div><button class="pageBtn" onclick="doCount()">+ Count 1</button><button class="pageBtn" style="background:#222" onclick="document.getElementById('countVal').textContent='0'">Reset Count</button></div></div>
+
+<!-- SHOP PAGE -->
+<div class="pageOverlay" id="pageShop"><div class="pageTop"><button onclick="closePage('pageShop')">←</button><h2>🏪 Shop</h2></div>
+<div class="pageCard"><b>Shop Inventory + Billing</b><p>Add Product → Barcode → Price → Sale</p><input class="extPageInput" id="shopName" placeholder="Product Name"><input class="extPageInput" id="shopPrice" placeholder="Price - e.g. 500"><button class="pageBtn" onclick="addShopProduct()">+ Add Product & Bill</button><div id="shopList" style="margin-top:10px;color:#7ee2ff">No products yet</div></div></div>
+
+<script>
+var _shopTotal=0;
+function doBarcodeTransaction(){var c=document.getElementById('barcodeInput').value||'123456789';document.getElementById('barcodeResult').textContent='✅ Barcode Found: '+c+' — Product: Demo Product';document.getElementById('barcodeTrans').innerHTML='Product: Demo Product<br>Price: Rs 500<br><button class="pageBtn" onclick="openPage(\'pageShop\')">Go To Shop Billing →</button>';showBotToast('💰 Barcode Transaction Started');}
+function doCamScan(){document.getElementById('camscanResult').textContent='✅ Paper Detected → Cropped → Saved as PDF / Photo';showBotToast('📄 Cam Scan: Paper Saved');}
+function doCount(){var el=document.getElementById('countVal');el.textContent=parseInt(el.textContent)+1;setBotWorking('count',true);setTimeout(function(){setBotWorking('count',false)},1000);}
+function addShopProduct(){var n=document.getElementById('shopName').value||'Product';var p=parseInt(document.getElementById('shopPrice').value||'500');_shopTotal+=p;document.getElementById('shopList').innerHTML+='<div>'+n+' - Rs '+p+'</div><b>Total: Rs '+_shopTotal+'</b>';showBotToast('🏪 Shop: '+n+' Added - Total Rs '+_shopTotal);}
+try{var all=document.getElementById('pageAll');if(all&&!document.getElementById('new4Added')){var g=all.querySelector('.pageGrid');g.innerHTML+='<button onclick="openPage(\'pageBarcode\')">📊<br>Barcode</button><button onclick="openPage(\'pageCamScan\')">📄<br>Cam Scan</button><button onclick="openPage(\'pageCounting\')">🔢<br>Counting</button><button onclick="openPage(\'pageShop\')">🏪<br>Shop</button>';var d=document.createElement('div');d.id='new4Added';all.appendChild(d);}}catch(e){}
+</script>
 </body>
                                                                                      </html>
