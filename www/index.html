@@ -944,5 +944,64 @@ try{
   }
 }catch(e){}
 </script>
+  <!-- PATCH 25 - EVERY FEATURE SEPARATE PAGE - EXTERNAL DEVICES -->
+
+<!-- IP CAM / CCTV -->
+<div class="pageOverlay" id="pageIpCam"><div class="pageTop"><button onclick="closePage('pageIpCam')">←</button><h2>📹 IP Cam / CCTV</h2></div>
+<div class="pageCard"><b>IP Cam / CCTV Viewer</b><p>RTSP • ONVIF • HLS • RTMP — Offline</p><input class="extPageInput" id="ipCamUrl" placeholder="rtsp://192.168.1.100:554/stream"><button class="pageBtn" onclick="alert('IP Cam Connecting: '+document.getElementById('ipCamUrl').value)">Connect IP Cam</button></div>
+<div class="pageCard"><b>Offline Bots</b><p>🤖 Motion Bot • Person Bot • Face Bot</p></div></div>
+
+<!-- THERMAL -->
+<div class="pageOverlay" id="pageThermal"><div class="pageTop"><button onclick="closePage('pageThermal')">←</button><h2>🌡️ Thermal</h2></div>
+<div class="pageCard"><b>FLIR ONE Pro — Thermal</b><p>Temp Alert • Hot Spot • Fire Alert</p><button class="pageBtn" onclick="alert('Thermal Connected - Temp: 36.5°C')">Connect FLIR</button></div>
+<div class="pageCard"><b>Offline Bots</b><p>🤖 Heat Bot • Fire Bot • Temp Bot</p></div></div>
+
+<!-- USB CAM -->
+<div class="pageOverlay" id="pageUsbCam"><div class="pageTop"><button onclick="closePage('pageUsbCam')">←</button><h2>🔌 USB Cam</h2></div>
+<div class="pageCard"><b>USB Endoscope / Microscope</b><p>1000x Zoom • Measure</p><button class="pageBtn" onclick="alert('USB Cam Connected')">Connect USB Cam</button></div>
+<div class="pageCard"><b>Offline Bots</b><p>🤖 Measure Bot • Count Bot</p></div></div>
+
+<!-- WIFI MICROSCOPE -->
+<div class="pageOverlay" id="pageWifiMicro"><div class="pageTop"><button onclick="closePage('pageWifiMicro')">←</button><h2>🔬 WiFi Microscope</h2></div>
+<div class="pageCard"><b>DEPSTECH WiFi Microscope</b><p>Connect to: 192.168.10.1</p><button class="pageBtn" onclick="alert('Connecting to 192.168.10.1')">Connect WiFi Micro</button></div>
+<div class="pageCard"><b>Offline Bots</b><p>🤖 Detail Bot • Skin / Leaf Bot</p></div></div>
+
+<!-- DRONE -->
+<div class="pageOverlay" id="pageDrone"><div class="pageTop"><button onclick="closePage('pageDrone')">←</button><h2>🚁 DJI Mini 4 Pro</h2></div>
+<div class="pageCard"><b>DJI Drone Control</b><p>Follow Me • Waypoint • Auto Return</p><button class="pageBtn" onclick="alert('Drone Connected')">Connect Drone</button></div>
+<div class="pageCard"><b>Offline Bots</b><p>🤖 Track Bot • Follow Bot</p></div></div>
+
+<!-- BLUETOOTH -->
+<div class="pageOverlay" id="pageBluetooth"><div class="pageTop"><button onclick="closePage('pageBluetooth')">←</button><h2>📶 Bluetooth</h2></div>
+<div class="pageCard"><b>Bluetooth Devices</b><p>Auto Pair • Auto Reconnect</p><button class="pageBtn" onclick="alert('Scanning Bluetooth...')">Scan Devices</button></div>
+<div class="pageCard"><b>Offline Bots</b><p>🤖 Pair Bot • Scan Bot</p></div></div>
+
+<!-- PRINTER -->
+<div class="pageOverlay" id="pagePrinter"><div class="pageTop"><button onclick="closePage('pagePrinter')">←</button><h2>🖨️ Printer</h2></div>
+<div class="pageCard"><b>Bluetooth / USB Printer</b><p>Auto Print Bill / Doc • QR Print</p><button class="pageBtn" onclick="alert('Printer Connected')">Connect Printer</button></div>
+<div class="pageCard"><b>Offline Bots</b><p>🤖 Print Bot — Auto Print After Scan</p></div></div>
+
+<!-- STORAGE -->
+<div class="pageOverlay" id="pageStorage"><div class="pageTop"><button onclick="closePage('pageStorage')">←</button><h2>💾 USB Storage</h2></div>
+<div class="pageCard"><b>USB Storage / Backup</b><p>Auto Backup • Auto Export</p><button class="pageBtn" onclick="alert('Storage Connected - Backup Started')">Connect Storage</button></div>
+<div class="pageCard"><b>Offline Bots</b><p>🤖 Backup Bot — Auto Backup Daily</p></div></div>
+
+<!-- EXTERNAL DEVICES HUB -->
+<div class="pageOverlay" id="pageExternal"><div class="pageTop"><button onclick="closePage('pageExternal')">←</button><h2>🔌 External Devices</h2></div>
+<div class="pageGrid">
+<button onclick="openPage('pageIpCam')">📹<br>IP Cam</button>
+<button onclick="openPage('pageThermal')">🌡️<br>Thermal</button>
+<button onclick="openPage('pageUsbCam')">🔌<br>USB Cam</button>
+<button onclick="openPage('pageWifiMicro')">🔬<br>WiFi Micro</button>
+<button onclick="openPage('pageDrone')">🚁<br>Drone</button>
+<button onclick="openPage('pageBluetooth')">📶<br>Bluetooth</button>
+<button onclick="openPage('pagePrinter')">🖨️<br>Printer</button>
+<button onclick="openPage('pageStorage')">💾<br>Storage</button>
+</div></div>
+
+<script>
+/* Add External + IP Cam etc to All Pages Grid */
+try{var g=document.querySelector('#pageAll .pageGrid');if(g&&!document.getElementById('extAdded')){g.innerHTML+='<button onclick="openPage(\'pageIpCam\')">📹<br>IP Cam</button><button onclick="openPage(\'pageThermal\')">🌡️<br>Thermal</button><button onclick="openPage(\'pageUsbCam\')">🔌<br>USB Cam</button><button onclick="openPage(\'pageWifiMicro\')">🔬<br>WiFi Micro</button><button onclick="openPage(\'pageDrone\')">🚁<br>Drone</button><button onclick="openPage(\'pageBluetooth\')">📶<br>Bluetooth</button><button onclick="openPage(\'pagePrinter\')">🖨️<br>Printer</button><button onclick="openPage(\'pageStorage\')">💾<br>Storage</button><button onclick="openPage(\'pageExternal\')">🔌<br>External</button>';var d=document.createElement('div');d.id='extAdded';document.getElementById('pageAll').appendChild(d)}}catch(e){}
+</script>
 </body>
                                                                                      </html>
