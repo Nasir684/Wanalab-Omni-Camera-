@@ -687,5 +687,40 @@ try{
   }
 }catch(e){}
 </script>
+  <style>
+/* PATCH 20 - FINAL FIX BY TEXT */
+#gpsFixed{padding:14px!important;background:#0b1822!important;border:1px solid #1e3a4a!important;border-radius:14px!important;display:block!important;margin:12px 0!important}
+#gpsFixed div{white-space:normal!important;word-break:normal!important}
+.gpsFTitle{font-size:16px!important;font-weight:800!important;color:#fff!important}
+.gpsFText{font-size:13px!important;line-height:1.7!important;color:#d8eaf5!important;font-family:monospace!important;margin-top:6px!important}
+.gpsFBtn{width:100%!important;padding:11px!important;border-radius:12px!important;border:none!important;font-weight:800!important;font-size:13px!important;margin-top:8px!important;color:#fff!important;text-align:center!important}
+</style>
+<script>
+/* PATCH 20 - FIND GPS BY TEXT */
+try{
+  if(!document.getElementById('gpsFixed')){
+    var all = document.querySelectorAll('div');
+    var target = null;
+    for(var i=0;i<all.length;i++){
+      if(all[i].textContent.indexOf('GPS Timestamp')>-1 && all[i].textContent.indexOf('GPS: OFF')>-1){
+        // take the smallest one that contains it
+        if(!target || all[i].innerHTML.length < target.innerHTML.length) target = all[i];
+      }
+    }
+    if(target){
+      var fix = document.createElement('div');
+      fix.id = 'gpsFixed';
+      fix.innerHTML = '<div class="gpsFTitle">📍 GPS Timestamp</div>'
+      + '<div class="gpsFText" id="gpsFixedText">📍 Waiting for GPS...<br>Time: ' + new Date().toLocaleString('en-GB') + '</div>'
+      + '<div class="gpsFBtn" style="background:#1e8fff" onclick="if(navigator.geolocation){navigator.geolocation.getCurrentPosition(function(p){document.getElementById(\'gpsFixedText\').innerHTML=\'Lat: \'+p.coords.latitude.toFixed(6)+\'<br>Lng: \'+p.coords.longitude.toFixed(6)+\'<br>Accuracy: \'+Math.round(p.coords.accuracy)+\'m<br>Time: \'+new Date().toLocaleString(\'en-GB\')})}">🔄 GET GPS</div>'
+      + '<div class="gpsFBtn" style="background:#1f7a55">📤 SHARE PROOF • GPS + TIME</div>'
+      + '<div class="gpsFBtn" style="background:#ff2d55">🆘 SOS • SEND LOCATION</div>'
+      + '<div class="gpsFText" style="text-align:center;color:#7ee2ff">⚡ BATTERY SAVER • ON • ECO MODE</div>';
+      target.parentNode.insertBefore(fix, target);
+      target.style.display = 'none';
+    }
+  }
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
