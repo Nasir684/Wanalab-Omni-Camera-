@@ -521,5 +521,28 @@ try{
   }
 }catch(e){}
 </script>
+  <style>
+/* PATCH 13 - CLEANUP */
+html,body{overflow-x:hidden!important}
+*{box-sizing:border-box!important}
+img,video{max-width:100%!important}
+.gpsBox{margin-bottom:6px!important}
+#gpsBadgeRow + .gpsMeta{margin-top:6px!important}
+</style>
+<script>
+/* PATCH 13 - REMOVE DUPLICATES */
+try{
+  // Remove duplicate LIVE badges / COPY buttons if pasted twice
+  var badges = document.querySelectorAll('#gpsBadgeRow');
+  for(var i=1;i<badges.length;i++) badges[i].remove();
+  var metas = document.querySelectorAll('.gpsMeta');
+  for(var j=1;j<metas.length;j++) metas[j].remove();
+  var cams = document.querySelectorAll('#camOverlay');
+  for(var k=1;k<cams.length;k++) cams[k].remove();
+  var syncs = document.querySelectorAll('.syncRow');
+  for(var s=1;s<syncs.length;s++) syncs[s].remove();
+  console.log('GodEye Patch 13: Cleaned');
+}catch(e){}
+    </script>
 </body>
                                                                                      </html>
