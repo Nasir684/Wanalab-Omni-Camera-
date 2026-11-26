@@ -356,5 +356,24 @@ function updateLimits(){
 }
 try{ updateLimits(); }catch(e){}
   </script>
+  <style>
+/* PATCH 6 - GPS PROFESSIONAL */
+.gpsBox{background:#071018!important;border:1px solid #1e3a4a!important;border-radius:12px!important;padding:10px 12px!important}
+.gpsBox b{font-family:monospace!important;font-size:12px!important;color:#7ee2ff!important;white-space:normal!important;word-break:break-all!important;line-height:1.5!important}
+.gpsBox small{font-family:monospace!important;font-size:11px!important;color:#9fb8c8!important;white-space:normal!important;word-break:break-all!important;line-height:1.5!important}
+#gpsLabel{color:#7ee2ff!important}
+#gpsStatus{color:#5eeaa0!important}
+</style>
+<script>
+/* PATCH 6 - FORMAT GPS TEXT */
+try{
+  var g = document.getElementById('gpsLabel');
+  if(g && g.textContent.indexOf('31.')>-1){
+    var txt = g.textContent.replace('GPS: ','').replace('GPS:','');
+    var parts = txt.split(' - ');
+    g.innerHTML = 'LAT: ' + (parts[0]||'') + '<br>LON: ' + (parts[1]||'');
+  }
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
