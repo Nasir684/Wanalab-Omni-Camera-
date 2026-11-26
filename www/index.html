@@ -340,5 +340,21 @@ updateProBadge(); updateLimits();
 .tools button b{font-size:12px!important;line-height:1.2!important;white-space:normal!important;text-align:center!important}
 .tools button span{font-size:10px!important;line-height:1.25!important;white-space:normal!important;text-align:center!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
   </style>
+  <script>
+/* PATCH 5 - FIX LIMITS TEXT */
+function updateLimits(){
+  try{
+    var b = document.getElementById('statBillSub');
+    if(b) b.textContent = 'FREE: 5 / 5 Left';
+    var s = document.getElementById('statScanSub');
+    if(s) s.textContent = 'PRO Only';
+    var p = document.getElementById('statPhotoSub');
+    if(p) p.textContent = 'PRO Only';
+    var t = document.getElementById('statThumbSub');
+    if(t) t.textContent = 'PRO Only';
+  }catch(e){}
+}
+try{ updateLimits(); }catch(e){}
+  </script>
 </body>
                                                                                      </html>
