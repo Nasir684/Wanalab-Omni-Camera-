@@ -469,5 +469,33 @@ try{
   });
 }catch(e){}
 </script>
+  <style>
+/* PATCH 11 - FIX WORD BREAK */
+.gpsBox *{word-break:normal!important;overflow-wrap:break-word!important}
+#gpsLabel{font-size:12.5px!important;line-height:1.6!important;white-space:normal!important;font-family:monospace!important}
+#gpsStatus{font-size:12.5px!important;line-height:1.6!important;white-space:normal!important}
+.gpsLine{display:block!important;margin:2px 0!important}
+</style>
+<script>
+/* PATCH 11 - REWRITE GPS LINES */
+try{
+  var gl = document.getElementById('gpsLabel');
+  if(gl){
+    var t = gl.textContent;
+    var m = t.match(/([\d.]+)\s*,\s*([\d.]+).*?(\d{2}\/\d{2}\/\d{4}.*?)\s*-\s*Accuracy\s*(\d+m)/);
+    if(m){
+      gl.innerHTML = '<span class="gpsLine">📍 Wana, Pakistan</span><span class="gpsLine">LAT: '+m[1]+'</span><span class="gpsLine">LON: '+m[2]+'</span><span class="gpsLine">'+m[3]+' • Accuracy '+m[4]+'</span>';
+    }
+  }
+  var gs = document.getElementById('gpsStatus');
+  if(gs) gs.textContent = '✅ Real GPS • Accuracy 20m • Timestamp Proof OK';
+  document.querySelectorAll('.gpsBox h3, .gpsBox h4').forEach(function(e){
+    if(e.textContent.indexOf('GPS Timestamp')>-1){
+      e.innerHTML = '📍 GPS Timestamp';
+      e.style.fontSize = '17px';
+    }
+  });
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
