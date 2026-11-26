@@ -23,51 +23,77 @@ jobs:
         run: npm install
       - run: npm run build
       - run: npx cap sync android
-      - name: DEBUG - Show what files we actually have
-        run: |
-          echo "=== WORKFLOWS ==="
-          ls -R .github/workflows/
-          echo "=== MANIFEST SOURCE ==="
-          cat android/app/src/main/AndroidManifest.xml
-          echo "=== ALL MANIFESTS ==="
-          find android -name "AndroidManifest.xml" | xargs grep -l "title_activity_main" || echo "No manifest has title_activity_main"
-          echo "=== STRINGS ==="
-          cat android/app/src/main/res/values/strings.xml || echo "NO STRINGS FILE"
-      - name: FIX - Inject string via build.gradle + Manifest - CANNOT FAIL
+      - name: FIX - All missing resources - Styles + Strings + Colors
         run: |
           python3 <<'PYEOF'
-          import re
-          # 1. Fix Manifest - replace reference with plain text
-          mp = 'android/app/src/main/AndroidManifest.xml'
-          t = open(mp).read()
-          t = t.replace('@string/title_activity_main', 'GodEye')
-          t = re.sub(r'android:icon="[^"]*"', 'android:icon="@mipmap/ic_launcher"', t)
-          t = re.sub(r'android:roundIcon="[^"]*"', 'android:roundIcon="@mipmap/ic_launcher_round"', t)
-          open(mp,'w').write(t)
-          print("Manifest fixed, title_activity_main left?", 'title_activity_main' in open(mp).read())
-          # 2. Inject via build.gradle - this creates the string at build time even if res/ is wiped
-          bg = 'android/app/build.gradle'
-          g = open(bg).read()
-          print("=== BUILD.GRADLE BEFORE ===")
-          print(g)
-          if 'title_activity_main' not in g:
-              # Insert resValue inside defaultConfig { ... }
-              g = g.replace('defaultConfig {', 'defaultConfig {\n        resValue "string", "title_activity_main", "GodEye"\n        resValue "string", "app_name", "GodEye"')
-          open(bg,'w').write(g)
-          print("=== BUILD.GRADLE AFTER ===")
-          print(open(bg).read())
-          # 3. Also create strings.xml
-          import os
-          os.makedirs('android/app/src/main/res/values', exist_ok=True)
-          open('android/app/src/main/res/values/strings.xml','w').write('<?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">GodEye</string><string name="title_activity_main">GodEye</string></resources>')
-          print("strings.xml written")
+          import re, os
+          from pathlib import Path
+          base = Path('android/app/src/main/res')
+          base.joinpath('values').mkdir(parents=True, exist_ok=True)
+          base.joinpath('xml').mkdir(parents=True, exist_ok=True)
+          # 1. Write COMPLETE styles.xml - includes the missing one
+          (base/'values/styles.xml').write_text('''<?xml version="1.0" encoding="utf-8"?>
+          <resources>
+            <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+              <item name="colorPrimary">@color/colorPrimary</item>
+              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+              <item name="colorAccent">@color/colorAccent</item>
+            </style>
+            <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+              <item name="colorPrimary">@color/colorPrimary</item>
+              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+              <item name="colorAccent">@color/colorAccent</item>
+            </style>
+            <style name="AppTheme.NoActionBarLaunch" parent="Theme.AppCompat.Light.NoActionBar">
+              <item name="colorPrimary">@color/colorPrimary</item>
+              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+              <item name="colorAccent">@color/colorAccent</item>
+              <item name="android:windowBackground">@color/colorPrimary</item>
+            </style>
+            <style name="AppTheme.NoActionBarLaunchSplash" parent="AppTheme.NoActionBarLaunch" />
+            <style name="LaunchTheme" parent="AppTheme.NoActionBarLaunch" />
+            <style name="SplashTheme" parent="AppTheme.NoActionBarLaunch" />
+          </resources>
+          ''')
+          # 2. Strings
+          (base/'values/strings.xml').write_text('<?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">GodEye</string><string name="title_activity_main">GodEye</string><string name="action_settings">Settings</string><string name="hello_world">Hello World!</string></resources>')
+          # 3. Colors
+          (base/'values/colors.xml').write_text('<?xml version="1.0" encoding="utf-8"?><resources><color name="colorPrimary">#2563EB</color><color name="colorPrimaryDark">#1E40AF</color><color name="colorAccent">#2563EB</color><color name="colorPrimaryVariant">#1E40AF</color><color name="colorOnPrimary">#FFFFFF</color></resources>')
+          # 4. file_paths
+          (base/'xml/file_paths.xml').write_text('<?xml version="1.0" encoding="utf-8"?><paths><files-path name="files" path="." /><cache-path name="cache" path="." /><external-path name="external" path="." /></paths>')
+          (base/'xml/data_extraction_rules.xml').write_text('<?xml version="1.0" encoding="utf-8"?><data-extraction-rules><cloud-backup><exclude domain="root" path="." /></cloud-backup><device-transfer><exclude domain="root" path="." /></device-transfer></data-extraction-rules>')
+          # 5. AUTO-FIX: Scan Manifest for ANY @style / @string / @color / @drawable / @xml / @layout and create if missing
+          manifest = open('android/app/src/main/AndroidManifest.xml').read()
+          print("MANIFEST:")
+          print(manifest)
+          # Fix known bad refs first
+          manifest = manifest.replace('@string/title_activity_main', 'GodEye')
+          open('android/app/src/main/AndroidManifest.xml','w').write(manifest)
+          refs = set(re.findall(r'@([a-z]+)/([A-Za-z0-9_\.]+)', manifest))
+          print(f"Refs found: {refs}")
+          for typ, name in refs:
+              if typ == 'style':
+                  t = (base/'values/styles.xml').read_text()
+                  if f'name="{name}"' not in t:
+                      t = t.replace('</resources>', f'  <style name="{name}" parent="AppTheme.NoActionBarLaunch" />\n</resources>')
+                      (base/'values/styles.xml').write_text(t)
+                      print(f"✅ Auto-added style {name}")
+              elif typ == 'string':
+                  t = (base/'values/strings.xml').read_text()
+                  if f'name="{name}"' not in t:
+                      t = t.replace('</resources>', f'    <string name="{name}">GodEye</string>\n</resources>')
+                      (base/'values/strings.xml').write_text(t)
+                      print(f"✅ Auto-added string {name}")
+              elif typ == 'color':
+                  t = (base/'values/colors.xml').read_text()
+                  if f'name="{name}"' not in t:
+                      t = t.replace('</resources>', f'<color name="{name}">#2563EB</color></resources>')
+                      (base/'values/colors.xml').write_text(t)
+                      print(f"✅ Auto-added color {name}")
+          print("=== FINAL styles.xml ===")
+          print((base/'values/styles.xml').read_text())
           PYEOF
-          echo "=== VERIFY - If this still shows title_activity_main, fix did NOT run ==="
-          grep -r "title_activity_main" android/app/src/main/AndroidManifest.xml || echo "✅ GOOD - No reference left in Manifest"
-          grep -r "title_activity_main" android/app/build.gradle || echo "❌ BAD - build.gradle injection missing"
-          cat android/app/src/main/res/values/strings.xml
-      - name: Clean bad resources + MainActivity + Colors + Styles
-        run: |
+          # MainActivity + clean
           rm -f android/app/src/main/res/xml/config.xml
           rm -rf android/app/src/main/java/com/wanalab/omnicamera
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
@@ -77,21 +103,6 @@ jobs:
           package com.wanalab.godeye;
           import com.getcapacitor.BridgeActivity;
           public class MainActivity extends BridgeActivity {}
-          EOF
-          cat > android/app/src/main/res/values/colors.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources><color name="colorPrimary">#2563EB</color><color name="colorPrimaryDark">#1E40AF</color><color name="colorAccent">#2563EB</color></resources>
-          EOF
-          cat > android/app/src/main/res/values/styles.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar"><item name="colorPrimary">@color/colorPrimary</item><item name="colorPrimaryDark">@color/colorPrimaryDark</item><item name="colorAccent">@color/colorAccent</item></style>
-            <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar"><item name="colorPrimary">@color/colorPrimary</item><item name="colorPrimaryDark">@color/colorPrimaryDark</item><item name="colorAccent">@color/colorAccent</item></style>
-          </resources>
-          EOF
-          cat > android/app/src/main/res/xml/file_paths.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <paths><files-path name="files" path="." /><cache-path name="cache" path="." /><external-path name="external" path="." /></paths>
           EOF
       - name: Create proper launcher icons
         run: |
@@ -106,6 +117,13 @@ jobs:
               img.save(f'{p}/ic_launcher.png')
               img.save(f'{p}/ic_launcher_round.png')
           print('✅ Icons created')
+          PYEOF
+          python3 <<'PYEOF'
+          import re
+          t = open('android/app/src/main/AndroidManifest.xml').read()
+          t = re.sub(r'android:icon="[^"]*"', 'android:icon="@mipmap/ic_launcher"', t)
+          t = re.sub(r'android:roundIcon="[^"]*"', 'android:roundIcon="@mipmap/ic_launcher_round"', t)
+          open('android/app/src/main/AndroidManifest.xml','w').write(t)
           PYEOF
       - name: Generate gradlew if missing
         run: |
