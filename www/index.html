@@ -1125,5 +1125,91 @@ function addGalleryTopBtn(){
 setTimeout(addGalleryTopBtn,800);setTimeout(addGalleryTopBtn,2500);
 window.addEventListener('load',function(){setTimeout(addGalleryTopBtn,1000)});
 </script>
+  <style>
+/* PATCH 28 - GPS SEPARATE + VOICE KEYWORDS */
+.voiceKw{background:#1a1a1a!important;border:1px solid #333!important;border-radius:10px!important;padding:10px!important;margin-bottom:6px!important;font-size:13px!important}
+.voiceKw b{color:#7ee2ff}
+.gpsBig{font-size:32px!important;font-weight:800!important;text-align:center!important;padding:12px 0!important}
+</style>
+
+<!-- GPS PAGE - SEPARATE - NOT ON FRONT PAGE -->
+<div class="pageOverlay" id="pageGPS"><div class="pageTop"><button onclick="closePage('pageGPS')">←</button><h2>📍 GPS</h2></div>
+<div class="pageCard"><b>GPS Location</b><div class="gpsBig" id="gpsPageLatLng">No GPS Yet<br><span style="font-size:14px;color:#aaa">Tap GET GPS</span></div><p id="gpsPageDetail" style="text-align:center">Accuracy: - | Time: -</p>
+<button class="pageBtn" onclick="getGPSPage()">📍 GET GPS</button>
+<button class="pageBtn" style="background:#00b894" onclick="shareGPSPage()">📤 SHARE PROOF</button>
+<button class="pageBtn" style="background:#222" onclick="copyGPSPage()">📋 COPY GPS</button>
+<button class="pageBtn" style="background:#ff2d55" onclick="sosGPSPage()">🆘 SOS • SEND LOCATION</button></div>
+<div class="pageCard"><b>Anti-Fake Check</b><p id="gpsAntiFake">Tap GET GPS to check Real / Fake</p><button class="pageBtn" style="background:#7a3cff" onclick="openPage('pageAntiFake')">🛡️ Open Anti-Fake Page →</button></div>
+<div class="pageCard"><b>Voice Keywords For GPS</b><p>“GPS” • “Get GPS” • “Location” • “Share Location” • “SOS”</p></div>
+</div>
+
+<script>
+/* PATCH 28 - GPS LOGIC + VOICE KEYWORDS MAP */
+function getGPSPage(){
+  document.getElementById('gpsPageLatLng').innerHTML='Getting GPS...';
+  if(typeof getSpecGPS==='function')getSpecGPS();
+  setTimeout(function(){
+    if(typeof _sLat!=='undefined'&&_sLat){
+      document.getElementById('gpsPageLatLng').innerHTML='Lat: '+_sLat.toFixed(6)+'<br>Lng: '+_sLng.toFixed(6);
+      document.getElementById('gpsPageDetail').textContent='Accuracy: '+_sAcc+'m | Time: '+new Date().toLocaleString('en-GB');
+      document.getElementById('gpsAntiFake').textContent=_sAcc<50?'✅ REAL GPS - Accuracy '+_sAcc+'m':'⚠️ Check - Accuracy '+_sAcc+'m - Turn OFF Fake GPS';
+    }else document.getElementById('gpsPageLatLng').innerHTML='GPS Failed<br><span style="font-size:14px;color:#aaa">Turn ON Location + Allow Permission</span>';
+  },2500);
+}
+function shareGPSPage(){var t='GodEye Proof\nLat: '+((typeof _sLat!=='undefined'&&_sLat)?_sLat.toFixed(6):'-')+' Lng: '+((typeof _sLng!=='undefined'&&_sLng)?_sLng.toFixed(6):'-')+'\nTime: '+new Date().toLocaleString('en-GB');if(navigator.share)navigator.share({text:t});else alert(t)}
+function copyGPSPage(){var t=((typeof _sLat!=='undefined'&&_sLat)?_sLat.toFixed(6):'-')+', '+((typeof _sLng!=='undefined'&&_sLng)?_sLng.toFixed(6):'-');try{navigator.clipboard.writeText(t);alert('GPS Copied: '+t)}catch(e){alert(t)}}
+function sosGPSPage(){alert('🆘 SOS Sent!\nLocation: '+((typeof _sLat!=='undefined'&&_sLat)?_sLat.toFixed(6):'-')+', '+((typeof _sLng!=='undefined'&&_sLng)?_sLng.toFixed(6):'-'));showBotToast('🆘 SOS Sent With GPS')}
+
+var VOICE_MAP=[
+ {kw:['gps','get gps','location','where am i'],action:function(){openPage('pageGPS');getGPSPage()},say:'Opening GPS Page'},
+ {kw:['share proof','share location','send location'],action:function(){shareGPSPage()},say:'Sharing GPS Proof'},
+ {kw:['sos','emergency','help'],action:function(){sosGPSPage()},say:'SOS Started'},
+ {kw:['capture','photo','take photo','click'],action:function(){saveToLocalGallery('Photo');showBotToast('📷 Photo Captured By Voice')},say:'Photo Captured'},
+ {kw:['video','start video','record'],action:function(){openPage('pageVideo')},say:'Video Started'},
+ {kw:['stop video','stop recording'],action:function(){closePage('pageVideo');showBotToast('Video Stopped')},say:'Video Stopped'},
+ {kw:['gallery','photos','my photos'],action:function(){openPage('pageGallery')},say:'Opening Gallery'},
+ {kw:['dashboard'],action:function(){openPage('pageDashboard')},say:'Opening Dashboard'},
+ {kw:['face','face database','add face'],action:function(){openPage('pageFace')},say:'Opening Face Database'},
+ {kw:['history','proof history'],action:function(){openPage('pageHistory')},say:'Opening Proof History'},
+ {kw:['vault','open vault'],action:function(){openPage('pageVault')},say:'Opening Vault'},
+ {kw:['anti fake','fake gps','check fake'],action:function(){openPage('pageAntiFake')},say:'Opening Anti-Fake'},
+ {kw:['settings','setting'],action:function(){openSettings()},say:'Opening Settings'},
+ {kw:['barcode','scan barcode','transaction'],action:function(){openPage('pageBarcode')},say:'Barcode Started'},
+ {kw:['cam scan','scan paper','scan document','document'],action:function(){openPage('pageCamScan')},say:'Cam Scan Started'},
+ {kw:['count','counting','count items'],action:function(){openPage('pageCounting')},say:'Counting Started'},
+ {kw:['shop','billing','inventory'],action:function(){openPage('pageShop')},say:'Opening Shop'},
+ {kw:['ip cam','cctv'],action:function(){openPage('pageIpCam')},say:'Opening IP Cam'},
+ {kw:['thermal','heat','fire'],action:function(){openPage('pageThermal')},say:'Opening Thermal'},
+ {kw:['usb cam','microscope'],action:function(){openPage('pageUsbCam')},say:'Opening USB Cam'},
+ {kw:['bluetooth'],action:function(){openPage('pageBluetooth')},say:'Opening Bluetooth'},
+ {kw:['printer','print'],action:function(){openPage('pagePrinter')},say:'Opening Printer'},
+ {kw:['storage'],action:function(){openPage('pageStorage')},say:'Opening Storage'},
+ {kw:['drone'],action:function(){openPage('pageDrone')},say:'Opening Drone'},
+ {kw:['cam tools','tools','effects'],action:function(){openPage('pageCamTools')},say:'Opening Cam Tools'},
+ {kw:['flash','torch','light on'],action:function(){if(typeof toggleSpecFlash==='function')toggleSpecFlash()},say:'Flash Toggled'},
+ {kw:['stop','close','back','go back'],action:function(){document.querySelectorAll('.pageOverlay').forEach(function(p){p.classList.remove('open')});try{document.getElementById('settingsPage').classList.remove('open')}catch(e){}},say:'Stopped - Back To Camera'},
+ {kw:['all pages','show all'],action:function(){openPage('pageAll')},say:'Opening All Pages'}
+];
+function runVoiceCommand(text){
+  text=text.toLowerCase();var log=document.getElementById('voiceLog');if(log)log.textContent='Heard: "'+text+'"';
+  for(var i=0;i<VOICE_MAP.length;i++){for(var j=0;j<VOICE_MAP[i].kw.length;j++){if(text.indexOf(VOICE_MAP[i].kw[j])>-1){showBotToast('🎤 '+VOICE_MAP[i].say);VOICE_MAP[i].action();return true}}}
+  showBotToast('🎤 Not understood: '+text);return false;
+}
+function startVoiceEngine(){
+  showBotToast('🎤 Listening... Say: GPS / Capture / Barcode / Shop / Stop');
+  try{
+    var Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!Rec){var t=prompt('Voice - Type Command (e.g. GPS / Barcode / Shop / Stop):');if(t)runVoiceCommand(t);return}
+    var r=new Rec();r.lang='en-US';r.onresult=function(e){runVoiceCommand(e.results[0][0].transcript)};r.onerror=function(){var t2=prompt('Voice failed - Type Command:');if(t2)runVoiceCommand(t2)};r.start();
+  }catch(e){var t3=prompt('Type Voice Command:');if(t3)runVoiceCommand(t3)}
+}
+try{
+  document.querySelectorAll('button').forEach(function(b){var o=b.getAttribute('onclick')||'';if(o.indexOf('voiceSpec')>-1)b.setAttribute('onclick',"openPage('pageVoice');startVoiceEngine()")});
+  var vp=document.getElementById('pageVoice');if(vp){vp.innerHTML='<div class="pageTop"><button onclick="closePage(\'pageVoice\')">←</button><h2>🎤 Voice Command</h2></div><div class="pageCard"><b>Say Any Keyword — Start / Stop Any Feature</b><p id="voiceLog">Tap Start Listening, then say command</p><button class="pageBtn" onclick="startVoiceEngine()">🎤 Start Listening</button></div><div class="pageCard"><b>All Voice Keywords</b><div class="voiceKw"><b>GPS:</b> GPS, Get GPS, Location</div><div class="voiceKw"><b>Capture:</b> Capture, Photo, Take Photo</div><div class="voiceKw"><b>Video:</b> Video, Start Video — Stop: Stop Video</div><div class="voiceKw"><b>Barcode:</b> Barcode, Transaction</div><div class="voiceKw"><b>Cam Scan:</b> Cam Scan, Scan Paper, Document</div><div class="voiceKw"><b>Counting:</b> Count, Counting</div><div class="voiceKw"><b>Shop:</b> Shop, Billing, Inventory</div><div class="voiceKw"><b>Gallery:</b> Gallery, Photos</div><div class="voiceKw"><b>GPS Pages:</b> Share Location, SOS, Help</div><div class="voiceKw"><b>Other:</b> Dashboard, Face, History, Vault, Settings, Thermal, Drone, Printer, Bluetooth, Storage, CCTV, IP Cam, Cam Tools, Flash</div><div class="voiceKw"><b>Stop:</b> Stop, Close, Back — Goes Back To Camera</div></div>'}
+  var top=document.querySelector('.specTopRight');if(top){top.querySelectorAll('button').forEach(function(b){var o=b.getAttribute('onclick')||'';if(o.indexOf('getSpecGPS')>-1 && !b.id.includes('settings') && b.id!=='galleryTopBtn'){b.style.display='none'}})}
+  var dash=document.getElementById('pageDashboard');if(dash&&!document.getElementById('gpsDashCard')){var c=document.createElement('div');c.id='gpsDashCard';c.className='pageCard';c.innerHTML='<b>📍 GPS Page</b><p>Open GPS Separate Page</p><button class="pageBtn" onclick="openPage(\'pageGPS\')">Open GPS Page →</button>';dash.insertBefore(c,dash.firstChild.nextSibling)}
+  var all=document.getElementById('pageAll');if(all){var g=all.querySelector('.pageGrid');if(g&&!document.getElementById('gpsAllAdded')){g.innerHTML+='<button onclick="openPage(\'pageGPS\')">📍<br>GPS</button><button onclick="openPage(\'pageVoice\')">🎤<br>Voice</button>';var d=document.createElement('div');d.id='gpsAllAdded';all.appendChild(d)}}
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
