@@ -1,3 +1,41 @@
+name: Build GodEye APK + AAB - v2.2
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Install Android SDK packages
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Install Node deps
+        run: npm install
+      - run: npm run build
+      - run: npx cap sync android
+      - name: Clean misplaced files + Create MainActivity
+        run: |
+          rm -rf android/app/src/main/res/values/mipmap-anydpi-v26
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          rm -f android/app/src/main/res/values/ic_launcher_*.xml
+          rm -rf android/app/src/main/java/com/wanalab/omnicamera
+          mkdir -p android/app/src/main/java/com/wanalab/godeye
+          cat > android/app/src/main/java/com/wanalab/godeye/MainActivity.java <<'EOF'
+          package com.wanalab.godeye;
+          import com.getcapacitor.BridgeActivity;
+          public class MainActivity extends BridgeActivity {}
+          EOF
+          echo "✅ Cleaned + MainActivity created"
       - name: DIAGNOSE - Print all files
         run: |
           echo "=== JAVA ==="
@@ -9,9 +47,31 @@
           echo "=== RES MIPMAP ==="
           ls android/app/src/main/res/ | grep mipmap
           echo "=== MainActivity ==="
-          cat android/app/src/main/java/com/wanalab/godeye/MainActivity.java || echo "MISSING!"
+          cat android/app/src/main/java/com/wanalab/godeye/MainActivity.java
           echo "=== Namespace ==="
           grep -n "namespace\|applicationId" android/app/build.gradle
           echo "=== WWW ==="
           ls -l www/ | head -20
           ls www/index.html || echo "NO INDEX.HTML - THIS IS CRASH!"
+      - name: Generate gradlew if missing
+        run: |
+          if [ -f android/gradlew ]; then chmod +x android/gradlew; exit 0; fi
+          cd /tmp
+          wget -q https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
+          unzip -q gradle-8.11.1-bin.zip
+          /tmp/gradle-8.11.1/bin/gradle -p $GITHUB_WORKSPACE/android wrapper --gradle-version 8.11.1
+          chmod +x $GITHUB_WORKSPACE/android/gradlew
+      - name: Build APK + AAB
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+          ./gradlew bundleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GodEye-APK-v2.2
+          path: android/app/build/outputs/apk/debug/*.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GodEye-AAB-v2.2
+          path: android/app/build/outputs/bundle/debug/*.aab
