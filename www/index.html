@@ -651,5 +651,41 @@ try{
   },1500);
 }catch(e){}
 </script>
+  <style>
+/* PATCH 19 - REBUILD GPS BOX */
+.gpsBox{padding:14px!important;display:block!important}
+.gpsBox > *{display:none!important}
+#gpsBoxNew{display:block!important}
+#gpsBoxNew *{display:block!important;white-space:normal!important;word-break:normal!important}
+.gpsTitle{font-size:17px!important;font-weight:800!important;color:#fff!important;margin-bottom:8px!important}
+.gpsLine2{font-size:13px!important;line-height:1.7!important;color:#d8eaf5!important;font-family:monospace!important}
+.gpsBtn{width:100%!important;padding:11px!important;border-radius:12px!important;border:none!important;font-weight:800!important;font-size:13px!important;margin-top:8px!important;text-align:center!important}
+</style>
+<script>
+/* PATCH 19 - REBUILD */
+try{
+  var old = document.querySelector('.gpsBox');
+  if(old && !document.getElementById('gpsBoxNew')){
+    var n = document.createElement('div');
+    n.id = 'gpsBoxNew';
+    n.innerHTML = '<div class="gpsTitle">📍 GPS Timestamp</div>'
+    + '<div class="gpsLine2" id="newGpsText">📍 Waiting for GPS...<br>Tap Get GPS below</div>'
+    + '<div class="gpsLine2" id="newGpsTime">Time: '+new Date().toLocaleString('en-GB')+'</div>'
+    + '<button class="gpsBtn" style="background:#1e8fff;color:#fff" onclick="location.reload()">🔄 GET GPS</button>'
+    + '<button class="gpsBtn" style="background:#1f7a55;color:#fff" id="newShare">📤 SHARE PROOF • GPS + TIME</button>'
+    + '<button class="gpsBtn" style="background:#ff2d55;color:#fff" id="newSos">🆘 SOS • SEND LOCATION</button>'
+    + '<div class="gpsLine2" style="text-align:center;margin-top:8px;color:#7ee2ff">⚡ BATTERY SAVER • ON • ECO MODE</div>';
+    old.appendChild(n);
+    // Keep new text updated from old label if it loads
+    setInterval(function(){
+      var o = document.getElementById('gpsLabel');
+      var t = document.getElementById('newGpsText');
+      if(o && t && o.textContent.length > 10) t.textContent = o.textContent;
+      var tm = document.getElementById('newGpsTime');
+      if(tm) tm.textContent = 'Time: ' + new Date().toLocaleString('en-GB');
+    },1000);
+  }
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
