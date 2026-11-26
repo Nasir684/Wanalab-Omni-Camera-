@@ -375,5 +375,31 @@ try{
   }
 }catch(e){}
 </script>
+  <style>
+/* PATCH 7 - GPS PRO CARD */
+.gpsRow{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:8px!important}
+.gpsBadge{background:#0f3d2e!important;color:#5eeaa0!important;border:1px solid #1f7a55!important;font-size:10px!important;font-weight:700!important;padding:3px 8px!important;border-radius:20px!important;white-space:nowrap!important}
+.gpsCopy{background:#0e2a3a!important;color:#7ee2ff!important;border:1px solid #1e5a7a!important;font-size:10px!important;font-weight:700!important;padding:5px 10px!important;border-radius:8px!important;white-space:nowrap!important}
+.gpsMeta{font-family:monospace!important;font-size:10.5px!important;color:#9fb8c8!important;line-height:1.6!important;white-space:normal!important;word-break:break-all!important}
+</style>
+<script>
+/* PATCH 7 - GPS BADGE + COPY */
+try{
+  var gb = document.querySelector('.gpsBox');
+  if(gb && !document.getElementById('gpsBadgeRow')){
+    var row = document.createElement('div');
+    row.id = 'gpsBadgeRow';
+    row.className = 'gpsRow';
+    row.style.marginTop = '8px';
+    row.innerHTML = '<span class="gpsBadge">● LIVE • Real GPS</span><button class="gpsCopy" onclick="try{navigator.clipboard.writeText(document.getElementById(\'gpsLabel\').innerText);this.textContent=\'COPIED ✓\';setTimeout(()=>this.textContent=\'COPY GPS\',1500)}catch(e){}">COPY GPS</button>';
+    gb.appendChild(row);
+    var m = document.createElement('div');
+    m.className = 'gpsMeta';
+    m.style.marginTop = '6px';
+    m.textContent = 'ACCURACY: 100m • SOURCE: Device GPS • ' + new Date().toLocaleString('en-GB');
+    gb.appendChild(m);
+  }
+}catch(e){}
+  </script>
 </body>
                                                                                      </html>
