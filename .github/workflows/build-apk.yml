@@ -23,23 +23,64 @@ jobs:
         run: npm install
       - run: npm run build
       - run: npx cap sync android
-      - name: Clean ALL bad resources - FIXES mergeDebugResources
+      - name: NUCLEAR - Wipe res and rebuild minimal
         run: |
-          rm -f android/app/src/main/res/xml/config.xml
+          echo "=== OLD RES - THE CULPRIT IS IN HERE ==="
+          find android/app/src/main/res -type f | sort
+          echo "=== MANIFEST REFERENCES ==="
+          cat android/app/src/main/AndroidManifest.xml
+          echo "=== BUILD.GRADLE ==="
+          cat android/app/build.gradle
+          # SAVE manifest, wipe everything
+          cp android/app/src/main/AndroidManifest.xml /tmp/Manifest.xml
+          rm -rf android/app/src/main/res
+          mkdir -p android/app/src/main/res/values
+          mkdir -p android/app/src/main/res/xml
+          mkdir -p android/app/src/main/res/drawable
+          # Minimal values - no duplicates, no bad XML
+          cat > android/app/src/main/res/values/strings.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources><string name="app_name">GodEye</string></resources>
+          EOF
+          cat > android/app/src/main/res/values/colors.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources><color name="colorPrimary">#2563EB</color><color name="colorPrimaryDark">#1E40AF</color><color name="colorAccent">#2563EB</color></resources>
+          EOF
+          cat > android/app/src/main/res/values/styles.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+            <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+              <item name="colorPrimary">@color/colorPrimary</item>
+              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+              <item name="colorAccent">@color/colorAccent</item>
+            </style>
+            <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+              <item name="colorPrimary">@color/colorPrimary</item>
+              <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+              <item name="colorAccent">@color/colorAccent</item>
+            </style>
+          </resources>
+          EOF
+          cat > android/app/src/main/res/xml/file_paths.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <paths><files-path name="files" path="." /><cache-path name="cache" path="." /><external-path name="external" path="." /></paths>
+          EOF
+          cat > android/app/src/main/res/xml/data_extraction_rules.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <data-extraction-rules><cloud-backup><exclude domain="root" path="." /></cloud-backup><device-transfer><exclude domain="root" path="." /></device-transfer></data-extraction-rules>
+          EOF
+          # Fix Manifest - remove any reference to missing resources
+          cat /tmp/Manifest.xml
+          echo "=== NEW RES ==="
+          find android/app/src/main/res -type f | sort
+          # MainActivity
           rm -rf android/app/src/main/java/com/wanalab/omnicamera
-          rm -rf android/app/src/main/res/values/mipmap-anydpi-v26
-          rm -rf android/app/src/main/res/mipmap-anydpi-v26
-          rm -f android/app/src/main/res/values/ic_launcher_*.xml
-          find android/app/src/main/res -name ".DS_Store" -delete || true
-          rm -rf android/app/src/main/res/drawable-v24 || true
           mkdir -p android/app/src/main/java/com/wanalab/godeye
           cat > android/app/src/main/java/com/wanalab/godeye/MainActivity.java <<'EOF'
           package com.wanalab.godeye;
           import com.getcapacitor.BridgeActivity;
           public class MainActivity extends BridgeActivity {}
           EOF
-          echo "✅ Cleaned"
-          find android/app/src/main/res -type f | sort || true
       - name: Create proper launcher icons
         run: |
           pip3 install Pillow --break-system-packages -q
@@ -54,7 +95,24 @@ jobs:
               img.save(f'{p}/ic_launcher_round.png')
           print('✅ Icons created')
           PYEOF
-          ls android/app/src/main/res/ | grep mipmap || true
+      - name: Fix Manifest to use only existing resources
+        run: |
+          python3 <<'PYEOF'
+          import re
+          p = 'android/app/src/main/AndroidManifest.xml'
+          t = open(p).read()
+          print("BEFORE MANIFEST:")
+          print(t)
+          # Force icon and theme to ones we KNOW exist
+          t = re.sub(r'android:icon="[^"]*"', 'android:icon="@mipmap/ic_launcher"', t)
+          t = re.sub(r'android:roundIcon="[^"]*"', 'android:roundIcon="@mipmap/ic_launcher_round"', t)
+          t = re.sub(r'android:theme="[^"]*"', 'android:theme="@style/AppTheme.NoActionBar"', t)
+          # Remove any reference to drawable splash / vector that we deleted
+          t = re.sub(r'android:.*?="@drawable/[^"]*"', '', t)
+          open(p,'w').write(t)
+          print("AFTER MANIFEST:")
+          print(open(p).read())
+          PYEOF
       - name: Generate gradlew if missing
         run: |
           if [ -f android/gradlew ]; then chmod +x android/gradlew; exit 0; fi
@@ -67,7 +125,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --info --stacktrace 2>&1 | tee /tmp/build.log | tail -n 200
           ./gradlew bundleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
