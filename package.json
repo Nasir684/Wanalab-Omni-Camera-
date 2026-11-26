@@ -1,18 +1,27 @@
 {
-  "name": "wanalab-godeye",
-  "version": "2.2",
+  "name": "godeye-by-wanalab",
+  "version": "2.2.0",
   "private": true,
+  "description": "GodEye - By WanaLab - Camera + Bill + Scan + Count + Face 468 Dots + Thumb Biometric + GPS Timestamp + GPS Share + Anti-Fake GPS + Credentials",
   "scripts": {
     "build": "node -e \"console.log('www already exists, skipping web build')\"",
-    "sync": "npx cap sync android"
+    "sync": "npx cap sync android",
+    "assets": "npx @capacitor/assets generate --iconBackgroundColor #0B0E11 --splashBackgroundColor #0B0E11"
   },
   "dependencies": {
-    "@capacitor/android": "7.4.0",
-    "@capacitor/app": "7.0.2",
-    "@capacitor/cli": "7.4.0",
-    "@capacitor/core": "7.4.0",
-    "@capacitor/haptics": "7.0.2",
-    "@capacitor/keyboard": "7.0.3",
-    "@capacitor/status-bar": "7.0.2"
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/keyboard": "^8.0.0",
+    "@capacitor/status-bar": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.1",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
