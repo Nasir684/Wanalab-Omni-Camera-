@@ -39,20 +39,33 @@ jobs:
       - name: DIAGNOSE - Print all files
         run: |
           echo "=== JAVA ==="
-          find android/app/src/main/java -type f | sort
+          find android/app/src/main/java -type f | sort || true
           echo "=== RES VALUES ==="
-          ls -R android/app/src/main/res/values/
+          ls -R android/app/src/main/res/values/ || true
           echo "=== RES XML ==="
-          ls -R android/app/src/main/res/xml/
+          ls -R android/app/src/main/res/xml/ || true
           echo "=== RES MIPMAP ==="
-          ls android/app/src/main/res/ | grep mipmap
+          ls android/app/src/main/res/ | grep mipmap || echo "NO MIPMAP FOLDERS - WILL CREATE ICONS"
           echo "=== MainActivity ==="
-          cat android/app/src/main/java/com/wanalab/godeye/MainActivity.java
+          cat android/app/src/main/java/com/wanalab/godeye/MainActivity.java || echo "MISSING!"
           echo "=== Namespace ==="
-          grep -n "namespace\|applicationId" android/app/build.gradle
+          grep -n "namespace\|applicationId" android/app/build.gradle || true
           echo "=== WWW ==="
-          ls -l www/ | head -20
+          ls -l www/ | head -20 || true
           ls www/index.html || echo "NO INDEX.HTML - THIS IS CRASH!"
+      - name: Create missing launcher icons
+        run: |
+          python3 -c "
+          import os, base64
+          png = base64.b64decode('[STRIPPED 96 bytes]')
+          for d in ['mipmap-mdpi','mipmap-hdpi','mipmap-xhdpi','mipmap-xxhdpi','mipmap-xxxhdpi']:
+              p = f'android/app/src/main/res/{d}'
+              os.makedirs(p, exist_ok=True)
+              open(f'{p}/ic_launcher.png','wb').write(png)
+              open(f'{p}/ic_launcher_round.png','wb').write(png)
+          print('✅ Icons created')
+          "
+          ls android/app/src/main/res/ | grep mipmap || true
       - name: Generate gradlew if missing
         run: |
           if [ -f android/gradlew ]; then chmod +x android/gradlew; exit 0; fi
