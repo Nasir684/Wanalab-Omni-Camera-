@@ -77,6 +77,16 @@ button.gold{background:#FFC107;color:#000;border-color:#FFC107}
 </style>
 </head>
 <body>
+ <div id="errBox" style="position:fixed;top:0;left:0;right:0;background:red;color:white;z-index:99999;padding:10px;display:none"></div>
+<script>
+window.onerror = function(msg, src, line){
+  var b = document.getElementById('errBox');
+  b.style.display='block';
+  b.innerHTML = 'ERROR: ' + msg + ' | Line: ' + line;
+  return false;
+};
+alert('JS STARTED - Patches loading');
+</script> 
 <div id="head"><div class="logo"><div class="mark">👁️</div><div><b>GODEYE</b><small>WanaLab • Founded by Nasir Khan</small></div></div><div class="online"><i></i> <span id="proBadge">FREE</span></div></div>
 
 <div id="stats">
