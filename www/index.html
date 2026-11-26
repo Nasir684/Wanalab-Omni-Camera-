@@ -544,5 +544,28 @@ try{
   console.log('GodEye Patch 13: Cleaned');
 }catch(e){}
     </script>
+  <style>
+/* PATCH 14 - SHARE PROOF */
+.shareBtn{background:#1f7a55!important;color:#fff!important;border:none!important;font-size:13px!important;font-weight:800!important;padding:11px!important;border-radius:12px!important;width:100%!important;margin-top:10px!important;letter-spacing:0.3px!important}
+</style>
+<script>
+/* PATCH 14 - SHARE */
+try{
+  if(!document.getElementById('shareProofBtn')){
+    var b = document.createElement('button');
+    b.id = 'shareProofBtn';
+    b.className = 'shareBtn';
+    b.textContent = '📤 SHARE PROOF • GPS + TIME';
+    b.onclick = function(){
+      var gps = document.getElementById('gpsLabel') ? document.getElementById('gpsLabel').innerText : '';
+      var msg = 'GodEye Proof\n' + gps + '\nTime: ' + new Date().toLocaleString('en-GB') + '\nLocation: Wana, Pakistan';
+      if(navigator.share){ navigator.share({title:'GodEye Proof', text:msg}).catch(function(){}); }
+      else { navigator.clipboard.writeText(msg); alert('Proof Copied ✓ Paste in WhatsApp'); }
+    };
+    var gb = document.querySelector('.gpsBox');
+    if(gb) gb.appendChild(b);
+  }
+}catch(e){}
+</script>
 </body>
                                                                                      </html>
