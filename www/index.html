@@ -1068,5 +1068,62 @@ function doCount(){var el=document.getElementById('countVal');el.textContent=par
 function addShopProduct(){var n=document.getElementById('shopName').value||'Product';var p=parseInt(document.getElementById('shopPrice').value||'500');_shopTotal+=p;document.getElementById('shopList').innerHTML+='<div>'+n+' - Rs '+p+'</div><b>Total: Rs '+_shopTotal+'</b>';showBotToast('🏪 Shop: '+n+' Added - Total Rs '+_shopTotal);}
 try{var all=document.getElementById('pageAll');if(all&&!document.getElementById('new4Added')){var g=all.querySelector('.pageGrid');g.innerHTML+='<button onclick="openPage(\'pageBarcode\')">📊<br>Barcode</button><button onclick="openPage(\'pageCamScan\')">📄<br>Cam Scan</button><button onclick="openPage(\'pageCounting\')">🔢<br>Counting</button><button onclick="openPage(\'pageShop\')">🏪<br>Shop</button>';var d=document.createElement('div');d.id='new4Added';all.appendChild(d);}}catch(e){}
 </script>
+  <style>
+/* PATCH 27 - GALLERY TOP RIGHT + LOCAL STORAGE */
+#galleryTopBtn{width:42px!important;height:42px!important;border-radius:50%!important;border:1px solid #1e3a4a!important;background:#0b1822!important;color:#fff!important;font-size:18px!important;position:relative!important}
+#galleryBadge{position:absolute!important;top:-4px!important;right:-4px!important;background:#ff2d55!important;color:#fff!important;font-size:10px!important;font-weight:800!important;min-width:18px!important;height:18px!important;border-radius:9px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0 4px!important}
+.galItem{background:#2a2a2a!important;border-radius:12px!important;padding:10px!important;margin-bottom:8px!important;display:flex!important;gap:10px!important;align-items:center!important}
+.galThumb{width:64px!important;height:64px!important;min-width:64px!important;border-radius:10px!important;background:#1a1a1a!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:28px!important;overflow:hidden!important}
+.galThumb img{width:100%!important;height:100%!important;object-fit:cover!important}
+</style>
+
+<!-- GALLERY PAGE - SEPARATE -->
+<div class="pageOverlay" id="pageGallery"><div class="pageTop"><button onclick="closePage('pageGallery')">←</button><h2>🖼️ Gallery — Local</h2></div>
+<div class="pageCard"><b>Stored In Local Device Only</b><p id="galCount">0 Photos / Videos Saved Locally</p><p style="color:#7ee2ff;font-size:12px">No Cloud Upload. Only On This Phone.</p></div>
+<div id="galleryList"><div class="pageCard"><b>No Captures Yet</b><p>Tap Capture on Front Page — Photo / Video will appear here.</p></div></div>
+<button class="pageBtn" style="background:#222" onclick="clearGallery()">Clear Gallery (Local)</button>
+</div>
+
+<script>
+/* PATCH 27 - LOCAL GALLERY */
+var _gallery=[];try{_gallery=JSON.parse(localStorage.getItem('godeye_gallery')||'[]')}catch(e){_gallery=[]}
+function saveToLocalGallery(type){
+  var item={type:type||'Photo',time:new Date().toLocaleString('en-GB'),lat:(typeof _sLat!=='undefined'&&_sLat)?_sLat.toFixed(6):'-',lng:(typeof _sLng!=='undefined'&&_sLng)?_sLng.toFixed(6):'-',thumb:''};
+  try{var v=document.querySelector('video');if(v&&v.videoWidth){var c=document.createElement('canvas');c.width=160;c.height=120;c.getContext('2d').drawImage(v,0,0,160,120);item.thumb=c.toDataURL('image/jpeg',0.5)}}catch(e){}
+  _gallery.unshift(item);if(_gallery.length>50)_gallery=_gallery.slice(0,50);
+  localStorage.setItem('godeye_gallery',JSON.stringify(_gallery));
+  renderGallery();updateGalleryBadge();
+  showBotToast('🖼️ Saved To Local Gallery: '+item.type);
+}
+function renderGallery(){
+  var list=document.getElementById('galleryList');var cnt=document.getElementById('galCount');
+  if(cnt)cnt.textContent=_gallery.length+' Photos / Videos Saved Locally';
+  if(!_gallery.length){list.innerHTML='<div class="pageCard"><b>No Captures Yet</b><p>Tap Capture on Front Page</p></div>';return}
+  list.innerHTML='';_gallery.forEach(function(g,i){
+    list.innerHTML+='<div class="galItem"><div class="galThumb">'+(g.thumb?'<img src="'+g.thumb+'">':(g.type==='Video'?'🎥':'📷'))+'</div><div style="flex:1"><b>'+g.type+' #'+(_gallery.length-i)+'</b><br><span style="font-size:12px;color:#aaa">'+g.time+'<br>📍 '+g.lat+', '+g.lng+'</span></div><button onclick="shareGalleryItem('+i+')" style="background:#1e8fff;border:none;color:#fff;padding:8px 10px;border-radius:8px">Share</button><button onclick="deleteGalleryItem('+i+')" style="background:#ff2d55;border:none;color:#fff;padding:8px 10px;border-radius:8px;margin-left:4px">🗑️</button></div>';
+  });
+}
+function updateGalleryBadge(){var b=document.getElementById('galleryBadge');if(b)b.textContent=_gallery.length;b.style.display=_gallery.length?'flex':'none'}
+function shareGalleryItem(i){var g=_gallery[i];var txt='GodEye '+g.type+'\nTime: '+g.time+'\nGPS: '+g.lat+', '+g.lng;if(navigator.share)navigator.share({text:txt});else alert(txt)}
+function deleteGalleryItem(i){_gallery.splice(i,1);localStorage.setItem('godeye_gallery',JSON.stringify(_gallery));renderGallery();updateGalleryBadge()}
+function clearGallery(){_gallery=[];localStorage.setItem('godeye_gallery','[]');renderGallery();updateGalleryBadge();alert('Local Gallery Cleared')}
+try{
+  document.querySelectorAll('button').forEach(function(b){
+    var o=b.getAttribute('onclick')||'';
+    if(o.indexOf('captureSpec')>-1 && !b.dataset.galHook){b.dataset.galHook='1';b.addEventListener('click',function(){setTimeout(function(){saveToLocalGallery('Photo')},600)})}
+    if(o.indexOf('toggleSpecVideo')>-1 && !b.dataset.galHookV){b.dataset.galHookV='1';b.addEventListener('click',function(){setTimeout(function(){saveToLocalGallery('Video')},600)})}
+  });
+}catch(e){}
+function openGallery(){renderGallery();openPage('pageGallery')}
+function addGalleryTopBtn(){
+  var top=document.querySelector('.specTopRight');if(!top)return;
+  if(document.getElementById('galleryTopBtn'))return;
+  var btn=document.createElement('button');btn.id='galleryTopBtn';btn.innerHTML='🖼️<span id="galleryBadge" style="display:none">0</span>';btn.onclick=openGallery;
+  top.insertBefore(btn,top.firstChild);
+  updateGalleryBadge();renderGallery();
+}
+setTimeout(addGalleryTopBtn,800);setTimeout(addGalleryTopBtn,2500);
+window.addEventListener('load',function(){setTimeout(addGalleryTopBtn,1000)});
+</script>
 </body>
                                                                                      </html>
