@@ -3,13 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>GodEye - DEV v6.4</title>
+<title>GodEye - DEV v7.4</title>
+<link rel="icon" type="image/png" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial;background:#f2f2f2;color:#111}
 #front{position:fixed;inset:0;background:#000;display:flex;flex-direction:column}
 #video{flex:1;width:100%;object-fit:cover;background:#000}
 .topBar{display:flex;justify-content:space-between;align-items:center;padding:10px;color:#fff;background:rgba(0,0,0,.6);font-size:14px}
-.topBar b{font-size:16px}
+.topBar b{font-size:16px}.topBar img{width:32px;height:32px;object-fit:contain;border-radius:8px;background:#fff;padding:2px}
 .ctrl{display:flex;gap:8px;justify-content:center;padding:14px;background:#111;flex-wrap:wrap}
 .ctrl button{border:0;border-radius:50px;padding:12px 16px;font-weight:700;cursor:pointer}
 .primary{background:#007bff !important;color:#fff !important}
@@ -21,7 +23,7 @@
 .pageBody{padding:12px;padding-bottom:80px}
 .card{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .card b{font-size:15px}
-.card input,.card select{width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin:8px 0;font-size:15px}
+.card input,.card select,.card textarea{width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin:8px 0;font-size:15px}
 .iconRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .iconRow button{flex:1;min-width:100px;border:1px solid #d0dfff !important;background:#e8f0ff !important;color:#111 !important;border-radius:12px;padding:12px;cursor:pointer;font-weight:700}
 .iconRow button.primary{background:#007bff !important;color:#fff !important}
@@ -41,17 +43,16 @@ img.preview{width:100%;border-radius:12px;display:none;margin-top:8px}
 </head>
 <body>
 <script>
-// v6.4 - MODE FROM STORAGE (FIX 6)
 const APP_MODE = localStorage.getItem('godeye_mode') || 'DEV';
 const CONFIG = {FREE:{maxPhotos:20,maxPages:5,watermark:true,faceApps:1,label:'FREE'},PRO:{maxPhotos:9999,maxPages:999,watermark:false,faceApps:6,label:'PRO'},DEV:{maxPhotos:9999,maxPages:999,watermark:false,faceApps:6,bypass:true,label:'DEV - TESTING'}};
-const LIMITS = CONFIG[APP_MODE]; const VERSION = 'v6.4-fixed';
+const LIMITS = CONFIG[APP_MODE]; const VERSION = 'v7.4-fixed';
 function canSave(){ if(APP_MODE==='DEV') return true; var c=JSON.parse(localStorage.getItem('godeye_pages')||'[]').length; if(c>=LIMITS.maxPhotos){showPaywall();return false} return true; }
 function showPaywall(){ showToast('Free limit reached - Upgrade to PRO'); openPage('pay'); }
 function setModeApp(m){ localStorage.setItem('godeye_mode',m); showToast('Mode: '+m+' - Reloading'); setTimeout(()=>location.reload(),800); }
 </script>
 
 <div id="front">
-  <div class="topBar"><span>👁️ GodEye <b id="modeLabel"></b></span><span id="gpsDot">📍 --</span><span onclick="openDash()">☰</span></div>
+  <div class="topBar"><span style="display:flex;align-items:center;gap:8px"><img src="assets/icon.png" onerror="this.style.display='none'">👁️ GodEye <b id="modeLabel"></b></span><span id="gpsDot">📍 --</span><span onclick="openDash()">☰</span></div>
   <video id="video" autoplay playsinline muted></video>
   <div style="text-align:center;color:#fff;background:#111;padding:4px;font-size:12px;display:none" id="recTimer">● REC 00:00</div>
   <div class="ctrl">
@@ -67,7 +68,7 @@ function setModeApp(m){ localStorage.setItem('godeye_mode',m); showToast('Mode: 
 <div class="page" id="dash">
   <div class="pageHead"><button onclick="backToCam()">←</button><b>📂 Dashboard</b><span onclick="backToCam()">✕</span></div>
   <div class="pageBody">
-    <div class="card"><b>Identity</b><p class="small">Nasir Khan • <span id="dashMode"></span> • <span id="dashVer"></span></p>
+    <div class="card" style="text-align:center"><img src="assets/icon.png" onerror="this.style.display='none'" style="width:80px;height:80px;object-fit:contain;border-radius:16px"><br><b>Identity</b><p class="small">Nasir Khan • <span id="dashMode"></span> • <span id="dashVer"></span></p>
       <div class="iconGrid">
         <div class="iconItem" onclick="openPage('gps')"><i>📍</i><b>GPS</b></div>
         <div class="iconItem" onclick="openPage('face')"><i>👤</i><b>Face AI</b></div>
@@ -99,11 +100,14 @@ function setModeApp(m){ localStorage.setItem('godeye_mode',m); showToast('Mode: 
   <div class="pageHead"><button onclick="backToCam()">←</button><b>👤 Face AI</b><span onclick="backToCam()">✕</span></div>
   <div class="pageBody">
     <div class="card"><b>Face Camera - <span id="faceCountBadge">Faces: 0</span></b>
+      <input id="faceName" placeholder="Type Name: Nasir - For Verify / Attendance / Enroll">
       <div style="position:relative"><video id="faceVideo" class="pageVideo" autoplay playsinline muted></video><canvas id="faceCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%"></canvas></div>
       <p id="faceResult" style="text-align:center">Tap Start, then Tap on face in camera</p>
       <div class="iconRow"><button onclick="startFaceCam()" class="greenBtn">📷 Start</button><button onclick="stopFaceCam()" class="redBtn">⏹️ Stop</button></div>
       <div class="iconRow"><button onclick="captureFacePhoto()" class="primary">📸 Capture Face</button><button onclick="flipFaceCam()">🔄 Flip</button></div>
-      <p class="small" style="text-align:center">Mode: <b id="faceModeLabel">Attendance</b> • If no green box, tap face</p></div>
+      <div class="iconRow"><button onclick="enrollFace()" style="background:#ff9800 !important;color:#fff !important">👤 Enroll Face</button><button onclick="toggleAutoAttend()" id="autoBtn">🤖 Auto Attendance: OFF</button></div>
+      <div class="iconRow"><button id="autoDetectBtn" onclick="toggleAutoDetect()">Auto Detect: OFF - Tap Mode ✅</button><button onclick="faceBoxes=[];showToast('Cleared')">🧹 Clear Squares</button></div>
+      <p class="small" style="text-align:center">Mode: <b id="faceModeLabel">Attendance</b> • Enrolled: <b id="enrolledFaceList">None</b> • Tap = New Square + Mesh Dots</p></div>
     <div class="card"><b>Face Applications</b>
       <div class="iconRow"><button onclick="faceApp('attend')">✅<b>Attendance</b></button><button onclick="faceApp('verify')">🔒<b>Verify</b></button><button onclick="faceApp('count')">👥<b>Count</b></button></div>
       <div class="iconRow"><button onclick="faceApp('emotion')">😊<b>Emotion</b></button><button onclick="faceApp('blur')">🫣<b>Blur</b></button><button onclick="faceApp('search')">🔍<b>Search</b></button></div>
@@ -133,7 +137,22 @@ function setModeApp(m){ localStorage.setItem('godeye_mode',m); showToast('Mode: 
 </div>
 
 <div class="page" id="page-gallery"><div class="pageHead"><button onclick="backToCam()">←</button><b>🖼️ Gallery</b><span onclick="backToCam()">✕</span></div><div class="pageBody"><input id="galSearch" placeholder="🔍 Search gallery..." oninput="renderGallery()"><div class="iconRow"><button onclick="filterGal('all')">All</button><button onclick="filterGal('Photo')">Photo</button><button onclick="filterGal('Bill')">Bill</button><button onclick="filterGal('Doc')">Doc</button><button onclick="filterGal('Video')">Video</button></div><div class="card"><b>All Saved</b><div id="galList">No saved yet</div></div><button onclick="clearGallery()" style="width:100%;padding:12px;background:#ffebee;border:1px solid #ffcdd2;border-radius:12px;color:#c62828;font-weight:700">🗑️ Clear Gallery (Free Storage)</button></div></div>
-<div class="page" id="page-attend"><div class="pageHead"><button onclick="backToCam()">←</button><b>✅ Attendance</b><span onclick="backToCam()">✕</span></div><div class="pageBody"><div class="card"><b>Mark Attendance</b><p class="small">Uses GPS + Time as proof</p><input id="attendName" placeholder="Your Name"><button class="primary" onclick="markAttend()" style="width:100%">✅ Mark Attendance Now</button><div id="attendList" style="margin-top:10px"></div></div></div></div>
+
+<div class="page" id="page-attend"><div class="pageHead"><button onclick="backToCam()">←</button><b>✅ Attendance - School</b><span onclick="backToCam()">✕</span></div><div class="pageBody">
+<div class="card"><b>🏫 School / Department Attendance</b><p class="small">Uses GPS + Time as proof - Whole School / Department</p>
+<input id="schoolName" placeholder="School: Govt High School DI Khan" value="Govt School DI Khan">
+<input id="className" placeholder="Class: Class 10-A" value="Class 10-A">
+<textarea id="rosterInput" rows="4" placeholder="Paste Roster - One per line: Nasir, Ahmed, Ali, Fatima"></textarea>
+<div class="iconRow"><button onclick="saveRoster()" class="primary">💾 Save Roster</button><button onclick="loadRoster()">📋 Load</button></div>
+<div id="rosterList"></div>
+<input id="attendName" placeholder="Your Name">
+<button class="primary" onclick="markAttend()" style="width:100%">✅ Mark Attendance Now</button>
+<div class="iconRow"><button onclick="exportAttendanceTXT()" class="greenBtn">📄 Export TXT (Editable)</button><button onclick="exportAttendanceCSV()" class="primary">📥 Export CSV</button></div>
+<div class="iconRow"><button onclick="autoUpdateMonthlyFile()">🔁 Auto-Update Monthly File</button><button onclick="clearAttendance()">🗑️ Clear</button></div>
+<p class="small">TXT = Edit in Notepad. CSV = Open in Excel. Monthly File auto-updates daily for whole month.</p></div>
+<div class="card"><b>Monthly - <span id="monthLabel"></span></b><div id="monthGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:11px"></div><div id="monthSummary"></div></div>
+<div class="card"><b>All Records</b><div id="attendList" style="margin-top:10px"></div></div>
+</div></div>
 
 <div class="page" id="page-count"><div class="pageHead"><button onclick="backToCam()">←</button><b>🔢 Count</b><span onclick="backToCam()">✕</span></div><div class="pageBody">
 <div class="card"><b>Add Item to Count</b><input id="countName" placeholder="Item: Sacks, Boxes, Bottles"><button class="primary" onclick="addCountItem()" style="width:100%">➕ Add Item</button></div>
@@ -151,15 +170,15 @@ function setModeApp(m){ localStorage.setItem('godeye_mode',m); showToast('Mode: 
 let stream=null, isVideoMode=false, recorder=null, chunks=[], recStart=0, recTimerInt=null, curFacing='environment';
 let gpsCamOn=true, lastGPS={lat:0,lng:0,acc:0}, countItems=JSON.parse(localStorage.getItem('godeye_count')||'[]');
 let billStream=null, docStream=null, faceStream=null, faceAppMode='attend', faceRunning=false, faceBoxes=[], faceDetector=null, faceLoop=null, faceFacing='user', facePersonName='', galFilter='all', docPages=[];
+let autoAttendOn=false, autoTimer=null, lastAutoTime=0, autoDetectOn=false;
 
 function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2200)}
-function initLabels(){document.getElementById('modeLabel').textContent=LIMITS.label;document.getElementById('dashMode').textContent=LIMITS.label;document.getElementById('dashVer').textContent=VERSION;document.getElementById('payMode').textContent=LIMITS.label;document.getElementById('devBadge').textContent=APP_MODE==='DEV'?'DEV TESTING • No Limits':LIMITS.label;document.getElementById('recTimer').style.display='none';renderFaceLog();renderBillList();renderDocList();renderCountItems();}
+function initLabels(){document.getElementById('modeLabel').textContent=LIMITS.label;document.getElementById('dashMode').textContent=LIMITS.label;document.getElementById('dashVer').textContent=VERSION;document.getElementById('payMode').textContent=LIMITS.label;document.getElementById('devBadge').textContent=APP_MODE==='DEV'?'DEV TESTING • No Limits':LIMITS.label;document.getElementById('recTimer').style.display='none';renderFaceLog();renderBillList();renderDocList();renderCountItems();updateEnrolledList();renderAttend();renderRoster();}
 async function startCamera(){try{if(stream) stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:curFacing},audio:false});var v=document.getElementById('video');v.srcObject=stream;await v.play()}catch(e){showToast('Camera permission needed - Tap Allow')}}
 async function flipMainCam(){curFacing=curFacing==='environment'?'user':'environment';await startCamera();}
 function capturePhoto(){if(!canSave())return;var v=document.getElementById('video');if(!v.srcObject){showToast('Camera starting...');startCamera();return}var c=document.createElement('canvas');c.width=v.videoWidth||1280;c.height=v.videoHeight||720;c.getContext('2d').drawImage(v,0,0);savePage('Photo',c.toDataURL('image/jpeg',0.75));showToast('Photo Saved'+(gpsCamOn&&lastGPS.lat?' • 📍 GPS Attached':''))}
 function shutterPress(){ if(isVideoMode) toggleVideo(); else capturePhoto(); }
 function togglePhotoVideo(){isVideoMode=!isVideoMode;document.getElementById('modeTxt').textContent=isVideoMode?'Video':'Photo';document.getElementById('shutterBtn').textContent=isVideoMode?'🎬 Video':'📸 Photo';showToast(isVideoMode?'Video Mode - Tap shutter to REC':'Photo Mode')}
-// FIX 1 - VIDEO: mimeType check + Blob URL, NOT dataURL
 function toggleVideo(){
   if(recorder && recorder.state==='recording'){recorder.stop();return;}
   try{
@@ -178,21 +197,18 @@ function toggleVideo(){
 }
 function openDash(){ if(stream) stream.getTracks().forEach(t=>t.stop()); document.getElementById('front').style.display='none';document.getElementById('dash').style.display='block';renderDash()}
 function backToCam(){document.querySelectorAll('.page').forEach(p=>p.style.display='none');document.getElementById('dash').style.display='none';document.getElementById('front').style.display='flex';stopPageCams();startCamera();}
-// FIX 4 - NAVIGATION: stop main + auto-start bill/doc
 function openPage(id){
   if(stream) stream.getTracks().forEach(t=>t.stop()); stream=null;
   stopPageCams();document.getElementById('front').style.display='none';document.getElementById('dash').style.display='none';document.querySelectorAll('.page').forEach(p=>p.style.display='none');document.getElementById('page-'+id).style.display='block';
-  if(id==='gps'){getGPS();renderGPSHistory()}if(id==='gallery') renderGallery();if(id==='attend') renderAttend();if(id==='count') renderCountItems();if(id==='bill'){renderBillList();startBillCam();}if(id==='doc'){renderDocList();startDocCam();}if(id==='face') renderFaceLog();
+  if(id==='gps'){getGPS();renderGPSHistory()}if(id==='gallery') renderGallery();if(id==='attend'){renderAttend();renderRoster();}if(id==='count') renderCountItems();if(id==='bill'){renderBillList();startBillCam();}if(id==='doc'){renderDocList();startDocCam();}if(id==='face'){renderFaceLog();updateEnrolledList();}
 }
 function stopPageCams(){[billStream,docStream,faceStream].forEach(s=>{if(s) s.getTracks().forEach(t=>t.stop())});billStream=docStream=faceStream=null;faceRunning=false;cancelAnimationFrame(faceLoop);}
-// FIX 3 - GALLERY: try/catch + limit 50
 function savePage(title,img){if(!canSave())return;try{var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');arr.unshift({title:title,img:img,time:new Date().toLocaleString(),gps:lastGPS.lat?lastGPS.lat.toFixed(5)+','+lastGPS.lng.toFixed(5):'No GPS'});localStorage.setItem('godeye_pages',JSON.stringify(arr.slice(0,50)));}catch(e){showToast('⚠️ Storage full - Clear Gallery to save more');}renderDash()}
 function renderDash(){var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');document.getElementById('dashList').innerHTML=arr.length?arr.slice(0,5).map(x=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>'+x.title+'</b><br><small>'+x.time+' • '+x.gps+'</small></div>').join(''):'No saved yet'}
 function filterGal(f){galFilter=f;renderGallery();}
 function renderGallery(){var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');var q=(document.getElementById('galSearch')?.value||'').toLowerCase();arr=arr.filter(x=>(galFilter==='all'||x.title.includes(galFilter))&&x.title.toLowerCase().includes(q));document.getElementById('galList').innerHTML=arr.length?arr.map(x=>'<div style="margin-bottom:12px">'+(x.video?'<video src="'+x.video+'" controls style="width:100%;border-radius:10px"></video>':x.img?'<img src="'+x.img+'" style="width:100%;border-radius:10px">':'<div style="padding:20px;background:#eee;border-radius:10px;text-align:center">No image</div>')+'<b>'+x.title+'</b><br><small>'+x.time+' • '+x.gps+'</small></div>').join(''):'No saved yet'}
 function clearGallery(){ if(confirm('Clear all gallery?')){ localStorage.setItem('godeye_pages','[]'); renderGallery(); renderDash(); showToast('Gallery cleared'); } }
 
-// GPS - FIX 2: NO FAKE DEFAULT
 function getGPS(){if(!navigator.geolocation){showToast('GPS not supported');return}navigator.geolocation.getCurrentPosition(p=>{lastGPS={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy};var el=document.getElementById('gpsLive');if(el) el.textContent=lastGPS.lat.toFixed(6)+', '+lastGPS.lng.toFixed(6);var a=document.getElementById('gpsAcc');if(a) a.textContent='Accuracy: '+Math.round(lastGPS.acc)+' meters';document.getElementById('gpsDot').textContent='📍 GPS OK'},()=>showToast('GPS OFF - Turn on Location'),{enableHighAccuracy:true})}
 function openMaps(){if(!lastGPS.lat){showToast('Tap Refresh first');getGPS();return}window.open('https://maps.google.com/?q='+lastGPS.lat+','+lastGPS.lng,'_blank')}
 function copyGPS(){if(!lastGPS.lat){showToast('Tap Refresh first');return}navigator.clipboard.writeText(lastGPS.lat+','+lastGPS.lng);showToast('Copied: '+lastGPS.lat+','+lastGPS.lng)}
@@ -200,16 +216,36 @@ function saveGPSPlace(){if(!lastGPS.lat){showToast('Tap Refresh first');return}v
 function renderGPSHistory(){var h=JSON.parse(localStorage.getItem('godeye_gps')||'[]');document.getElementById('gpsHistory').innerHTML=h.length?h.map(x=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>📍 '+x.name+'</b><br><small>'+x.lat.toFixed(5)+','+x.lng.toFixed(5)+' • '+x.time+'</small></div>').join(''):'No saved places yet'}
 function toggleGPSCam(){gpsCamOn=!gpsCamOn;document.getElementById('gpsCamBtn').textContent='📍 GPS With Camera: '+(gpsCamOn?'ON':'OFF');showToast('GPS With Camera '+(gpsCamOn?'ON':'OFF'))}
 
-// FACE - FIX 5: clear boxes after save
-function faceApp(mode){faceAppMode=mode;var labels={attend:'Attendance',verify:'Verify',count:'Count',emotion:'Emotion',blur:'Blur',search:'Search'};document.getElementById('faceModeLabel').textContent=labels[mode];document.getElementById('faceAppDesc').textContent='Mode: '+labels[mode]+' - Tap Start, then Tap face in camera';if(mode==='verify'){var n=prompt('Name to Verify:','Nasir');if(n) facePersonName=n;}if(mode==='search'){var q=prompt('Search name:','');if(q) searchFace(q);}showToast('Face Mode: '+labels[mode]);startFaceCam();}
+// FACE - v7.4 FIXES: No prompt, Tap=New Square, Mesh Dots, Blur Fix, Enroll, Auto Attend
+function faceApp(mode){faceAppMode=mode;var labels={attend:'Attendance',verify:'Verify',count:'Count',emotion:'Emotion',blur:'Blur',search:'Search'};document.getElementById('faceModeLabel').textContent=labels[mode];document.getElementById('faceAppDesc').textContent='Mode: '+labels[mode]+' - Type name above, Tap Start, Tap face in camera';if(mode==='search'){var q=document.getElementById('faceName').value.trim();if(q) searchFace(q);else showToast('Type name above to search');return;}showToast('Face Mode: '+labels[mode]);startFaceCam();}
+function toggleAutoDetect(){ autoDetectOn=!autoDetectOn; document.getElementById('autoDetectBtn').textContent='Auto Detect: '+(autoDetectOn?'ON':'OFF - Tap Mode ✅'); }
+function toggleAutoAttend(){ autoAttendOn=!autoAttendOn; document.getElementById('autoBtn').textContent='🤖 Auto Attendance: '+(autoAttendOn?'ON 🟢':'OFF'); if(autoAttendOn) startFaceCam(); }
+function updateEnrolledList(){ var e=JSON.parse(localStorage.getItem('godeye_enrolled')||'[]'); var el=document.getElementById('enrolledFaceList'); if(el) el.textContent=e.length?e.map(x=>x.name).join(', '):'None'; }
+function enrollFace(){
+  var name=document.getElementById('faceName').value.trim()||'Nasir'; var v=document.getElementById('faceVideo'); if(!v.srcObject){showToast('Tap Start first');return;}
+  var c=document.createElement('canvas'); c.width=v.videoWidth||640; c.height=v.videoHeight||480; c.getContext('2d').drawImage(v,0,0);
+  var e=JSON.parse(localStorage.getItem('godeye_enrolled')||'[]'); e=e.filter(x=>x.name.toLowerCase()!==name.toLowerCase()); e.unshift({name:name,img:c.toDataURL('image/jpeg',0.6),time:new Date().toLocaleString()});
+  localStorage.setItem('godeye_enrolled',JSON.stringify(e)); updateEnrolledList(); showToast('✅ Enrolled: '+name);
+}
+function drawMeshDots(ctx,b){
+  ctx.fillStyle='#00e676';
+  for(let r=0;r<9;r++) for(let col=0;col<9;col++){ ctx.beginPath(); ctx.arc(b.x+b.width*(0.15+col*0.085), b.y+b.height*(0.15+r*0.085), 2.5, 0, 6.28); ctx.fill(); }
+  ctx.fillStyle='#ffeb3b';
+  [[0.32,0.32],[0.68,0.32],[0.5,0.55]].forEach(p=>{ ctx.beginPath(); ctx.arc(b.x+b.width*p[0], b.y+b.height*p[1], 4, 0, 6.28); ctx.fill(); });
+  ctx.strokeStyle='rgba(0,230,118,0.4)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(b.x,b.y+b.height*0.35); ctx.lineTo(b.x+b.width,b.y+b.height*0.35); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(b.x,b.y+b.height*0.65); ctx.lineTo(b.x+b.width,b.y+b.height*0.65); ctx.stroke();
+}
 async function startFaceCam(){try{if(faceStream) faceStream.getTracks().forEach(t=>t.stop());faceStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:faceFacing}});var v=document.getElementById('faceVideo');v.srcObject=faceStream;await v.play();if('FaceDetector' in window){try{faceDetector=new FaceDetector({fastMode:true})}catch(e){faceDetector=null}}faceRunning=true;faceBoxes=[];document.getElementById('faceResult').textContent='🟢 Face AI Running - Tap on face if no box';runFaceLoop();}catch(e){showToast('Camera permission needed')}}
-async function runFaceLoop(){var v=document.getElementById('faceVideo');var c=document.getElementById('faceCanvas');if(!faceRunning) return;c.width=v.videoWidth||640;c.height=v.videoHeight||480;var ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);let auto=[];if(faceDetector){try{auto=await faceDetector.detect(v)}catch(e){}}var boxes=auto.map(f=>f.boundingBox).concat(faceBoxes);document.getElementById('faceCountBadge').textContent='Faces: '+boxes.length;boxes.forEach((b,i)=>{if(faceAppMode==='blur'){ctx.save();ctx.filter='blur(14px)';ctx.drawImage(v,b.x,b.y,b.width,b.height,b.x,b.y,b.width,b.height);ctx.restore();}ctx.strokeStyle='#00e676';ctx.lineWidth=4;ctx.strokeRect(b.x,b.y,b.width,b.height);ctx.fillStyle='#00e676';ctx.font='bold 18px Arial';var lbl=faceAppMode==='attend'?'Present ✓':faceAppMode==='verify'?(facePersonName||'Verify'):faceAppMode==='count'?'Person '+(i+1):faceAppMode==='emotion'?['😊 Happy','😐 Neutral','😮 Surprised'][i%3]:faceAppMode==='search'?'Search':'Face '+(i+1);ctx.fillText(lbl,b.x,b.y-8);});faceLoop=requestAnimationFrame(runFaceLoop);}
+async function runFaceLoop(){var v=document.getElementById('faceVideo');var c=document.getElementById('faceCanvas');if(!faceRunning) return;c.width=v.videoWidth||640;c.height=v.videoHeight||480;var ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);let auto=[];if(autoDetectOn && faceDetector){try{auto=await faceDetector.detect(v)}catch(e){}}var boxes=auto.map(f=>f.boundingBox).concat(faceBoxes);document.getElementById('faceCountBadge').textContent='Faces: '+boxes.length;boxes.forEach((b,i)=>{if(faceAppMode==='blur'){ctx.save();ctx.filter='blur(18px)';ctx.drawImage(v,b.x,b.y,b.width,b.height,b.x,b.y,b.width,b.height);ctx.restore();ctx.fillStyle='rgba(120,120,120,0.45)';ctx.fillRect(b.x,b.y,b.width,b.height);}ctx.strokeStyle='#00e676';ctx.lineWidth=4;ctx.strokeRect(b.x,b.y,b.width,b.height);ctx.fillStyle='#00e676';ctx.font='bold 18px Arial';var lbl=faceAppMode==='attend'?'Present ✓':faceAppMode==='verify'?(document.getElementById('faceName').value||'Verify'):faceAppMode==='count'?'Person '+(i+1):faceAppMode==='emotion'?['😊 Happy','😐 Neutral','😮 Surprised'][i%3]:faceAppMode==='search'?'Search':'Face '+(i+1);ctx.fillText(lbl,b.x,b.y-8);drawMeshDots(ctx,b);});checkAutoAttendance(boxes.length);faceLoop=requestAnimationFrame(runFaceLoop);}
+function checkAutoAttendance(n){ if(!autoAttendOn) return; if(n===0){autoTimer=null;return;} if(!autoTimer) autoTimer=Date.now(); var el=(Date.now()-autoTimer)/1000; document.getElementById('faceResult').textContent='🤖 Face Detected... Auto in '+(2-Math.floor(el))+'s'; if(el>=2){ autoTimer=null; if(Date.now()-lastAutoTime<10000) return; lastAutoTime=Date.now(); doAutoAttendance(); } }
+function doAutoAttendance(){ var e=JSON.parse(localStorage.getItem('godeye_enrolled')||'[]'); var name=e.length===1?e[0].name:(document.getElementById('faceName').value.trim()||e[0]?.name||'Nasir'); markOneAttend(name,1,'Auto Face'); showToast('✅ AUTO ATTENDANCE: '+name); if(navigator.vibrate) navigator.vibrate([200,100,200]); }
 function stopFaceCam(){faceRunning=false;cancelAnimationFrame(faceLoop);if(faceStream){faceStream.getTracks().forEach(t=>t.stop());faceStream=null;document.getElementById('faceVideo').srcObject=null;document.getElementById('faceResult').textContent='Stopped';}}
 async function flipFaceCam(){faceFacing=faceFacing==='user'?'environment':'user';await startFaceCam();}
 function searchFace(q){var f=JSON.parse(localStorage.getItem('godeye_faces')||'[]').filter(x=>x.name.toLowerCase().includes(q.toLowerCase()));showToast(f.length?'✅ Found: '+f[0].name+' - '+f[0].time:'❌ Not found: '+q);}
-function captureFacePhoto(){var v=document.getElementById('faceVideo');if(!v.srcObject){showToast('Start first');return}var c=document.createElement('canvas');c.width=v.videoWidth||640;c.height=v.videoHeight||480;var ctx=c.getContext('2d');ctx.drawImage(v,0,0);if(faceAppMode==='blur'){faceBoxes.forEach(b=>{ctx.save();ctx.filter='blur(14px)';ctx.drawImage(v,b.x,b.y,b.width,b.height,b.x,b.y,b.width,b.height);ctx.restore();});}var img=c.toDataURL('image/jpeg',0.75);var name=faceAppMode==='verify'?(facePersonName||'Person'):faceAppMode==='attend'?(prompt('Name for Attendance:','Nasir')||'Person'):'Face';var rec={name:name,mode:faceAppMode,faces:Math.max(1,faceBoxes.length),time:new Date().toLocaleString(),gps:lastGPS.lat?lastGPS.lat.toFixed(5)+','+lastGPS.lng.toFixed(5):'No GPS',img:img};var f=JSON.parse(localStorage.getItem('godeye_faces')||'[]');f.unshift(rec);localStorage.setItem('godeye_faces',JSON.stringify(f.slice(0,30)));savePage('Face - '+faceAppMode+' - '+name,img);renderFaceLog();faceBoxes=[];document.getElementById('faceCountBadge').textContent='Faces: 0';showToast('✅ Face Saved: '+faceAppMode+' - '+name);}
+function captureFacePhoto(){var v=document.getElementById('faceVideo');if(!v.srcObject){showToast('Start first');return}var c=document.createElement('canvas');c.width=v.videoWidth||640;c.height=v.videoHeight||480;var ctx=c.getContext('2d');ctx.drawImage(v,0,0);var name=document.getElementById('faceName').value.trim()||'Nasir';if(faceAppMode==='verify'){var found=JSON.parse(localStorage.getItem('godeye_enrolled')||'[]').some(x=>x.name.toLowerCase()===name.toLowerCase());showToast(found?'✅ Verified: '+name+' FOUND':'❌ Not Found: '+name+' - Enroll first');if(!found) return;}var boxesToUse=faceBoxes.length?faceBoxes:[{x:c.width*0.2,y:c.height*0.12,width:c.width*0.6,height:c.height*0.65}];if(faceAppMode==='blur'){boxesToUse.forEach(b=>{ctx.save();ctx.filter='blur(18px)';ctx.drawImage(v,b.x,b.y,b.width,b.height,b.x,b.y,b.width,b.height);ctx.restore();ctx.fillStyle='rgba(120,120,120,0.55)';ctx.fillRect(b.x,b.y,b.width,b.height);});}var img=c.toDataURL('image/jpeg',0.75);var rec={name:name,mode:faceAppMode,faces:Math.max(1,boxesToUse.length),time:new Date().toLocaleString(),gps:lastGPS.lat?lastGPS.lat.toFixed(5)+','+lastGPS.lng.toFixed(5):'No GPS',img:img};var f=JSON.parse(localStorage.getItem('godeye_faces')||'[]');f.unshift(rec);localStorage.setItem('godeye_faces',JSON.stringify(f.slice(0,30)));if(faceAppMode==='attend'||faceAppMode==='count') markOneAttend(name,boxesToUse.length);savePage('Face - '+faceAppMode+' - '+name,img);renderFaceLog();faceBoxes=[];document.getElementById('faceCountBadge').textContent='Faces: 0';showToast('✅ Face Saved: '+faceAppMode+' - '+name);}
 function renderFaceLog(){var f=JSON.parse(localStorage.getItem('godeye_faces')||'[]');document.getElementById('faceLog').innerHTML=f.length?f.slice(0,5).map(x=>'<div style="display:flex;gap:10px;padding:8px;border-bottom:1px solid #eee"><img src="'+x.img+'" style="width:60px;height:60px;object-fit:cover;border-radius:10px"><div><b>'+x.name+' - '+x.mode+'</b><br><small>'+x.time+'</small></div></div>').join(''):'No records yet';}
-document.addEventListener('DOMContentLoaded',()=>{var c=document.getElementById('faceCanvas');if(c) c.addEventListener('click',e=>{if(!faceRunning){showToast('Tap Start first');return}var r=c.getBoundingClientRect();var x=(e.clientX-r.left)/r.width*c.width;var y=(e.clientY-r.top)/r.height*c.height;if(faceAppMode==='count') faceBoxes.push({x:x-60,y:y-80,width:120,height:160});else faceBoxes=[{x:x-80,y:y-100,width:160,height:200}];showToast('Face marked: '+faceBoxes.length);});});
+document.addEventListener('DOMContentLoaded',()=>{var c=document.getElementById('faceCanvas');if(c) c.addEventListener('click',e=>{if(!faceRunning){showToast('Tap Start first');return}var r=c.getBoundingClientRect();var x=(e.clientX-r.left)/r.width*c.width;var y=(e.clientY-r.top)/r.height*c.height;if(faceAppMode==='count') faceBoxes.push({x:x-90,y:y-110,width:180,height:220});else faceBoxes=[{x:x-80,y:y-100,width:160,height:200}];showToast('✅ Square '+faceBoxes.length+' Added - Tap again for next person');if(navigator.vibrate) navigator.vibrate(50);});});
 
 // BILL / DOC
 async function startBillCam(){try{if(billStream)billStream.getTracks().forEach(t=>t.stop());billStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('billVideo').srcObject=billStream}catch(e){showToast('Camera permission needed')}}
@@ -222,9 +258,21 @@ function clearDocPages(){docPages=[];document.getElementById('docPageCount').tex
 function saveDoc(){if(!docPages.length){showToast('Capture at least 1 page');return}var title=document.getElementById('docTitle').value||'Doc';docPages.forEach((img,i)=>savePage('Doc - '+title+' - Page '+(i+1),img));var d=JSON.parse(localStorage.getItem('godeye_docs')||'[]');d.unshift({title:title,pages:docPages.length,time:new Date().toLocaleString()});localStorage.setItem('godeye_docs',JSON.stringify(d.slice(0,30)));clearDocPages();renderDocList();showToast('Doc Saved: '+title);}
 function renderDocList(){var d=JSON.parse(localStorage.getItem('godeye_docs')||'[]');document.getElementById('docList').innerHTML=d.length?d.map(x=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>📄 '+x.title+' - '+x.pages+' pages</b><br><small>'+x.time+'</small></div>').join(''):'No docs yet';}
 
-// ATTEND / COUNT
-function markAttend(){var name=document.getElementById('attendName').value||'Nasir';var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]');a.unshift({name:name,time:new Date().toLocaleString(),gps:lastGPS.lat?lastGPS.lat.toFixed(5)+','+lastGPS.lng.toFixed(5):'No GPS'});localStorage.setItem('godeye_attend',JSON.stringify(a.slice(0,20)));renderAttend();showToast('Attendance Marked: '+name)}
-function renderAttend(){var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]');document.getElementById('attendList').innerHTML=a.length?a.map(x=>'<div style="padding:8px;border-bottom:1px solid #eee">✅ '+(x.name||'')+' • '+x.time+' • '+x.gps+'</div>').join(''):'No attendance yet'}
+// ATTEND - SCHOOL / MONTHLY / EXPORT
+function saveRoster(){ var names=document.getElementById('rosterInput').value.split('\n').map(s=>s.trim()).filter(Boolean); var obj={school:document.getElementById('schoolName').value,cls:document.getElementById('className').value,names:names}; localStorage.setItem('godeye_roster',JSON.stringify(obj)); renderRoster(); showToast('Roster Saved: '+names.length); }
+function loadRoster(){ var r=JSON.parse(localStorage.getItem('godeye_roster')||'{"names":[]}'); document.getElementById('rosterInput').value=r.names.join('\n'); document.getElementById('className').value=r.cls||''; document.getElementById('schoolName').value=r.school||''; renderRoster(); }
+function renderRoster(){ var r=JSON.parse(localStorage.getItem('godeye_roster')||'{"names":[]}'); var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]'); var today=new Date().toLocaleDateString(); document.getElementById('rosterList').innerHTML=r.names.map(n=>{ var p=a.some(x=>x.name===n && new Date(x.time).toLocaleDateString()===today); return '<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #eee"><span>'+(p?'✅ ':'❌ ')+n+'</span><button onclick="markOneAttend(\''+n+'\')">Mark ✓</button></div>'; }).join('')||'No roster - Paste names above'; }
+function markOneAttend(name,count,method){ var r=JSON.parse(localStorage.getItem('godeye_roster')||'{}'); var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]'); a.unshift({name:name,school:r.school||'',cls:r.cls||'',method:method||'Manual',count:count||1,time:new Date().toLocaleString(),gps:lastGPS.lat?lastGPS.lat.toFixed(5)+','+lastGPS.lng.toFixed(5):'No GPS'}); localStorage.setItem('godeye_attend',JSON.stringify(a.slice(0,200))); renderAttend(); renderRoster(); autoUpdateMonthlyFile(true); }
+function markAttend(){var name=document.getElementById('attendName').value||document.getElementById('faceName')?.value||'Nasir';markOneAttend(name,1,'Manual');showToast('Attendance Marked: '+name)}
+function renderAttend(){var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]');document.getElementById('attendList').innerHTML=a.length?a.slice(0,20).map(x=>'<div style="padding:8px;border-bottom:1px solid #eee">✅ '+(x.name||'')+' • '+(x.method||'Manual')+' • '+x.time+' • '+x.gps+'</div>').join(''):'No attendance yet';renderMonthly();}
+function clearAttendance(){ if(confirm('Clear all?')){ localStorage.setItem('godeye_attend','[]'); renderAttend(); renderRoster(); } }
+function downloadFile(content,filename,type){ var b=new Blob([content],{type:type}); var u=URL.createObjectURL(b); var l=document.createElement('a'); l.href=u; l.download=filename; l.click(); showToast('Downloaded: '+filename); }
+function exportAttendanceTXT(){ var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]'); var r=JSON.parse(localStorage.getItem('godeye_roster')||'{}'); var txt='GODEYE ATTENDANCE - '+(r.school||'')+' - '+(r.cls||'')+'\nGenerated: '+new Date().toLocaleString()+'\n----------------------------------------\nName | Date | Time | Status | GPS\n'; a.forEach(x=>{ var d=new Date(x.time); txt+=x.name+' | '+d.toLocaleDateString()+' | '+d.toLocaleTimeString()+' | Present | '+(x.gps||'')+'\n'; }); txt+='\n--- EDIT IN NOTEPAD ---\n'; downloadFile(txt,'GodEye-Attendance-'+new Date().toISOString().slice(0,10)+'.txt','text/plain'); }
+function exportAttendanceCSV(){ var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]'); var r=JSON.parse(localStorage.getItem('godeye_roster')||'{}'); var csv='School,Class,Name,Date,Time,Status,GPS\n'; a.forEach(x=>{ var d=new Date(x.time); csv+='"'+(r.school||'')+'","'+(r.cls||'')+'","'+x.name+'",'+d.toLocaleDateString()+','+d.toLocaleTimeString()+',Present,'+(x.gps||'')+'\n'; }); downloadFile(csv,'GodEye-Attendance-'+new Date().toISOString().slice(0,10)+'.csv','text/csv'); }
+function autoUpdateMonthlyFile(silent){ var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]'); var r=JSON.parse(localStorage.getItem('godeye_roster')||'{}'); var now=new Date(); var days=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(); var txt='MONTHLY - '+(r.school||'')+' - '+(r.cls||'')+' - '+now.toLocaleString('en',{month:'long',year:'numeric'})+'\n'; for(let d=1;d<=days;d++){ var ds=new Date(now.getFullYear(),now.getMonth(),d).toLocaleDateString(); var rec=a.filter(x=>new Date(x.time).toLocaleDateString()===ds); txt+='\nDay '+d+' ('+ds+') - Present: '+rec.length+' / '+(r.names?.length||0)+'\n'; rec.forEach(x=>txt+='  ✅ '+x.name+' - '+new Date(x.time).toLocaleTimeString()+'\n'); if(r.names) r.names.forEach(n=>{ if(!rec.some(x=>x.name===n)) txt+='  ❌ '+n+' - Absent\n'; }); } localStorage.setItem('godeye_monthly_file_latest',txt); if(!silent) showToast('🔁 Monthly File Auto-Updated - Whole Month'); }
+function renderMonthly(){ var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]'); var now=new Date(); var days=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(); var map={}; a.forEach(x=>{ var d=new Date(x.time); if(d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()) map[d.getDate()]=1; }); var ml=document.getElementById('monthLabel'); if(ml) ml.textContent=now.toLocaleString('en',{month:'long',year:'numeric'}); var h=''; for(let d=1;d<=days;d++){ var p=map[d]; h+='<div style="padding:8px 2px;border-radius:8px;background:'+(p?'#28a745':d===now.getDate()?'#ff9800':'#f0f0f0')+';color:'+(p||d===now.getDate()?'#fff':'#111')+'">'+d+(p?' ✓':'')+'</div>'; } var mg=document.getElementById('monthGrid'); if(mg) mg.innerHTML=h; var tp=Object.keys(map).length; var ms=document.getElementById('monthSummary'); if(ms) ms.innerHTML='<b>Present: '+tp+' / '+days+' • Rate: '+Math.round(tp/days*100)+'%</b>'; }
+
+// COUNT
 function addCountItem(){var n=document.getElementById('countName').value.trim();if(!n){showToast('Type item name');return}countItems.unshift({name:n,val:0});localStorage.setItem('godeye_count',JSON.stringify(countItems));document.getElementById('countName').value='';renderCountItems();}
 function changeItemCount(idx,d){countItems[idx].val=Math.max(0,countItems[idx].val+d);localStorage.setItem('godeye_count',JSON.stringify(countItems));renderCountItems();}
 function deleteCountItem(idx){countItems.splice(idx,1);localStorage.setItem('godeye_count',JSON.stringify(countItems));renderCountItems();}
@@ -232,7 +280,6 @@ function saveItemCount(idx){savePage('Count: '+countItems[idx].name+' = '+countI
 function renderCountItems(){var total=countItems.reduce((s,x)=>s+x.val,0);document.getElementById('countTotal').textContent=total;document.getElementById('countItems').innerHTML=countItems.length?countItems.map((it,i)=>'<div style="display:flex;justify-content:space-between;align-items:center;background:#f8f9ff;padding:12px;border-radius:12px;margin-bottom:8px"><div><b>📦 '+it.name+'</b><br><span style="font-size:22px;font-weight:800">'+it.val+'</span></div><div style="display:flex;gap:6px"><button onclick="changeItemCount('+i+',-1)" style="padding:10px 14px">-</button><button onclick="changeItemCount('+i+',1)" class="primary" style="padding:10px 14px">+</button><button onclick="saveItemCount('+i+')" class="primary" style="padding:10px 12px">💾</button><button onclick="deleteCountItem('+i+')" style="padding:10px 10px">🗑️</button></div></div>').join(''):'<p class="small">No items. Add Sacks, Boxes etc.</p>';}
 
 initLabels();startCamera();getGPS();
-// FIX 2 - AUTO GPS UPDATE EVERY 30s
 setInterval(()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>{lastGPS={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy};document.getElementById('gpsDot').textContent='📍 GPS OK';}); },30000);
 </script>
 </body>
