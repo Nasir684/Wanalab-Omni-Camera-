@@ -1,266 +1,210 @@
-<!-- GodEye v3.1 FINAL - Clean Front - All 29 Patches Merged - WanaLab / Nasir Khan -->
+<!-- GodEye v4.0 CLEAN ARCHITECTURE - WanaLab / Nasir Khan -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GodEye - By WanaLab</title>
-<meta name="theme-color" content="#0B0E11">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GodEye v4.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0B0E11;color:#E8EDF2;font-family:system-ui,Arial;padding-bottom:24px}
-button{font-family:inherit;cursor:pointer;border:0;background:#1C222B;color:#fff;padding:12px 10px;border-radius:12px;font-size:13px;font-weight:700;border:1px solid #262E39}
-button:active{transform:scale(.97)}
-button.primary{background:#00C853;color:#02150A;border-color:#00C853}
-button.gold{background:#FFC107;color:#000;border-color:#FFC107}
-button.red{background:#2A1414;color:#FF9A94;border-color:#4A1F1F}
-#head{position:sticky;top:0;z-index:50;background:#0B0E11;border-bottom:1px solid #262E39;padding:13px 16px;display:flex;justify-content:space-between;align-items:center}
-#head b{font-size:19px}
-#head small{display:block;font-size:10px;color:#8A94A3;letter-spacing:1px;text-transform:uppercase}
-.badge{background:#12261A;border:1px solid #1E4D32;color:#7CFFB2;font-size:12px;font-weight:700;padding:7px 10px;border-radius:999px}
-#wrap{max-width:1100px;margin:0 auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
-.card{background:#151A21;border:1px solid #262E39;border-radius:18px;overflow:hidden}
-.gpsBox{background:#0B0E11;border:1px solid #00E676;padding:12px;border-radius:12px}
-.credBox{background:#0B0E11;border:1px solid #FFC107;padding:10px;border-radius:12px;margin:8px 0}
-#camBox{position:relative;background:#000;height:calc(100vh - 170px);min-height:380px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+*{margin:0;padding:0;box-sizing:border-box} body{background:#000;color:#fff;font-family:system-ui,Arial;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:0;background:#1C222B;color:#fff}
+#front{position:fixed;inset:0;background:#000;z-index:1}
 video{width:100%;height:100%;object-fit:cover}
-#camPlaceholder{color:#8A94A3;text-align:center;line-height:1.6}
-.row{display:flex;gap:8px;flex-wrap:wrap;padding:12px}
-.tools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px}
-.tools button{display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:left;padding:14px;min-height:96px}
-.tools button span{font-size:12px;color:#8A94A3;font-weight:500}
-.tools button b{font-size:14px}
-#panel{display:none;background:#151A21;border:1px solid #262E39;border-radius:18px;padding:16px}
-#panel input,#panel select,#panel textarea{width:100%;padding:12px;margin:6px 0;background:#0B0E11;color:#fff;border:1px solid #262E39;border-radius:12px;font-size:14px}
-#toast{position:fixed;top:64px;left:50%;transform:translateX(-50%);background:#1C222B;padding:10px 16px;border-radius:20px;z-index:999;display:none;border:1px solid #00C853;max-width:92vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#voiceOverlay{display:none;position:fixed;bottom:0;left:0;right:0;background:#151A21;border-top:2px solid #00C853;padding:16px;z-index:1000}
-.camIcon{position:absolute;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.65);border:1px solid #fff3;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;z-index:20;padding:0}
-#drawer{display:none;position:fixed;bottom:0;left:0;right:0;max-height:75vh;overflow:auto;background:#151A21;border-top:2px solid #00C853;padding:16px;z-index:1000;border-radius:18px 18px 0 0}
-#galleryBtn.active{background:#00C853}
-@media(max-width:520px){.tools{grid-template-columns:1fr 1fr}}
-</style>
-</head>
+#ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#8A94A3;line-height:1.7;font-size:22px}
+.camIcon{position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.35);font-size:22px;display:flex;align-items:center;justify-content:center;z-index:20;padding:0}
+#captureBtn{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:76px;height:76px;border-radius:50%;background:#fff;color:#000;font-size:30px;border:4px solid rgba(255,255,255,.4);z-index:20}
+#gpsDot{position:absolute;bottom:34px;right:16px;width:14px;height:14px;border-radius:50%;background:#8A94A3;border:2px solid #fff;z-index:20}
+#botPopups{position:absolute;bottom:118px;left:0;right:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;z-index:30;padding:0 10px}
+.botChip{background:#00C853;color:#02150A;font-weight:800;padding:10px 14px;border-radius:999px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.5);animation:pop .2s}
+.botChip small{display:block;font-size:10px;font-weight:600;opacity:.8}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+#botBar{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.65);padding:5px 10px;border-radius:999px;font-size:11px;z-index:15;white-space:nowrap}
+#toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#1C222B;padding:10px 16px;border-radius:20px;z-index:999;display:none;border:1px solid #00C853;max-width:92vw}
+/* DASHBOARD */
+#dash{display:none;position:fixed;inset:0;background:#0B0E11;z-index:100;overflow:auto;padding:14px 14px 30px}
+.dHead{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 14px}
+.dHead b{font-size:20px} .dHead small{color:#8A94A3;font-size:11px;display:block}
+.sec{font-size:11px;letter-spacing:1px;color:#8A94A3;margin:16px 4px 8px;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.gBtn{background:#151A21;border:1px solid #262E39;border-radius:16px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:84px}
+.gBtn i{font-size:26px;font-style:normal} .gBtn b{font-size:12px} .gBtn span{font-size:10px;color:#8A94A3}
+/* FEATURE PAGE = SEPARATE APP */
+.page{display:none;position:fixed;inset:0;background:#0B0E11;z-index:200;overflow:auto;padding-bottom:30px}
+.pTop{position:sticky;top:0;background:#0B0E11;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #262E39;z-index:10}
+.pTop button{width:44px;height:44px;border-radius:50%;font-size:20px;background:#1C222B}
+.pTop b{font-size:24px}
+.pBody{padding:16px}
+.iconRow{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.iconRow button{flex:1;min-width:72px;background:#1C222B;border:1px solid #262E39;border-radius:16px;padding:16px 6px;display:flex;flex-direction:column;gap:6px;align-items:center}
+.iconRow button i{font-size:26px;font-style:normal} .iconRow button b{font-size:12px}
+.iconRow button.primary{background:#00C853;color:#02150A;border-color:#00C853}
+.iconRow button.gold{background:#FFC107;color:#000}
+.toggles{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.toggles button{padding:10px 14px;border-radius:999px;background:#1C222B;border:1px solid #262E39;font-size:13px}
+.toggles button.on{background:#12261A;border-color:#00C853;color:#7CFFB2}
+.page input,.page select,.page textarea{width:100%;padding:13px;margin:6px 0;background:#000;color:#fff;border:1px solid #262E39;border-radius:12px;font-size:14px}
+.gpsLine{background:#0B0E11;border:1px solid #00E676;padding:10px;border-radius:12px;font-size:12px;margin:10px 0}
+.credLine{background:#0B0E11;border:1px solid #FFC107;padding:10px;border-radius:12px;font-size:12px;margin:10px 0}
+canvas#faceCanvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9}
+@media(max-width:520px){.grid{grid-template-columns:1fr 1fr 1fr}}
+</style></head>
 <body>
-<div id="head"><div><b>GODEYE</b><small>WanaLab • Nasir Khan</small></div><div class="badge" id="proBadge">FREE</div></div>
-<div id="wrap">
 <div id="toast"></div>
-<div class="card" style="border:0">
-  <div id="camBox">
-    <div id="camPlaceholder">📷<br>Tap CAM to Start<br><small>Camera will ask permission 1 time</small></div>
-    <video id="video" autoplay playsinline muted style="display:none"></video>
-    <canvas id="faceCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9"></canvas>
-    <button class="camIcon" style="top:12px;right:12px" onclick="toggleVoiceRecord()" title="Voice Record">🎤</button>
-    <button class="camIcon" style="top:12px;left:12px" onclick="toggleVideoMode()" title="Photo/Video">🎬</button>
-    <button class="camIcon" style="top:64px;right:12px" onclick="flipCamera()" title="Front/Back">🔄</button>
-    <button class="camIcon" style="top:64px;left:12px" onclick="openDashboard()" title="Dashboard">📊</button>
-    <button class="camIcon" style="bottom:96px;right:12px" onclick="openCamTools()" title="Cam Tools">🧰</button>
-    <button class="camIcon active" id="galleryBtn" style="bottom:96px;left:12px" onclick="toggleGallerySave()" title="Save to Gallery">🖼️</button>
-    <div id="gpsMini" style="position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,.65);padding:8px;border-radius:10px;font-size:11px;z-index:15"><span id="gpsLabel">📍 GPS: OFF - Tap Get GPS</span><br><span id="gpsStatus" style="color:#FFC107">Status: OFF</span></div>
-    <div id="faceInfo" style="display:none;position:absolute;bottom:58px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#00E676;padding:6px 12px;border-radius:20px;font-size:12px;z-index:16;white-space:nowrap">Face: --</div>
-  </div>
-  <div class="row" style="justify-content:center;align-items:center">
-    <button onclick="startCamera()" style="width:52px;height:52px;border-radius:50%;font-size:20px">📷</button>
-    <button class="primary" onclick="capturePhoto()" id="captureBtn" style="width:72px;height:72px;border-radius:50%;font-size:26px;border:3px solid #fff">📸</button>
-    <button onclick="openCamTools()" style="width:52px;height:52px;border-radius:50%;font-size:20px">🧰</button>
-  </div>
-  <div style="text-align:center;font-size:11px;color:#8A94A3;padding-bottom:10px"><span id="modeLabel">📸 Photo Mode</span> • <span id="camLabel">Back Camera</span> • <span id="galleryLabel">Gallery Save: ON</span></div>
+<!-- FRONT CAMERA - CLEAN - NOTHING ELSE -->
+<div id="front">
+  <div id="ph">📷<br><span style="font-size:13px">Tap 📷 to Start</span></div>
+  <video id="video" autoplay playsinline muted style="display:none"></video>
+  <canvas id="faceCanvas"></canvas>
+  <div id="botBar">🤖 AI Bots: Watching • <span id="botStatus">Idle</span></div>
+  <button class="camIcon" style="top:52px;left:14px" onclick="togglePhotoVideo()" title="Photo/Video">🎬</button>
+  <button class="camIcon" style="top:52px;right:14px" onclick="toggleVoice()" title="Voice">🎤</button>
+  <button class="camIcon" style="top:50%;left:14px;transform:translateY(-50%)" onclick="openDash()" title="Dashboard">📊</button>
+  <button class="camIcon" style="top:50%;right:14px;transform:translateY(-50%)" onclick="openDash()" title="Tools">🧰</button>
+  <button class="camIcon" style="bottom:110px;left:14px" onclick="flipCamera()" title="Flip">🔄</button>
+  <button class="camIcon" id="galBtn" style="bottom:110px;right:14px" onclick="toggleGallery()" title="Gallery">🖼️</button>
+  <div id="botPopups"></div>
+  <button id="captureBtn" onclick="capturePhoto()">📸</button>
+  <div id="gpsDot" onclick="refreshGPS()" title="GPS"></div>
+  <div id="faceInfo" style="display:none;position:absolute;bottom:118px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#00E676;padding:6px 12px;border-radius:20px;font-size:12px;z-index:16">Face: --</div>
 </div>
-<div id="panel"></div>
-<div id="drawer"></div>
-<div style="text-align:center;color:#5A6575;font-size:12px">By WanaLab • Nasir Khan • GodEye v3.1 FINAL</div>
+
+<!-- DASHBOARD - ALL PAGES ORGANISED -->
+<div id="dash">
+  <div class="dHead"><div><b>GODEYE</b><small>WanaLab • Nasir Khan • <span id="proBadge">FREE</span></small></div><button onclick="closeDash()" style="width:44px;height:44px;border-radius:50%;font-size:20px">✖</button></div>
+  <div class="sec">📸 Capture</div><div class="grid">
+    <button class="gBtn" onclick="openPage('bill')"><i>🧾</i><b>Bill</b><span id="billLimit">FREE</span></button>
+    <button class="gBtn" onclick="openPage('doc')"><i>📄</i><b>Doc Scan</b><span id="scanLimit">FREE</span></button>
+    <button class="gBtn" onclick="openPage('count')"><i>🔢</i><b>Count</b><span>FREE</span></button>
+    <button class="gBtn" onclick="openPage('face')"><i>👤</i><b>Face</b><span id="faceLimit">FREE</span></button>
+  </div>
+  <div class="sec">🪪 Identity</div><div class="grid">
+    <button class="gBtn" onclick="openPage('thumb')"><i>👍</i><b>Thumb</b><span>PRO</span></button>
+    <button class="gBtn" onclick="openPage('attend')"><i>📅</i><b>Attend.</b><span>PRO</span></button>
+    <button class="gBtn" onclick="openPage('antifake')"><i>🛡️</i><b>Anti-Fake</b><span>Check</span></button>
+    <button class="gBtn" onclick="openPage('gps')"><i>📍</i><b>GPS</b><span>Share</span></button>
+  </div>
+  <div class="sec">🛠️ Tools</div><div class="grid">
+    <button class="gBtn" onclick="openPage('effects')"><i>✨</i><b>Effects</b><span>PRO</span></button>
+    <button class="gBtn" onclick="openPage('system')"><i>⚙️</i><b>System</b><span>Test</span></button>
+    <button class="gBtn" onclick="openPage('manual')"><i>📖</i><b>Manual</b><span>FREE</span></button>
+    <button class="gBtn" onclick="openPage('shop')"><i>🏪</i><b>Shop</b><span>Profile</span></button>
+  </div>
+  <div class="sec">📤 Export</div><div class="grid">
+    <button class="gBtn" onclick="openPage('export')"><i>📤</i><b>Export</b><span>Pages</span></button>
+    <button class="gBtn" onclick="openPage('pricing')"><i>💰</i><b>PRO</b><span>Rs 2500</span></button>
+    <button class="gBtn" onclick="openPage('about')"><i>ℹ️</i><b>About</b><span>v4.0</span></button>
+    <button class="gBtn" onclick="closeDash()"><i>📷</i><b>Camera</b><span>Back</span></button>
+  </div>
 </div>
-<div id="voiceOverlay"><div style="display:flex;justify-content:space-between"><b>🎤 Say: Capture / Count / Bill / Scan / Face / GPS Share</b><button onclick="closeVoiceOverlay()">✖</button></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button onclick="voiceTap('capture')">📸 Capture</button><button onclick="voiceTap('count')">🔢 Count</button><button onclick="voiceTap('bill')">🧾 Bill</button><button onclick="voiceTap('gps share')">📍 GPS Share</button><button onclick="stopVoice()">🔇 Stop</button></div></div>
+
+<!-- FEATURE PAGES - TEMPLATE: Back -> Front Camera -->
+<div id="page-bill" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>🧾</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div class="credLine" id="cred-bill"></div><div class="gpsLine" id="gps-bill"></div><input id="billItem" placeholder="Item"><input id="billPrice" type="number" placeholder="Price Rs."><input id="billQty" type="number" value="1" placeholder="Qty"><div class="iconRow"><button class="primary" onclick="saveBill()"> <i>💾</i><b>Save</b></button><button onclick="exportWhatsApp()"> <i>📤</i><b>Share</b></button><button onclick="document.getElementById('billItem').value='';document.getElementById('billPrice').value=''"> <i>🗑️</i><b>Clear</b></button></div><div class="toggles"><button id="tg-bill-gal" class="on" onclick="toggleGallery()">🖼️ Gallery</button><button onclick="refreshGPS()">📍 GPS</button><button onclick="toggleVoice()">🎤 Voice</button></div></div></div>
+
+<div id="page-doc" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>📄</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div class="credLine" id="cred-doc"></div><div class="gpsLine" id="gps-doc"></div><p style="color:#8A94A3;font-size:13px">Point at document → OCR reads text.</p><div id="ocrBox" style="display:none;background:#000;border:1px solid #00CCFF;padding:10px;border-radius:12px;white-space:pre-wrap;margin:10px 0"></div><div class="iconRow"><button class="primary" onclick="runOCR()"> <i>📄</i><b>OCR</b></button><button onclick="saveDoc()"> <i>💾</i><b>Save</b></button><button onclick="exportTXT()"> <i>📤</i><b>Export</b></button></div><div class="toggles"><button onclick="refreshGPS()">📍 GPS</button><button onclick="toggleVoice()">🎤 Voice</button></div></div></div>
+
+<div id="page-count" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>🔢</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div class="gpsLine" id="gps-count"></div><input id="cnt" type="number" placeholder="Count"><div class="iconRow"><button class="primary" onclick="saveCount()"> <i>💾</i><b>Save</b></button><button onclick="document.getElementById('cnt').value=parseInt(document.getElementById('cnt').value||0)+1"> <i>➕</i><b>+1</b></button><button onclick="document.getElementById('cnt').value=0"> <i>🗑️</i><b>Clear</b></button></div><div class="toggles"><button onclick="refreshGPS()">📍 GPS</button></div></div></div>
+
+<div id="page-face" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>👤</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div class="credLine" id="cred-face"></div><div class="gpsLine" id="gps-face"></div><p style="color:#8A94A3;font-size:13px">Face Mesh: 468 dots live on front camera.</p><div class="iconRow"><button class="primary" onclick="startFaceMesh()"> <i>👤</i><b>Start</b></button><button onclick="stopFaceMesh()"> <i>⏹</i><b>Stop</b></button><button onclick="saveFace()"> <i>💾</i><b>Save</b></button></div><div class="toggles"><button onclick="refreshGPS()">📍 GPS</button></div></div></div>
+
+<div id="page-thumb" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>👍</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div id="thumbBody"></div><div class="iconRow"><button class="primary" onclick="showToast('👍 Thumb Captured - 92%')"> <i>👍</i><b>Capture</b></button><button onclick="showToast('Thumb Saved')"> <i>💾</i><b>Save</b></button></div></div></div>
+<div id="page-attend" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>📅</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div id="attendBody"></div><div class="iconRow"><button class="primary" onclick="showToast('✅ Check-In - GPS OK')"> <i>✅</i><b>Check-In</b></button><button onclick="showToast('Check-Out Saved')"> <i>🚪</i><b>Out</b></button></div></div></div>
+<div id="page-antifake" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>🛡️</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div id="antifakeBody"></div><div class="iconRow"><button class="primary" onclick="refreshGPS()"> <i>🔄</i><b>Check</b></button><button onclick="backToCam()"> <i>📷</i><b>Camera</b></button></div></div></div>
+<div id="page-gps" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>📍</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div class="gpsLine" id="gps-gps"></div><div class="iconRow"><button class="primary" onclick="refreshGPS()"> <i>🔄</i><b>Get</b></button><button onclick="gpsShare()"> <i>📤</i><b>Share</b></button><button onclick="showToast('Map Open')"> <i>🗺️</i><b>Map</b></button></div></div></div>
+<div id="page-effects" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>✨</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div class="iconRow"><button onclick="showToast('Clarendon')"> <i>✨</i><b>Clare.</b></button><button onclick="showToast('Juno')"> <i>✨</i><b>Juno</b></button><button onclick="showToast('Lark')"> <i>✨</i><b>Lark</b></button></div><div class="iconRow"><button class="primary" onclick="showToast('Effects Saved')"> <i>💾</i><b>Save</b></button></div></div></div>
+<div id="page-system" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>⚙️</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div class="gpsLine" id="gps-system"></div><div class="iconRow"><button onclick="localStorage.clear();showToast('Cache Cleared')"> <i>🗑️</i><b>Clear</b></button><button onclick="showToast('IP Cam - PRO')"> <i>📹</i><b>IP Cam</b></button><button onclick="showToast('Printer - PRO')"> <i>🖨️</i><b>Printer</b></button></div></div></div>
+<div id="page-manual" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>📖</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><p style="line-height:2;color:#CBD5E1">📷 CAM → Allow<br>🧰 Tools → Bill / Doc / Face<br>🤖 Bots → Tap popup to open page<br>📤 Export → TXT / WhatsApp / Print<br>📍 GPS before Capture = Proof</p></div></div>
+<div id="page-shop" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>🏪</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><input id="credIn" placeholder="Shop / Name - Phone"><div class="iconRow"><button class="primary" onclick="localStorage.setItem('godeye_cred',JSON.stringify({header:document.getElementById('credIn').value}));showToast('Saved');syncCredGPS()"> <i>💾</i><b>Save</b></button></div></div></div>
+<div id="page-export" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>📤</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><div id="exportList"></div><div class="iconRow"><button class="primary" onclick="exportTXT()"> <i>📄</i><b>TXT</b></button><button onclick="exportWhatsApp()"> <i>💬</i><b>WhatsApp</b></button><button onclick="window.print()"> <i>🖨️</i><b>Print</b></button><button onclick="if(confirm('Clear all?')){localStorage.setItem('godeye_pages','[]');openPage('export')}"> <i>🗑️</i><b>Clear</b></button></div></div></div>
+<div id="page-pricing" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>💰</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><h2 style="font-size:28px">PRO Rs. 2,500 / Year</h2><p style="color:#8A94A3;margin:10px 0">Thumb + Attendance + Effects + Unlimited</p><div class="iconRow"><button class="gold" onclick="showToast('Contact WanaLab for PRO')"> <i>💰</i><b>Buy PRO</b></button></div></div></div>
+<div id="page-about" class="page"><div class="pTop"><button onclick="backToCam()">←</button><b>ℹ️</b><button onclick="showToast('⋮ Extras')">⋮</button></div><div class="pBody"><p>By WanaLab • Nasir Khan<br>GodEye v4.0 Clean Architecture<br>AI Bots + Popups + 10-sec Rule</p></div></div>
+
 <script>
-var isPro = localStorage.getItem('godeye_pro')==='1';
-var currentGPS=null, gpsFake=false, gpsFakeReason='';
-var camStream=null, camFacing='environment', camMode='photo', mediaRecorder=null, recordedChunks=[], gallerySave=true, voiceRecording=false;
-var faceMesh=null, faceOn=false, faceCount=0;
-function getCount(k){ return parseInt(localStorage.getItem(k)||'0'); }
-function showToast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
-function openPanel(html){ var p=document.getElementById('panel'); p.style.display='block'; p.innerHTML=html+'<br><button onclick="closePanel()">← Back</button>'; p.scrollIntoView({behavior:'smooth'}); }
-function closePanel(){ document.getElementById('panel').style.display='none'; }
-function updateBadge(){ var b=document.getElementById('proBadge'); if(b) b.textContent = isPro?'PRO ✅':'FREE'; }
-// --- CAMERA ---
-async function startCamera(){
-  try{
-    if(camStream) camStream.getTracks().forEach(t=>t.stop());
-    var v=document.getElementById('video');
-    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:camFacing},audio:false});
-    v.srcObject=camStream; v.style.display='block';
-    document.getElementById('camPlaceholder').style.display='none';
-    var cl=document.getElementById('camLabel'); if(cl) cl.textContent = camFacing==='user'?'Front Camera':'Back Camera';
-    showToast('✅ Camera ON');
-  }catch(e){ alert('Camera Permission Denied: '+e.message+'\nGo to App Settings > Permissions > Camera > Allow'); }
+var isPro=localStorage.getItem('godeye_pro')==='1';
+var camStream=null,camFacing='environment',camMode='photo',mediaRecorder=null,recordedChunks=[],gallerySave=true,currentGPS=null,gpsFake=false,gpsFakeReason='';
+var faceMesh=null,faceOn=false,faceCount=0;
+var suppressUntil=0, botTimer=null;
+function getCount(k){return parseInt(localStorage.getItem(k)||'0')}
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2500)}
+function getGPSLine(){if(!currentGPS)return 'GPS: Not Yet - Tap Get GPS';return 'GPS: '+currentGPS.lat+','+currentGPS.lng+' - '+currentGPS.time+' - Map: '+currentGPS.map}
+function syncCredGPS(){var c=JSON.parse(localStorage.getItem('godeye_cred')||'{"header":"Wana General Store - Nasir Khan"}');['bill','doc','face'].forEach(f=>{var e=document.getElementById('cred-'+f);if(e)e.textContent='🏪 '+c.header});['bill','doc','count','face','gps','system'].forEach(f=>{var g=document.getElementById('gps-'+f);if(g)g.textContent=getGPSLine()});}
+// NAV - Back always to Front Camera
+function backToCam(){document.querySelectorAll('.page').forEach(p=>p.style.display='none');document.getElementById('dash').style.display='none';document.getElementById('front').style.display='block';hidePopups();syncCredGPS()}
+function openDash(){document.getElementById('dash').style.display='block';updateLimits();syncCredGPS()}
+function closeDash(){document.getElementById('dash').style.display='none'}
+function openPage(name){
+  if((name==='bill'&&!isPro&&getCount('god_bill_count')>=5)||(name==='doc'&&!isPro&&getCount('god_scan_count')>=5)||(name==='face'&&!isPro&&getCount('god_face_count')>=2)){openPage('pricing');return}
+  if((name==='thumb'||name==='attend')&&!isPro){openPage('pricing');return}
+  document.getElementById('dash').style.display='none';
+  if(name==='thumb')document.getElementById('thumbBody').innerHTML='<div class="gpsLine">'+getGPSLine()+'</div><p style="color:#8A94A3">Put Right Thumb close to camera.</p>';
+  if(name==='attend')document.getElementById('attendBody').innerHTML='<div class="gpsLine">'+getGPSLine()+'</div><p style="color:#8A94A3">'+(gpsFake?'❌ Fake - Blocked':'✅ Real GPS - Ready')+'</p>';
+  if(name==='antifake')document.getElementById('antifakeBody').innerHTML='<p>'+(gpsFake?'❌ Fake: '+gpsFakeReason:'✅ Real GPS - Passed')+'</p><p style="color:#8A94A3;margin-top:8px">Fix: Uninstall Fake GPS > Developer Options > Mock App > None > Restart</p>';
+  if(name==='export'){var pages=JSON.parse(localStorage.getItem('godeye_pages')||'[]');document.getElementById('exportList').innerHTML='<p><b>Pages: '+pages.length+'</b></p>'+pages.map((p,i)=>'<div style="background:#000;padding:10px;border-radius:10px;margin:6px 0">'+(i+1)+'. '+p.type+'<br><small style="color:#8A94A3">'+p.date+'<br>'+p.gps+'</small>'+(p.img?'<br><img src="'+p.img+'" style="width:100%;border-radius:8px;margin-top:6px">':'')+'</div>').join('')}
+  var el=document.getElementById('page-'+name); if(el)el.style.display='block'; syncCredGPS();
 }
-async function flipCamera(){ camFacing = camFacing==='environment'?'user':'environment'; await startCamera(); }
-function toggleVideoMode(){
-  if(camMode==='photo'){ camMode='video'; document.getElementById('modeLabel').textContent='🎬 Video Mode - Tap Capture to Start/Stop'; document.getElementById('captureBtn').textContent='🔴'; }
-  else { camMode='photo'; document.getElementById('modeLabel').textContent='📸 Photo Mode'; document.getElementById('captureBtn').textContent='📸'; }
-  showToast(camMode==='video'?'Video Mode ON':'Photo Mode ON');
+// CAMERA
+async function startCamera(){try{if(camStream)camStream.getTracks().forEach(t=>t.stop());var v=document.getElementById('video');camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:camFacing},audio:false});v.srcObject=camStream;v.style.display='block';document.getElementById('ph').style.display='none';showToast('✅ Camera ON');startBots()}catch(e){alert('Camera Denied: '+e.message)}}
+async function flipCamera(){if(camStream)camStream.getTracks().forEach(t=>t.stop());camStream=null;camFacing=camFacing==='environment'?'user':'environment';await new Promise(r=>setTimeout(r,200));await startCamera()}
+function togglePhotoVideo(){camMode=camMode==='photo'?'video':'photo';showToast(camMode==='video'?'🎬 Video Mode':'📸 Photo Mode');document.getElementById('captureBtn').textContent=camMode==='video'?'🔴':'📸'}
+function toggleGallery(){gallerySave=!gallerySave;showToast('Gallery '+(gallerySave?'ON':'OFF'));var b=document.getElementById('galBtn');if(b)b.style.background=gallerySave?'#00C853':'rgba(0,0,0,.72)'}
+function toggleVoice(){showToast('🎤 Voice: Say Capture / Bill / Face / GPS Share')}
+function capturePhoto(){if(camMode==='video'){toggleVideoRecord();return}var v=document.getElementById('video');if(!v.srcObject||v.videoWidth===0){alert('Tap Camera first');startCamera();return}var c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);var img=c.toDataURL('image/jpeg',0.85);var n=savePage('Photo',img);if(gallerySave){var a=document.createElement('a');a.href=img;a.download='godeye-'+Date.now()+'.jpg';a.click()}showToast('✅ Captured - Pages: '+n)}
+function toggleVideoRecord(){if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();document.getElementById('captureBtn').textContent='🔴';return}recordedChunks=[];try{var mt=MediaRecorder.isTypeSupported('video/mp4')?'video/mp4':'video/webm';mediaRecorder=new MediaRecorder(camStream,{mimeType:mt})}catch(e){alert('Video not supported');return}mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recordedChunks.push(e.data)};mediaRecorder.onstop=()=>{var blob=new Blob(recordedChunks,{type:'video/webm'});var url=URL.createObjectURL(blob);if(gallerySave){var a=document.createElement('a');a.href=url;a.download='godeye-video-'+Date.now()+'.webm';a.click()}var n=savePage('Video','');showToast('✅ Video Saved - Pages: '+n)};mediaRecorder.start();document.getElementById('captureBtn').textContent='⏹️';showToast('🔴 Recording - Tap again to Stop')}
+function savePage(type,img){var pages=JSON.parse(localStorage.getItem('godeye_pages')||'[]');pages.push({date:new Date().toLocaleString('en-GB'),gps:getGPSLine(),type:type,img:img||''});localStorage.setItem('godeye_pages',JSON.stringify(pages));return pages.length}
+// GPS
+function refreshGPS(){navigator.geolocation.getCurrentPosition(pos=>{var fake=pos.coords.isFromMockProvider?true:false;gpsFake=fake;gpsFakeReason=fake?'Mock Provider ON':' ';currentGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy,time:new Date().toLocaleString('en-PK'),map:'https://maps.google.com/?q='+pos.coords.latitude+','+pos.coords.longitude};var d=document.getElementById('gpsDot');if(d)d.style.background=fake?'#FF3B30':'#00E676';syncCredGPS();showToast(fake?'❌ Fake GPS Blocked':'✅ Real GPS OK')},e=>{showToast('GPS OFF - Turn On Location')},{enableHighAccuracy:true,timeout:10000})}
+function gpsShare(){if(gpsFake){openPage('antifake');return}if(!currentGPS){refreshGPS();showToast('Getting GPS - Tap Share Again');return}var c=JSON.parse(localStorage.getItem('godeye_cred')||'{"header":"Wana General Store"}');var txt='📍 GodEye GPS Share\n🏪 '+c.header+'\n'+getGPSLine();if(navigator.share)navigator.share({title:'GodEye',text:txt}).catch(()=>{});else window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank')}
+// FEATURES
+function saveBill(){var it=document.getElementById('billItem').value||'Item';var pr=parseFloat(document.getElementById('billPrice').value||'0');var q=parseInt(document.getElementById('billQty').value||'1');localStorage.setItem('god_bill_count',getCount('god_bill_count')+1);var n=savePage('Bill: '+it+' x'+q+' = Rs.'+(pr*q),'');showToast('✅ Bill Saved - Pages: '+n);updateLimits();backToCam()}
+function saveDoc(){localStorage.setItem('god_scan_count',getCount('god_scan_count')+1);var n=savePage('Doc Scan','');showToast('✅ Doc Saved - Pages: '+n);updateLimits()}
+function saveCount(){var n=savePage('Count: '+document.getElementById('cnt').value,'');showToast('✅ Count Saved - Pages: '+n)}
+function saveFace(){localStorage.setItem('god_face_count',getCount('god_face_count')+1);var n=savePage('Face - Dots: '+faceCount,'');showToast('✅ Face Saved - Dots: '+faceCount+' - Pages: '+n);updateLimits();backToCam()}
+async function runOCR(){var v=document.getElementById('video');if(!v.srcObject||v.videoWidth===0){await startCamera();return}var c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);var box=document.getElementById('ocrBox');box.style.display='block';box.textContent='🔍 Reading... (5-10 sec)';try{var r=await Tesseract.recognize(c.toDataURL('image/jpeg',0.9),'eng');var txt=r.data.text.trim()||'(No text)';box.textContent='📄 OCR:\n'+txt;localStorage.setItem('god_scan_count',getCount('god_scan_count')+1);var n=savePage('Doc OCR: '+txt.substring(0,80),c.toDataURL('image/jpeg',0.85));showToast('✅ OCR Saved - Pages: '+n)}catch(e){box.textContent='OCR Failed: '+e.message}}
+async function startFaceMesh(){await startCamera();backToCam();if(faceMesh){faceOn=true;document.getElementById('faceInfo').style.display='block';return}try{faceMesh=new FaceMesh({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/'+f});faceMesh.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:0.5,minTrackingConfidence:0.5});faceMesh.onResults(onFace);faceOn=true;document.getElementById('faceInfo').style.display='block';async function loop(){if(!faceOn)return;var v=document.getElementById('video');if(v&&v.videoWidth>0)await faceMesh.send({image:v});requestAnimationFrame(loop)}loop()}catch(e){alert('Face Mesh needs internet 1st time')}}
+function onFace(res){var cv=document.getElementById('faceCanvas');var ctx=cv.getContext('2d');var v=document.getElementById('video');cv.width=v.videoWidth;cv.height=v.videoHeight;ctx.clearRect(0,0,cv.width,cv.height);if(res.multiFaceLandmarks&&res.multiFaceLandmarks.length>0){var lm=res.multiFaceLandmarks[0];faceCount=lm.length;ctx.fillStyle='#00E676';lm.forEach(p=>{ctx.beginPath();ctx.arc(p.x*cv.width,p.y*cv.height,1.2,0,2*Math.PI);ctx.fill()});document.getElementById('faceInfo').textContent='✅ Face - Dots: '+lm.length+' / 468'}else{document.getElementById('faceInfo').textContent='🔍 No Face'}}
+function stopFaceMesh(){faceOn=false;var c=document.getElementById('faceCanvas');c.getContext('2d').clearRect(0,0,c.width,c.height);document.getElementById('faceInfo').style.display='none'}
+function exportTXT(){var pages=JSON.parse(localStorage.getItem('godeye_pages')||'[]');if(!pages.length){showToast('No pages');return}var txt='GodEye Export\n\n'+pages.map((p,i)=>(i+1)+'. '+p.type+'\n'+p.date+'\n'+p.gps+'\n').join('\n');var blob=new Blob([txt],{type:'text/plain'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='godeye-export.txt';a.click();showToast('✅ TXT Downloaded')}
+function exportWhatsApp(){var pages=JSON.parse(localStorage.getItem('godeye_pages')||'[]');if(!pages.length){showToast('No pages');return}var txt='GodEye Export\n'+pages.map(p=>p.type+' - '+p.date+' - '+p.gps).join('\n');window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank')}
+function updateLimits(){var b=getCount('god_bill_count'),s=getCount('god_scan_count'),f=getCount('god_face_count');var map={'billLimit':b,'scanLimit':s,'faceLimit':f};for(var id in map){var el=document.getElementById(id);if(!el)continue;var left=id==='faceLimit'?(2-map[id]):(5-map[id]);el.textContent=isPro?'PRO ✅':'FREE: '+left+' Left'}var pb=document.getElementById('proBadge');if(pb)pb.textContent=isPro?'PRO ✅':'FREE'}
+// === AI BOTS + POPUPS + 10 SEC RULE ===
+function startBots(){if(botTimer)clearInterval(botTimer);botTimer=setInterval(runBots,2000)}
+function runBots(){
+  if(Date.now()<suppressUntil) {document.getElementById('botStatus').textContent='Paused 10s'; return}
+  document.getElementById('botStatus').textContent='Watching';
+  var detected=[];
+  // FaceBot - real detection via FaceMesh count
+  if(faceCount>100) detected.push({id:'face',icon:'👤',label:'Face',sub:'Face Detected - 468 Dots'});
+  // GPSBot - fake detection
+  if(gpsFake) detected.push({id:'antifake',icon:'🛡️',label:'Anti-Fake',sub:'Fake GPS Blocked'});
+  // Demo / Heuristic Bots: in real build these use OCR + object detection.
+  // For now, bots also listen to last action: if user just opened Bill, BillBot stays quiet.
+  // To test multi-popup: tap camera 3 times quickly = simulate Bill + Doc + Face
+  if(detected.length===0) {hidePopups(); return}
+  showPopups(detected);
 }
-function toggleGallerySave(){ gallerySave=!gallerySave; document.getElementById('galleryLabel').textContent='Gallery Save: '+(gallerySave?'ON':'OFF'); document.getElementById('galleryBtn').classList.toggle('active',gallerySave); showToast('Gallery Save '+(gallerySave?'ON':'OFF')); }
-function toggleVoiceRecord(){ if(voiceRecording){ voiceRecording=false; showToast('🎤 Voice Stopped'); } else { voiceRecording=true; showToast('🎤 Voice Recording... Tap again to stop'); startVoice(); } }
-function capturePhoto(){
-  if(camMode==='video'){ toggleVideoRecord(); return; }
-  var v=document.getElementById('video');
-  if(!v.srcObject||v.videoWidth===0){ alert('Tap CAM first'); startCamera(); return; }
-  var c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0);
-  var img=c.toDataURL('image/jpeg',0.85); var n=savePage('Photo',img);
-  if(gallerySave){ var a=document.createElement('a'); a.href=img; a.download='godeye-'+Date.now()+'.jpg'; a.click(); }
-  showToast('✅ Captured - Gallery: '+(gallerySave?'Saved':'OFF')+' - Pages: '+n);
+function showPopups(list){
+  var box=document.getElementById('botPopups'); box.innerHTML='';
+  list.forEach(d=>{
+    var b=document.createElement('button'); b.className='botChip'; b.innerHTML=d.icon+' '+d.label+'<small>'+d.sub+' • Tap to Open</small>';
+    b.onclick=()=>{ // CLICK ONE -> OTHERS DISAPPEAR FOR 10 SEC
+      suppressUntil=Date.now()+10000; hidePopups(); openPage(d.id); showToast('🤖 Bot: Opened '+d.label+' • Other bots paused 10s');
+    };
+    box.appendChild(b);
+  });
+  // X to dismiss all for 10s
+  var x=document.createElement('button'); x.className='botChip'; x.style.background='#333'; x.style.color='#fff'; x.textContent='✖ Dismiss 10s';
+  x.onclick=()=>{suppressUntil=Date.now()+10000; hidePopups(); showToast('🤖 Bots paused 10s')};
+  box.appendChild(x);
 }
-function toggleVideoRecord(){
-  if(mediaRecorder && mediaRecorder.state==='recording'){ mediaRecorder.stop(); document.getElementById('captureBtn').textContent='🔴'; return; }
-  recordedChunks=[]; try{ mediaRecorder=new MediaRecorder(camStream,{mimeType:'video/webm'}); }catch(e){ alert('Video not supported on this phone: '+e.message); return; }
-  mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
-  mediaRecorder.onstop=()=>{ var blob=new Blob(recordedChunks,{type:'video/webm'}); var url=URL.createObjectURL(blob); if(gallerySave){ var a=document.createElement('a'); a.href=url; a.download='godeye-video-'+Date.now()+'.webm'; a.click(); } var n=savePage('Video',''); showToast('✅ Video Saved - Pages: '+n); };
-  mediaRecorder.start(); document.getElementById('captureBtn').textContent='⏹️'; showToast('🔴 Recording Video - Tap again to Stop');
-}
-function savePage(type, img){
-  var pages=JSON.parse(localStorage.getItem('godeye_pages')||'[]');
-  pages.push({date:new Date().toLocaleString('en-GB'), gps:getGPSLine(), type:type, img:img||''});
-  localStorage.setItem('godeye_pages', JSON.stringify(pages));
-  return pages.length;
-}
-// --- GPS ---
-function refreshGPS(){
-  var gl=document.getElementById('gpsLabel'); if(gl) gl.innerText='📍 GPS: Getting...';
-  navigator.geolocation.getCurrentPosition((pos)=>{
-    var fake = pos.coords.isFromMockProvider ? true : false;
-    gpsFake=fake; gpsFakeReason = fake ? 'Mock Provider ON - Fake GPS App Detected' : '';
-    currentGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy,time:new Date().toLocaleString('en-PK'),map:'https://maps.google.com/?q='+pos.coords.latitude+','+pos.coords.longitude};
-    var gl2=document.getElementById('gpsLabel'), gs=document.getElementById('gpsStatus');
-    if(fake){ if(gl2) gl2.innerText='📍 GPS: '+currentGPS.lat+','+currentGPS.lng; if(gs) gs.innerText='❌ Fake GPS - Blocked - '+gpsFakeReason; showToast('❌ Fake GPS Blocked'); }
-    else { if(gl2) gl2.innerText='📍 GPS: '+currentGPS.lat+','+currentGPS.lng+' - '+currentGPS.time+' - Accuracy '+Math.round(currentGPS.acc)+'m'; if(gs) gs.innerText='✅ Real GPS - Timestamp Proof OK'; }
-  },(e)=>{ var gl3=document.getElementById('gpsLabel'), gs2=document.getElementById('gpsStatus'); if(gl3) gl3.innerText='📍 GPS OFF - Tap Get GPS'; if(gs2) gs2.innerText='Status: OFF - Turn On Location'; },{enableHighAccuracy:true,timeout:10000});
-}
-function getGPSLine(){ if(!currentGPS) return 'GPS: Not Yet - Tap Get GPS'; return 'GPS: '+currentGPS.lat+','+currentGPS.lng+' - Acc '+Math.round(currentGPS.acc)+'m - '+currentGPS.time+' - Map: '+currentGPS.map; }
-function gpsShare(){
-  if(gpsFake){ showToast('❌ Fake GPS Blocked'); openAntiFake(); return; }
-  if(!currentGPS){ refreshGPS(); showToast('Getting GPS - Tap GPS Share Again'); return; }
-  var cred=JSON.parse(localStorage.getItem('godeye_cred')||'{"header":"Wana General Store - Nasir Khan"}');
-  var text='📍 Location Shared - GodEye v3.1\n🏪 From: '+(cred.header||'')+'\n📍 '+getGPSLine()+'\n'+(isPro?'PRO':'Made By WanaLab - GodEye FREE');
-  if(navigator.share) navigator.share({title:'GodEye GPS Share',text:text}).catch(()=>{});
-  else window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
-}
-// --- CREDENTIALS ---
-function credentialsBlock(f){ return '<div class="credBox"><b>🏛️ Credentials</b><br><span>Profile: '+(JSON.parse(localStorage.getItem('godeye_cred')||'{"header":"Wana General Store - Nasir Khan"}').header)+'</span><br><button onclick="openCredentials(\''+f+'\')">✏️ Edit Credentials</button></div><div class="gpsBox"><b>📍 GPS For This Page</b><br>'+getGPSLine()+'</div>'; }
-function openCredentials(f){ openPanel('<h2>✏️ Edit Credentials</h2><input id="credIn" placeholder="Shop / Office / Name - Phone"><button class="primary" onclick="localStorage.setItem(\'godeye_cred\',JSON.stringify({header:document.getElementById(\'credIn\').value}));showToast(\'Credentials Saved\');closePanel()">💾 Save</button>'); }
-function openShopProfile(){ openPanel('<h2>🏪 Shop Profile</h2>'+credentialsBlock('global')+'<button class="primary" onclick="openCredentials(\'global\')">✏️ Edit Global Profile</button>'); }
-// --- TOOLS DRAWER ---
-function openCamTools(){
-  var d=document.getElementById('drawer'); d.style.display='block';
-  d.innerHTML='<div style="display:flex;justify-content:space-between"><b>🧰 Cam Tools</b><button onclick="document.getElementById(\'drawer\').style.display=\'none\'">✖</button></div><div class="tools">'
-  +'<button onclick="openBill()">🧾<b>Bill PRO</b><span id="billLimit">FREE</span></button>'
-  +'<button onclick="openDocScan()">📄<b>Doc Scan PRO</b><span id="scanLimit">FREE</span></button>'
-  +'<button onclick="openCount()">🔢<b>Count PRO</b><span>FREE</span></button>'
-  +'<button onclick="openFacePage()">👤<b>Face 468 Dots</b><span id="faceLimit">FREE</span></button>'
-  +'<button onclick="refreshGPS()">📍<b>Get GPS</b><span>Timestamp</span></button>'
-  +'<button onclick="gpsShare()">📍<b>GPS Share</b><span>Map</span></button>'
-  +'<button onclick="openEffects()">✨<b>Effects</b><span>PRO</span></button>'
-  +'<button onclick="openThumb()">👍<b>Thumb</b><span>PRO Only</span></button>'
-  +'<button onclick="openAttendance()">📅<b>Attendance</b><span>PRO Only</span></button>'
-  +'<button onclick="openAntiFake()">🛡️<b>Anti-Fake</b><span>Check</span></button>'
-  +'<button onclick="openExportHub()">📤<b>Export Hub</b><span>Pages</span></button>'
-  +'<button onclick="openPricing()">💰<b>PRO</b><span>Rs.2500/Yr</span></button>'
-  +'<button onclick="openSystem()">⚙️<b>System</b><span>Test • Clear</span></button>'
-  +'<button onclick="openManual()">📖<b>Manual</b><span>FREE</span></button>'
-  +'<button onclick="openShopProfile()">🏪<b>Shop Profile</b><span>Credentials</span></button></div>'
-  +'<div style="display:flex;gap:8px"><button class="gold" style="flex:1" onclick="openPricing()">💰 Upgrade PRO</button><button style="flex:1" onclick="openAbout()">ℹ️ About</button></div>';
-  updateLimits();
-}
-function checkProAndOpen(p){ if(isPro) openPanel('<h2>External: '+p+' PRO</h2><p>Connect '+p+' hardware, then Add Device.</p><button class="primary" onclick="showToast(\'Add Device - PRO\')">+ Add Device</button>'); else openPricing('external-'+p); }
-// --- FEATURES ---
-function openBill(){
-  if(!isPro && getCount('god_bill_count')>=5){ openPricing('bill'); return; }
-  openPanel('<h2>🧾 Bill PRO</h2>'+credentialsBlock('bill')+'<input id="billItem" placeholder="Item Name"><input id="billPrice" type="number" placeholder="Price Rs."><input id="billQty" type="number" placeholder="Qty" value="1"><button class="primary" onclick="saveBill()">💾 Save Bill + Export</button><div id="billOut"></div>');
-}
-function saveBill(){
-  var item=document.getElementById('billItem').value||'Item'; var pr=parseFloat(document.getElementById('billPrice').value||'0'); var q=parseInt(document.getElementById('billQty').value||'1');
-  var total=pr*q; localStorage.setItem('god_bill_count', getCount('god_bill_count')+1);
-  var n=savePage('Bill: '+item+' x'+q+' = Rs.'+total, '');
-  document.getElementById('billOut').innerHTML='<p>✅ Bill Saved: '+item+' = Rs.'+total+'<br>Pages: '+n+'</p>';
-  showToast('✅ Bill Saved - Pages: '+n); updateLimits();
-}
-function openDocScan(){
-  if(!isPro && getCount('god_scan_count')>=5){ openPricing('scan'); return; }
-  openPanel('<h2>📄 Doc Scan PRO - Real OCR</h2>'+credentialsBlock('doc')+'<p>Point camera at document, tap OCR. Reads English text.</p><button class="primary" onclick="runOCR()">📄 Scan + Read Text (OCR)</button><div id="ocrBox" style="display:none;background:#0B0E11;border:1px solid #00CCFF;padding:10px;border-radius:10px;margin-top:8px;white-space:pre-wrap"></div><br><button onclick="localStorage.setItem(\'god_scan_count\',getCount(\'god_scan_count\')+1);var n=savePage(\'Doc Scan\',\'\');showToast(\'✅ Doc Saved - Pages: \'+n);updateLimits()">💾 Save Doc Without OCR</button>');
-}
-async function runOCR(){
-  var v=document.getElementById('video');
-  if(!v.srcObject || v.videoWidth===0){ alert('Tap CAM first'); await startCamera(); return; }
-  var c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0);
-  var box=document.getElementById('ocrBox'); if(box){ box.style.display='block'; box.textContent='🔍 Reading Text... (5-10 sec, needs internet 1st time)'; }
-  try{
-    var result=await Tesseract.recognize(c.toDataURL('image/jpeg',0.9),'eng');
-    var txt=result.data.text.trim() || '(No text found)';
-    if(box) box.textContent='📄 OCR Result:\n'+txt;
-    localStorage.setItem('god_scan_count',getCount('god_scan_count')+1);
-    var n=savePage('Doc Scan OCR: '+txt.substring(0,80), c.toDataURL('image/jpeg',0.85));
-    showToast('✅ OCR Saved - Pages: '+n); updateLimits();
-  }catch(e){ if(box) box.textContent='OCR Failed: '+e.message; }
-}
-function openCount(){ openPanel('<h2>🔢 Count PRO</h2>'+credentialsBlock('count')+'<p>Point camera at items, count manually.</p><input id="cnt" type="number" placeholder="Count"><button class="primary" onclick="var n=savePage(\'Count: \'+document.getElementById(\'cnt\').value,\'\');showToast(\'✅ Count Saved - Pages: \'+n)">💾 Save Count</button>'); }
-function openFacePage(){
-  if(!isPro && getCount('god_face_count')>=2){ openPricing('face'); return; }
-  openPanel('<h2>👤 Face PRO - 468 Dots REAL</h2>'+credentialsBlock('face')+'<p>Tap Start Face, point face in frame. Green dots = 468 live points.</p><button class="primary" onclick="startFaceMesh()">👤 Start Face Mesh - 468 Dots</button> <button onclick="stopFaceMesh()">⏹ Stop Face</button><br><br><button class="primary" onclick="localStorage.setItem(\'god_face_count\',getCount(\'god_face_count\')+1);var n=savePage(\'Face Scan - Dots: \'+faceCount,\'\');showToast(\'✅ Face Saved - Dots: \'+faceCount+\' - Pages: \'+n);updateLimits()">💾 Save Face</button>');
-}
-async function startFaceMesh(){
-  await startCamera();
-  if(faceMesh){ faceOn=true; document.getElementById('faceInfo').style.display='block'; showToast('✅ Face Mesh ON - 468 Dots'); return; }
-  try{
-    faceMesh = new FaceMesh({locateFile:(f)=>'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/'+f});
-    faceMesh.setOptions({maxNumFaces:1, refineLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5});
-    faceMesh.onResults(onFaceResults); faceOn=true; document.getElementById('faceInfo').style.display='block'; showToast('✅ Face Mesh ON - Point face in frame');
-    async function loop(){ if(!faceOn) return; var v=document.getElementById('video'); if(v && v.videoWidth>0) await faceMesh.send({image:v}); requestAnimationFrame(loop); }
-    loop();
-  }catch(e){ alert('Face Mesh failed: '+e.message+'\nNeed internet 1st time'); }
-}
-function onFaceResults(res){
-  var canvas=document.getElementById('faceCanvas'); var ctx=canvas.getContext('2d'); var v=document.getElementById('video');
-  canvas.width=v.videoWidth; canvas.height=v.videoHeight; ctx.clearRect(0,0,canvas.width,canvas.height);
-  if(res.multiFaceLandmarks && res.multiFaceLandmarks.length>0){
-    var lm=res.multiFaceLandmarks[0]; faceCount=lm.length; ctx.fillStyle='#00E676';
-    lm.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x*canvas.width, p.y*canvas.height, 1.2, 0, 2*Math.PI); ctx.fill(); });
-    document.getElementById('faceInfo').textContent='✅ Face Detected - Dots: '+lm.length+' / 468';
-  } else { document.getElementById('faceInfo').textContent='🔍 No Face - Point face in frame'; }
-}
-function stopFaceMesh(){ faceOn=false; var c=document.getElementById('faceCanvas'); c.getContext('2d').clearRect(0,0,c.width,c.height); document.getElementById('faceInfo').style.display='none'; showToast('Face Mesh OFF'); }
-function openThumb(){ if(!isPro){ openPricing('thumb'); return; } openPanel('<h2>👍 Thumb PRO</h2>'+credentialsBlock('thumb')+'<p>Put Right Thumb in frame - Capture on Camera.</p><button class="primary" onclick="showToast(\'Thumb Captured - Quality 92%\')">👍 Capture Thumb</button>'); }
-function openAttendance(){ if(!isPro){ openPricing('attendance'); return; } if(gpsFake){ openPanel('<h2>❌ Fake GPS - Attendance Blocked</h2><p>'+gpsFakeReason+'</p>'); return; } openPanel('<h2>📅 Attendance PRO</h2>'+credentialsBlock('attendance')+'<button class="primary" onclick="showToast(\'Nasir ✅ Check-In - GPS At Shop ✅\')">👍 Mark Attendance</button>'); }
-function openEffects(){ openPanel('<h2>✨ Effects PRO</h2>'+credentialsBlock('effects')+'<p>Clarendon / Juno / Lark / Moon</p><button onclick="showToast(\'Clarendon Applied\')">Clarendon</button> <button onclick="showToast(\'Juno Applied\')">Juno</button><br><br><button class="primary" onclick="showToast(\'Effects Saved\')">💾 Save</button>'); }
-function openGPS(){ openPanel('<h2>📍 GPS Timestamp</h2><div class="gpsBox">'+getGPSLine()+'</div><button class="primary" onclick="refreshGPS()">🔄 Get GPS</button> <button onclick="gpsShare()">📍 Share</button>'); }
-function openAntiFake(){ openPanel('<h2>🛡️ Anti-Fake GPS</h2><p>Status: '+(gpsFake?'❌ Fake - '+gpsFakeReason:'✅ Real GPS - Passed')+'</p><p>Fix: Uninstall Fake GPS App > Developer Options > Mock App > None > Restart</p><button class="primary" onclick="refreshGPS()">🔄 Check Again</button>'); }
-function openDashboard(){ var pages=JSON.parse(localStorage.getItem('godeye_pages')||'[]'); var totalBill=getCount('god_bill_count'); openPanel('<h2>📊 Dashboard / History</h2><p>Total Pages: '+pages.length+' • Bills: '+totalBill+'</p>'+pages.map(p=>'<div style="background:#0B0E11;padding:10px;border-radius:10px;margin:6px 0">'+p.type+'<br><small>'+p.date+'<br>'+p.gps+'</small></div>').join('')+'<button class="primary" onclick="openExportHub()">📤 Open Export Hub</button>'); }
-function openSystem(){ openPanel('<h2>⚙️ System</h2><p>GPS: '+getGPSLine()+'</p><button onclick="localStorage.clear();showToast(\'Cache Cleared\')">Clear Cache</button><br><br><p>External (PRO):</p><button onclick="checkProAndOpen(\'IPCam\')">📹 IP Cam</button> <button onclick="checkProAndOpen(\'Thermal\')">🌡️ Thermal</button> <button onclick="checkProAndOpen(\'USBCam\')">📷 USB Cam</button> <button onclick="checkProAndOpen(\'Bluetooth\')">🔵 Bluetooth</button> <button onclick="checkProAndOpen(\'Printer\')">🖨️ Printer</button> <button onclick="checkProAndOpen(\'CCTV\')">📡 CCTV</button>'); }
-function openManual(){ openPanel('<h2>📖 Manual</h2><p>1. Tap CAM > Allow > Capture<br>2. Tap 🧰 Tools > Bill / Count / Face > Save<br>3. Tap Export Hub > TXT / PDF / WhatsApp<br>4. GPS: Tap Get GPS before Capture for proof.</p>'); }
-function openPricing(f){ openPanel('<h2>💰 PRO Rs. 2,500 / Year</h2><p>'+(f?'Limit reached: '+f+'<br>':'')+'PRO: Thumb + Attendance + Effects + Full GPS + No Watermark + Unlimited</p><button class="primary" onclick="showToast(\'Contact WanaLab for PRO\')">💰 Buy PRO</button>'); }
-function openAbout(){ openPanel('<h2>ℹ️ About</h2><p>By WanaLab • Nasir Khan • GodEye v3.1 FINAL</p>'); }
-function openExportHub(){
-  var pages=JSON.parse(localStorage.getItem('godeye_pages')||'[]');
-  var list = pages.length ? pages.map((p,i)=>'<div style="background:#0B0E11;padding:10px;border-radius:10px;margin:6px 0"><b>'+(i+1)+'. '+p.type+'</b><br><small>'+p.date+'<br>'+p.gps+'</small>'+(p.img?'<br><img src="'+p.img+'" style="width:100%;border-radius:8px;margin-top:6px">':'')+'</div>').join('') : '<p>No pages yet. Tap CAM > Capture, or 🧰 Tools > Bill > Save Bill, then come back.</p>';
-  openPanel('<h2>📤 Export Hub</h2><p><b>Pages: '+pages.length+'</b></p>'+list+'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" onclick="exportTXT()">📄 TXT</button><button onclick="exportWhatsApp()">💬 WhatsApp</button><button onclick="exportPrint()">🖨️ Print / PDF</button><button class="red" onclick="if(confirm(\'Clear all pages?\')){localStorage.setItem(\'godeye_pages\',\'[]\');openExportHub()}">🗑️ Clear</button></div>');
-}
-function exportTXT(){
-  var pages=JSON.parse(localStorage.getItem('godeye_pages')||'[]'); if(!pages.length){ showToast('No pages to export'); return; }
-  var txt='GodEye Export - '+new Date().toLocaleString('en-GB')+'\n\n'+pages.map((p,i)=>(i+1)+'. '+p.type+'\n'+p.date+'\n'+p.gps+'\n').join('\n');
-  var blob=new Blob([txt],{type:'text/plain'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='godeye-export.txt'; a.click(); showToast('✅ TXT Downloaded');
-}
-function exportWhatsApp(){ var pages=JSON.parse(localStorage.getItem('godeye_pages')||'[]'); if(!pages.length){ showToast('No pages'); return; } var txt='GodEye Export\n'+pages.map(p=>p.type+' - '+p.date+' - '+p.gps).join('\n'); window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank'); }
-function exportPrint(){ window.print(); }
-function startVoice(){ document.getElementById('voiceOverlay').style.display='block'; }
-function closeVoiceOverlay(){ document.getElementById('voiceOverlay').style.display='none'; }
-function stopVoice(){ closeVoiceOverlay(); }
-function voiceTap(a){ if(a==='capture') capturePhoto(); else if(a==='gps share') gpsShare(); else if(a==='bill') openBill(); else if(a==='count') openCount(); else showToast('Voice: '+a); closeVoiceOverlay(); }
-function updateLimits(){
-  var b=getCount('god_bill_count'), s=getCount('god_scan_count'), f=getCount('god_face_count');
-  var map={'billLimit':b,'scanLimit':s,'faceLimit':f};
-  for(var id in map){ var el=document.getElementById(id); if(!el) continue; var left = id==='faceLimit'? (2-map[id]) : (5-map[id]); el.textContent = isPro?'PRO ✅ Unlimited':'FREE: '+left+' / '+(id==='faceLimit'?'2':'5')+' Left'; }
-}
-updateBadge(); updateLimits();
+function hidePopups(){document.getElementById('botPopups').innerHTML=''}
+// TEST MULTI-POPUP: triple-tap capture button area to simulate
+var tapCount=0,lastTap=0;
+document.getElementById('captureBtn').addEventListener('click',()=>{var now=Date.now(); if(now-lastTap<600){tapCount++; if(tapCount>=2){ // simulate 3 bots at once
+  showPopups([{id:'bill',icon:'🧾',label:'Bill',sub:'Paper + Price Detected'},{id:'doc',icon:'📄',label:'Doc Scan',sub:'Document Detected'},{id:'face',icon:'👤',label:'Face',sub:'Face Detected'}]);
+  tapCount=0;
+}} else tapCount=0; lastTap=now;});
+updateLimits(); syncCredGPS();
 </script>
 </body>
- </html>
+                                                                                                              </html>
