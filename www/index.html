@@ -681,5 +681,96 @@ document.addEventListener('click', function(e){
 });
 </script>
 <!-- END PATCH 2 -->
+  <!-- PATCH 3: COUNT-01 | v10.3 | Count Professional + Camera Inside + Clickable Detail | Auto-Fixes Patch 2 -->
+<script>
+// PATCH 3 - SELF HEAL: Fix Patch 2 Bill camera leak if user leaves Bill
+if(typeof patch2CloseBillCam==='function'){
+  var _oldStop = stopPageCams;
+  stopPageCams = function(){
+    try{ patch2CloseBillCam(); }catch(e){}
+    try{ if(typeof patch3CloseCountCam==='function') patch3CloseCountCam(); }catch(e){}
+    return _oldStop();
+  };
+}
+
+// PATCH 3 - COUNT STATE
+var countCamStream=null; var countPhotoData=null; var countValue=0;
+
+// PATCH 3 - INJECT COUNT PROFESSIONAL UI
+(function(){
+  var countPage=document.getElementById('page-count')||document.getElementById('countPage')||document.querySelector('[id*="count"]');
+  if(!countPage) return;
+  if(document.getElementById('patch3CountBox')) return;
+  var box=document.createElement('div');
+  box.id='patch3CountBox';
+  box.style.cssText='background:#fff;border-radius:14px;padding:12px;margin:10px;box-shadow:0 2px 10px rgba(0,0,0,.08)';
+  box.innerHTML=
+  '<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">🔢 New Count</b><span style="background:#e3f2fd;color:#1565c0;font-size:11px;padding:4px 8px;border-radius:20px;font-weight:bold">PROFESSIONAL</span></div>'+
+  '<div style="background:#f8f9fa;border-radius:12px;padding:14px;text-align:center;margin-top:10px"><div style="font-size:11px;color:#888">TOTAL COUNT</div><div id="patch3CountNum" style="font-size:42px;font-weight:900;line-height:1">0</div><div style="display:flex;gap:8px;margin-top:10px"><button onclick="patch3CountChange(-1)" style="flex:1;background:#fff;border:1px solid #ddd;padding:12px;border:none;border-radius:10px;font-size:20px;font-weight:bold;box-shadow:0 1px 3px rgba(0,0,0,.08)">−</button><button onclick="patch3CountChange(1)" style="flex:1;background:#111;color:#fff;padding:12px;border:none;border-radius:10px;font-size:20px;font-weight:bold">+</button></div><div style="display:flex;gap:6px;margin-top:8px"><button onclick="patch3CountSet(10)" style="flex:1;background:#eee;padding:8px;border:none;border-radius:8px;font-weight:bold">+10</button><button onclick="patch3CountSet(50)" style="flex:1;background:#eee;padding:8px;border:none;border-radius:8px;font-weight:bold">+50</button><button onclick="patch3CountSet(100)" style="flex:1;background:#eee;padding:8px;border:none;border-radius:8px;font-weight:bold">+100</button><button onclick="patch3CountReset()" style="flex:1;background:#ffebee;color:#c62828;padding:8px;border:none;border-radius:8px;font-weight:bold">Reset</button></div></div>'+
+  '<div id="patch3CountCamWrap" style="display:none;margin-top:10px"><video id="patch3CountVideo" autoplay playsinline muted style="width:100%;border-radius:10px;background:#000;aspect-ratio:4/3;object-fit:cover"></video>'+
+  '<div style="display:flex;gap:8px;margin-top:8px"><button onclick="patch3TakeCountPhoto()" style="flex:1;background:#2196f3;color:#fff;padding:11px;border:none;border-radius:10px;font-weight:bold">📸 Capture Proof</button><button onclick="patch3CloseCountCam()" style="flex:1;background:#eee;padding:11px;border:none;border-radius:10px;font-weight:bold">Close</button></div></div>'+
+  '<div id="patch3CountPreview" style="display:none;margin-top:10px"><img id="patch3CountImg" style="width:100%;border-radius:10px"><div style="display:flex;gap:8px;margin-top:6px"><button onclick="patch3RetakeCount()" style="flex:1;background:#eee;padding:9px;border:none;border-radius:8px;font-weight:bold">↻ Retake</button><button onclick="patch3RemoveCountPhoto()" style="flex:1;background:#ffebee;color:#c62828;padding:9px;border:none;border-radius:8px;font-weight:bold">🗑 Remove</button></div></div>'+
+  '<div style="display:flex;gap:8px;margin-top:10px"><button onclick="patch3OpenCountCam()" style="flex:1;background:#111;color:#fff;padding:12px;border:none;border-radius:10px;font-weight:bold">📷 Open Camera</button><button onclick="patch3PickCountFile()" style="flex:1;background:#f5f5f5;padding:12px;border:none;border-radius:10px;font-weight:bold">🖼️ Gallery</button></div>'+
+  '<input type="file" id="patch3CountFile" accept="image/*" style="display:none" onchange="patch3OnCountFile(event)">'+
+  '<div style="font-size:11px;color:#888;margin-top:8px;text-align:center">Photo is proof - optional • Count saves even without photo</div>';
+  var body=countPage.querySelector('.pageBody')||countPage;
+  body.insertBefore(box, body.firstChild);
+})();
+
+// PATCH 3 - COUNT LOGIC
+function patch3UpdateCount(){ var n=document.getElementById('patch3CountNum'); if(n) n.textContent=countValue; }
+function patch3CountChange(d){ countValue=Math.max(0, countValue+d); patch3UpdateCount(); }
+function patch3CountSet(v){ countValue=countValue+v; patch3UpdateCount(); }
+function patch3CountReset(){ countValue=0; patch3UpdateCount(); }
+
+// PATCH 3 - COUNT CAMERA
+async function patch3OpenCountCam(){
+  try{
+    stopPageCams();
+    var wrap=document.getElementById('patch3CountCamWrap'); if(wrap) wrap.style.display='block';
+    var v=document.getElementById('patch3CountVideo');
+    countCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    v.srcObject=countCamStream;
+    showToast('Count Camera Open');
+  }catch(e){ showToast('Camera blocked - Use Gallery'); patch3PickCountFile(); }
+}
+function patch3CloseCountCam(){
+  try{ if(countCamStream) countCamStream.getTracks().forEach(function(t){t.stop()}); }catch(e){}
+  countCamStream=null;
+  var wrap=document.getElementById('patch3CountCamWrap'); if(wrap) wrap.style.display='none';
+}
+function patch3TakeCountPhoto(){
+  var v=document.getElementById('patch3CountVideo');
+  if(!v||!v.videoWidth){ showToast('Wait for camera'); return; }
+  var c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  countPhotoData=c.toDataURL('image/jpeg',0.85);
+  patch3ShowCountPhoto(); patch3CloseCountCam();
+}
+function patch3ShowCountPhoto(){ if(!countPhotoData) return; var p=document.getElementById('patch3CountPreview'); var img=document.getElementById('patch3CountImg'); if(p) p.style.display='block'; if(img) img.src=countPhotoData; }
+function patch3RetakeCount(){ countPhotoData=null; var p=document.getElementById('patch3CountPreview'); if(p) p.style.display='none'; patch3OpenCountCam(); }
+function patch3RemoveCountPhoto(){ countPhotoData=null; var p=document.getElementById('patch3CountPreview'); if(p) p.style.display='none'; var f=document.getElementById('patch3CountFile'); if(f) f.value=''; }
+function patch3PickCountFile(){ var f=document.getElementById('patch3CountFile'); if(f) f.click(); }
+function patch3OnCountFile(e){
+  var file=e.target.files[0]; if(!file) return;
+  var r=new FileReader(); r.onload=function(ev){ countPhotoData=ev.target.result; patch3ShowCountPhoto(); }; r.readAsDataURL(file);
+}
+
+// PATCH 3 - CLICKABLE: Tap Count card -> Detail with count + photo
+document.addEventListener('click', function(e){
+  var card=e.target.closest('[data-count-id], .count-card');
+  if(!card) return;
+  if(e.target.closest('button,input,video')) return;
+  var img=card.querySelector('img');
+  if(img && typeof patch2OpenDetail==='function') patch2OpenDetail('Count Detail', img.src, card.innerText||'');
+  else if(typeof patch2OpenDetail==='function') patch2OpenDetail('Count Detail', null, card.innerText||'');
+});
+
+// PATCH 3 - AUTO-FIX: Back button stops Count camera
+document.addEventListener('click', function(e){
+  if(e.target.closest('button') && e.target.textContent.includes('←')){ patch3CloseCountCam(); }
+});
+</script>
+<!-- END PATCH 3 -->
 </body>
   </html>
