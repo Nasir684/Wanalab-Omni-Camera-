@@ -1091,5 +1091,53 @@ try{ var _s6=localStorage.getItem('patch5Exports'); if(_s6) appSettings.exports=
 })();
 </script>
 <!-- END PATCH 6 -->
+  <!-- PATCH 9: DASHBOARD-01 | v10.9 | Fix by TEXT - Works even if IDs are wrong -->
+<script>
+// PATCH 9 - FIND BY TEXT, NOT BY ID
+(function(){
+  function fixText(){
+    document.querySelectorAll('div,span,b,p,small').forEach(function(el){
+      if(el.children.length>0) return;
+      var t=el.textContent||'';
+      // 1. Top orange badge
+      if(t.includes('DEV TESTING') && t.includes('No Limits')){
+        el.textContent='PRO • All Systems Live';
+        el.style.background='#4caf50';
+        el.style.color='#fff';
+      }
+      // 2. Identity subtitle
+      if(t.includes('Nasir Khan') && t.includes('DEV')){
+        el.textContent='Nasir Khan • PRO • v10.9';
+        el.style.color='#555';
+      }
+      // 3. Bottom hint
+      if(t.includes('Tap Photo / Video')){
+        el.textContent='Tap a page below - Camera runs only in that page ✅';
+      }
+    });
+  }
+  fixText();
+  // Keep fixing because Dashboard re-renders
+  setInterval(fixText, 800);
+
+  // 4. Inject NEW Dashboard Card at very top - force, even if old code re-renders
+  if(!document.getElementById('patch9Card')){
+    var card=document.createElement('div');
+    card.id='patch9Card';
+    card.style.cssText='background:#111;color:#fff;border-radius:14px;padding:12px;margin:10px;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:999';
+    card.innerHTML='<div><b style="font-size:16px">👁️ GodEye <span style="color:#4caf50">PRO</span></b><div style="font-size:11px;color:#aaa">Dashboard • Bill • Count • Scanner • Face • GPS</div></div><span style="background:#4caf50;color:#fff;font-size:11px;padding:5px 9px;border-radius:20px;font-weight:bold">● UPDATED v10.9</span>';
+    // Insert at top of body - always visible
+    document.body.insertBefore(card, document.body.firstChild);
+  }
+
+  // 5. Fix Dashboard header title if it says Dashboard
+  document.querySelectorAll('b,div,span').forEach(function(el){
+    if(el.children.length===0 && el.textContent.trim()==='Dashboard'){
+      el.textContent='📂 GodEye Dashboard';
+    }
+  });
+})();
+</script>
+<!-- END PATCH 9 -->
 </body>
   </html>
