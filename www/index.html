@@ -582,5 +582,104 @@ function stopPageCams(){
 }
 </script>
 <!-- END PATCH 1 -->
+  <!-- PATCH 2: BILL-01 | v10.2 | Bill Professional + Camera Inside + Clickable Detail | Auto-Fixes Patch 1 -->
+<script>
+// PATCH 2 - SELF HEAL: If Patch 1 missing, create helpers
+if(typeof closeDetail==='undefined'){ function closeDetail(){ var d=document.getElementById('page-detail'); if(d) d.style.display='none'; } }
+if(typeof stopPageCams==='undefined'){ function stopPageCams(){ try{[billStream,docStream,faceStream].forEach(function(s){if(s) s.getTracks().forEach(function(t){t.stop()})}); billStream=docStream=faceStream=null;}catch(e){} } }
+
+// PATCH 2 - BILL STATE
+var billCamStream=null; var billPhotoData=null;
+
+// PATCH 2 - INJECT BILL PROFESSIONAL UI (Add-Only, no old edit)
+(function(){
+  // Find Bill Page - try multiple IDs
+  var billPage=document.getElementById('page-bill')||document.getElementById('billPage')||document.querySelector('[id*="bill"]');
+  if(!billPage) return;
+  // Avoid duplicate inject
+  if(document.getElementById('patch2BillBox')) return;
+  var box=document.createElement('div');
+  box.id='patch2BillBox';
+  box.style.cssText='background:#fff;border-radius:14px;padding:12px;margin:10px;box-shadow:0 2px 10px rgba(0,0,0,.08)';
+  box.innerHTML=
+  '<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">🧾 New Bill</b><span style="background:#e8f5e9;color:#2e7d32;font-size:11px;padding:4px 8px;border-radius:20px;font-weight:bold">PROFESSIONAL</span></div>'+
+  '<div id="patch2BillCamWrap" style="display:none;margin-top:10px"><video id="patch2BillVideo" autoplay playsinline muted style="width:100%;border-radius:10px;background:#000;aspect-ratio:4/3;object-fit:cover"></video>'+
+  '<div style="display:flex;gap:8px;margin-top:8px"><button onclick="patch2TakeBillPhoto()" style="flex:1;background:#2196f3;color:#fff;padding:11px;border:none;border-radius:10px;font-weight:bold">📸 Capture</button><button onclick="patch2CloseBillCam()" style="flex:1;background:#eee;padding:11px;border:none;border-radius:10px;font-weight:bold">Close</button></div></div>'+
+  '<div id="patch2BillPreview" style="display:none;margin-top:10px"><img id="patch2BillImg" style="width:100%;border-radius:10px"><div style="display:flex;gap:8px;margin-top:6px"><button onclick="patch2RetakeBill()" style="flex:1;background:#eee;padding:9px;border:none;border-radius:8px;font-weight:bold">↻ Retake</button><button onclick="patch2RemoveBillPhoto()" style="flex:1;background:#ffebee;color:#c62828;padding:9px;border:none;border-radius:8px;font-weight:bold">🗑 Remove</button></div></div>'+
+  '<div style="display:flex;gap:8px;margin-top:10px"><button onclick="patch2OpenBillCam()" style="flex:1;background:#111;color:#fff;padding:12px;border:none;border-radius:10px;font-weight:bold">📷 Open Camera</button><button onclick="patch2PickBillFile()" style="flex:1;background:#f5f5f5;padding:12px;border:none;border-radius:10px;font-weight:bold">🖼️ Gallery</button></div>'+
+  '<input type="file" id="patch2BillFile" accept="image/*" style="display:none" onchange="patch2OnBillFile(event)">'+
+  '<div style="font-size:11px;color:#888;margin-top:8px;text-align:center">Photo is optional • Bill saves even without photo</div>';
+  // Insert at top of bill page body
+  var body=billPage.querySelector('.pageBody')||billPage;
+  body.insertBefore(box, body.firstChild);
+})();
+
+// PATCH 2 - BILL CAMERA FUNCTIONS
+async function patch2OpenBillCam(){
+  try{
+    stopPageCams(); // Smart: stop other cameras first
+    var wrap=document.getElementById('patch2BillCamWrap');
+    if(wrap) wrap.style.display='block';
+    var v=document.getElementById('patch2BillVideo');
+    billCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    v.srcObject=billCamStream;
+    showToast('Bill Camera Open');
+  }catch(e){ showToast('Camera blocked - Use Gallery'); patch2PickBillFile(); }
+}
+function patch2CloseBillCam(){
+  try{ if(billCamStream) billCamStream.getTracks().forEach(function(t){t.stop()}); }catch(e){}
+  billCamStream=null;
+  var wrap=document.getElementById('patch2BillCamWrap'); if(wrap) wrap.style.display='none';
+}
+function patch2TakeBillPhoto(){
+  var v=document.getElementById('patch2BillVideo');
+  if(!v||!v.videoWidth) { showToast('Wait for camera'); return; }
+  var c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  billPhotoData=c.toDataURL('image/jpeg',0.85);
+  patch2ShowBillPhoto();
+  patch2CloseBillCam();
+}
+function patch2ShowBillPhoto(){
+  if(!billPhotoData) return;
+  var p=document.getElementById('patch2BillPreview'); var img=document.getElementById('patch2BillImg');
+  if(p) p.style.display='block'; if(img) img.src=billPhotoData;
+}
+function patch2RetakeBill(){ billPhotoData=null; var p=document.getElementById('patch2BillPreview'); if(p) p.style.display='none'; patch2OpenBillCam(); }
+function patch2RemoveBillPhoto(){ billPhotoData=null; var p=document.getElementById('patch2BillPreview'); if(p) p.style.display='none'; var f=document.getElementById('patch2BillFile'); if(f) f.value=''; }
+function patch2PickBillFile(){ var f=document.getElementById('patch2BillFile'); if(f) f.click(); }
+function patch2OnBillFile(e){
+  var file=e.target.files[0]; if(!file) return;
+  var r=new FileReader(); r.onload=function(ev){ billPhotoData=ev.target.result; patch2ShowBillPhoto(); }; r.readAsDataURL(file);
+}
+
+// PATCH 2 - CLICKABLE DETAIL: Tap any saved Bill card -> Open Detail
+function patch2OpenDetail(title, img, meta){
+  var d=document.getElementById('page-detail'); if(!d) return;
+  var t=document.getElementById('detailTitle'); if(t) t.textContent=title||'Detail';
+  var b=document.getElementById('detailBody');
+  if(b) b.innerHTML=(img?'<img src="'+img+'" style="width:100%;border-radius:12px;margin-bottom:10px">':'<div style="background:#f5f5f5;padding:20px;border-radius:12px;text-align:center;color:#888;margin-bottom:10px">No Image - Text Bill</div>')+'<div style="background:#fff;padding:14px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)"><b>'+(title||'')+'</b><div style="color:#666;font-size:13px;margin-top:6px;white-space:pre-wrap">'+(meta||'')+'</div></div>';
+  d.style.display='block';
+}
+
+// PATCH 2 - AUTO-CLICK: Make existing Bill list clickable (works with old render)
+document.addEventListener('click', function(e){
+  var card=e.target.closest('[data-bill-id], .bill-card, [onclick*="Bill"]');
+  if(!card) return;
+  // Don't trigger when clicking buttons / camera
+  if(e.target.closest('button,input,video')) return;
+  // If card has image, open detail
+  var img=card.querySelector('img');
+  if(img) patch2OpenDetail('Bill Detail', img.src, card.innerText||'');
+});
+
+// PATCH 2 - AUTO-FIX: When leaving Bill page, stop Bill camera
+document.addEventListener('click', function(e){
+  if(e.target.closest('button') && e.target.textContent.includes('←')){
+    patch2CloseBillCam();
+  }
+});
+</script>
+<!-- END PATCH 2 -->
 </body>
   </html>
