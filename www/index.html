@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>GodEye - DEV v7.4</title>
+<title>GodEye - DEV v9.4</title>
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
 <style>
@@ -34,21 +34,68 @@
 .iconItem b{font-size:11px}
 video.pageVideo{width:100%;border-radius:12px;background:#000;min-height:220px}
 img.preview{width:100%;border-radius:12px;display:none;margin-top:8px}
-#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#111;color:#fff;padding:10px 16px;border-radius:30px;font-size:13px;display:none;z-index:99;max-width:90%;text-align:center}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#111;color:#fff;padding:10px 16px;border-radius:30px;font-size:13px;display:none;z-index:999;max-width:90%;text-align:center}
 #devBadge{position:fixed;top:56px;right:10px;background:#ff9800;color:#fff;font-size:11px;padding:4px 8px;border-radius:20px;z-index:99}
 .small{font-size:12px;color:#666}
 .greenBtn{background:#28a745 !important;color:#fff !important}
 .redBtn{background:#ff5252 !important;color:#fff !important}
+/* v9.4 - VIEWER + SETTINGS */
+.galGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.galItem{cursor:pointer;border:1px solid #eee;border-radius:10px;overflow:hidden;background:#fff;position:relative}
+.galItem img{width:100%;height:100px;object-fit:cover;display:block}
+.galItem .gName{padding:6px;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.galItem .gMeta{padding:0 6px 6px;font-size:10px;color:#888}
+.galItem .gEye{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.setOpt{display:flex;gap:10px;align-items:center;background:#f7f7f7;padding:11px;border-radius:10px;cursor:pointer;margin-bottom:6px}
+.setOpt b{font-size:13px}.setOpt small{color:#666;font-size:11px}
 </style>
 </head>
 <body>
 <script>
 const APP_MODE = localStorage.getItem('godeye_mode') || 'DEV';
 const CONFIG = {FREE:{maxPhotos:20,maxPages:5,watermark:true,faceApps:1,label:'FREE'},PRO:{maxPhotos:9999,maxPages:999,watermark:false,faceApps:6,label:'PRO'},DEV:{maxPhotos:9999,maxPages:999,watermark:false,faceApps:6,bypass:true,label:'DEV - TESTING'}};
-const LIMITS = CONFIG[APP_MODE]; const VERSION = 'v7.4-fixed';
+const LIMITS = CONFIG[APP_MODE]; const VERSION = 'v9.4-PRO-FILES';
 function canSave(){ if(APP_MODE==='DEV') return true; var c=JSON.parse(localStorage.getItem('godeye_pages')||'[]').length; if(c>=LIMITS.maxPhotos){showPaywall();return false} return true; }
 function showPaywall(){ showToast('Free limit reached - Upgrade to PRO'); openPage('pay'); }
 function setModeApp(m){ localStorage.setItem('godeye_mode',m); showToast('Mode: '+m+' - Reloading'); setTimeout(()=>location.reload(),800); }
+
+// ===== v9.4 SETTINGS - SAVE LOCATION + CUSTOM PATH =====
+let appSettings = JSON.parse(localStorage.getItem('godeye_settings')||'{}');
+if(!appSettings.saveLocation) appSettings.saveLocation='pictures';
+if(appSettings.autoSave===undefined) appSettings.autoSave=false;
+if(!appSettings.fileNameFormat) appSettings.fileNameFormat='godeye-date';
+if(!appSettings.customPrefix) appSettings.customPrefix='GodEye';
+if(!appSettings.customPath) appSettings.customPath='Pictures/GodEye';
+if(appSettings.useSDCard===undefined) appSettings.useSDCard=false;
+if(!appSettings.scanCounter) appSettings.scanCounter=1;
+function saveSettings(){ localStorage.setItem('godeye_settings',JSON.stringify(appSettings)); renderSettingsUI(); }
+function setSaveLocation(l){ appSettings.saveLocation=l; saveSettings(); showToast('✅ Save Location: '+getLocationName(l)); }
+function getLocationName(l){ return {app:'App Only',download:'Downloads',pictures:'Pictures / GodEye',camera:'Camera / DCIM',ask:'Har Baar Poochho'}[l]||l; }
+function setAutoSave(v){ appSettings.autoSave=v; saveSettings(); showToast(v?'✅ Auto Save ON':'Auto Save OFF'); }
+function setFileNameFormat(v){ appSettings.fileNameFormat=v; saveSettings(); var cp=document.getElementById('customPrefixInput'); if(cp) cp.style.display=v==='custom'?'block':'none'; }
+function setCustomPrefix(v){ appSettings.customPrefix=v; saveSettings(); }
+function setCustomPath(p){ p=p.replace(/^\/+/,'').replace(/\/+/g,'/').replace(/\s*\/\s*/g,'/'); appSettings.customPath=p; saveSettings(); showToast('✅ Folder: '+p); }
+function saveCustomPathFromInput(){ var v=document.getElementById('customPathInput').value.trim(); if(!v){showToast('Pehle path likho');return;} setCustomPath(v); }
+function setUseSDCard(v){ appSettings.useSDCard=v; saveSettings(); showToast(v?'💾 SD Card ON - Save ke baad Files App se Move karna hoga':'SD Card OFF'); }
+function getFullSavePath(){ var p=appSettings.customPath||'Pictures/GodEye'; if(appSettings.useSDCard && p.startsWith('SD Card/')) return p; return (appSettings.useSDCard?'SD Card/':'')+p; }
+function makeFileName(base){
+  var d=new Date(); var dateStr=d.getDate()+'-'+d.toLocaleString('en',{month:'short'})+'-'+d.getFullYear();
+  if(appSettings.fileNameFormat==='scan-number'){ var n=String(appSettings.scanCounter++).padStart(3,'0'); saveSettings(); return 'Scan-'+n+'.jpg'; }
+  if(appSettings.fileNameFormat==='date-godeye') return dateStr+'-'+(appSettings.customPrefix||'GodEye')+'.jpg';
+  if(appSettings.fileNameFormat==='custom') return (appSettings.customPrefix||'GodEye')+'-'+dateStr+'-'+Date.now().toString().slice(-4)+'.jpg';
+  return (appSettings.customPrefix||'GodEye')+'-'+dateStr+'-'+Date.now().toString().slice(-4)+'.jpg';
+}
+function renderSettingsUI(){
+  document.querySelectorAll('input[name="saveLoc"]').forEach(r=>{ r.checked=r.value===appSettings.saveLocation; });
+  var a=document.getElementById('autoSaveToggle'); if(a) a.checked=appSettings.autoSave;
+  var f=document.getElementById('fileNameFormat'); if(f) f.value=appSettings.fileNameFormat;
+  var cp=document.getElementById('customPrefixInput'); if(cp){ cp.value=appSettings.customPrefix||''; cp.style.display=appSettings.fileNameFormat==='custom'?'block':'none'; }
+  var ci=document.getElementById('customPathInput'); if(ci) ci.value=appSettings.customPath||'';
+  var sd=document.getElementById('useSDCardToggle'); if(sd) sd.checked=appSettings.useSDCard;
+  var t=document.getElementById('currentSaveLocText'); if(t) t.textContent='📍 Current: '+getLocationName(appSettings.saveLocation)+' • Folder: '+getFullSavePath()+' • Auto Save: '+(appSettings.autoSave?'ON':'OFF');
+  var ct=document.getElementById('currentCustomPathText'); if(ct) ct.textContent='📍 Current Folder: '+getFullSavePath();
+  var st=document.getElementById('settingsStorageText'); if(st){ var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]'); var kb=Math.round(arr.reduce((s,x)=>s+((x.img||'').length||0),0)/1024); st.textContent=arr.length+' Files • '+(kb>1024?(kb/1024).toFixed(1)+' MB':kb+' KB'); }
+}
 </script>
 
 <div id="front">
@@ -65,6 +112,37 @@ function setModeApp(m){ localStorage.setItem('godeye_mode',m); showToast('Mode: 
 </div>
 <div id="devBadge"></div><div id="toast"></div>
 
+<!-- PROFESSIONAL VIEWER - v9.4 -->
+<div id="proViewer" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9999;flex-direction:column">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,.8);gap:6px">
+    <span id="proViewerTitle" style="color:#fff;font-weight:bold;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+    <span id="proViewerCounter" style="color:#aaa;font-size:12px"></span>
+    <button onclick="proRename()" style="background:#333;color:#fff;padding:8px;border:none;border-radius:8px">✏️</button>
+    <button onclick="closeProViewer()" style="background:#f44336;color:#fff;padding:8px 14px;border:none;border-radius:8px">✕</button>
+  </div>
+  <div id="proViewerStage" style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
+    <img id="proViewerImg" style="max-width:100%;max-height:100%;object-fit:contain;display:none">
+    <iframe id="proViewerFrame" style="width:100%;height:100%;background:#fff;display:none"></iframe>
+    <div id="proViewerNoImg" style="color:#fff;text-align:center;display:none;padding:20px">No image<br><small style="color:#aaa">Ye entry sirf text / count hai</small></div>
+    <button onclick="proPrev()" style="position:absolute;left:8px;background:rgba(0,0,0,.6);color:#fff;border:none;padding:12px;border-radius:50%">◀</button>
+    <button onclick="proNext()" style="position:absolute;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;padding:12px;border-radius:50%">▶</button>
+  </div>
+  <div id="moveHelperBox" style="display:none;background:#222;padding:10px">
+    <div style="color:#fff;font-size:12px"><b>📂 File ko is Folder me Move karna hai?</b></div>
+    <div id="moveHelperText" style="color:#aaa;font-size:12px;margin-top:2px"></div>
+    <button onclick="openFilesAppToMove()" style="background:#2196f3;color:#fff;padding:10px;width:100%;border:none;border-radius:8px;margin-top:8px;font-weight:bold">📂 Files App Kholo - Move Karo</button>
+  </div>
+  <div style="display:flex;gap:8px;padding:10px;background:rgba(0,0,0,.8)">
+    <button onclick="saveToAndroidGallery()" style="flex:1;background:#ff9800;color:#fff;padding:12px;border:none;border-radius:8px;font-weight:bold">📱 Gallery Me Save</button>
+    <button onclick="proDownloadCurrent()" style="flex:1;background:#4caf50;color:#fff;padding:12px;border:none;border-radius:8px;font-weight:bold">📥 Downloads</button>
+  </div>
+  <div style="display:flex;gap:8px;padding:0 10px 10px;background:rgba(0,0,0,.8)">
+    <button onclick="proShareCurrent()" style="flex:1;background:#25D366;color:#fff;padding:11px;border:none;border-radius:8px;font-weight:bold">📱 Share</button>
+    <button onclick="openAndroidGallery()" style="flex:1;background:#333;color:#fff;padding:11px;border:none;border-radius:8px">🖼️ Phone Gallery Kholo</button>
+    <button onclick="proDeleteCurrent()" style="flex:1;background:#f44336;color:#fff;padding:11px;border:none;border-radius:8px;font-weight:bold">🗑️ Delete</button>
+  </div>
+</div>
+
 <div class="page" id="dash">
   <div class="pageHead"><button onclick="backToCam()">←</button><b>📂 Dashboard</b><span onclick="backToCam()">✕</span></div>
   <div class="pageBody">
@@ -79,9 +157,15 @@ function setModeApp(m){ localStorage.setItem('godeye_mode',m); showToast('Mode: 
       <div class="iconItem" onclick="openPage('gallery')"><i>🖼️</i><b>Gallery</b></div>
       <div class="iconItem" onclick="openPage('attend')"><i>✅</i><b>Attend</b></div>
       <div class="iconItem" onclick="openPage('count')"><i>🔢</i><b>Count</b></div>
+      <div class="iconItem" onclick="openPage('settings')"><i>⚙️</i><b>Settings</b></div>
+    </div>
+    <div class="iconGrid" style="margin-top:10px">
       <div class="iconItem" onclick="openPage('pay')"><i>💳</i><b>Upgrade</b></div>
+      <div class="iconItem" onclick="saveAllToAndroid()"><i>📱</i><b>All to Gallery</b></div>
+      <div class="iconItem" onclick="openPage('gallery')"><i>📁</i><b>Files</b></div>
+      <div class="iconItem" onclick="openPage('settings')"><i>📂</i><b>Save Location</b></div>
     </div></div>
-    <div class="card"><b>Saved Pages</b><div id="dashList">No saved yet</div></div>
+    <div class="card"><b>Saved Pages - Tap to Open</b><div id="dashList">No saved yet</div></div>
   </div>
 </div>
 
@@ -136,7 +220,40 @@ function setModeApp(m){ localStorage.setItem('godeye_mode',m); showToast('Mode: 
   </div>
 </div>
 
-<div class="page" id="page-gallery"><div class="pageHead"><button onclick="backToCam()">←</button><b>🖼️ Gallery</b><span onclick="backToCam()">✕</span></div><div class="pageBody"><input id="galSearch" placeholder="🔍 Search gallery..." oninput="renderGallery()"><div class="iconRow"><button onclick="filterGal('all')">All</button><button onclick="filterGal('Photo')">Photo</button><button onclick="filterGal('Bill')">Bill</button><button onclick="filterGal('Doc')">Doc</button><button onclick="filterGal('Video')">Video</button></div><div class="card"><b>All Saved</b><div id="galList">No saved yet</div></div><button onclick="clearGallery()" style="width:100%;padding:12px;background:#ffebee;border:1px solid #ffcdd2;border-radius:12px;color:#c62828;font-weight:700">🗑️ Clear Gallery (Free Storage)</button></div></div>
+<!-- GALLERY - v9.4 REBUILT -->
+<div class="page" id="page-gallery"><div class="pageHead"><button onclick="backToCam()">←</button><b>🖼️ Gallery - Tap to Open</b><span onclick="backToCam()">✕</span></div><div class="pageBody">
+<div class="card"><b>📁 Files - Professional</b><p class="small" id="galStats"></p>
+<input id="galSearch" placeholder="🔍 Search file..." oninput="renderGallery()">
+<div class="iconRow"><button onclick="filterGal('all')">All</button><button onclick="filterGal('Photo')">Photo</button><button onclick="filterGal('Bill')">Bill</button><button onclick="filterGal('Doc')">Doc</button><button onclick="filterGal('Video')">Video</button></div>
+<div style="display:flex;gap:6px;margin-top:8px"><select id="galSort" onchange="renderGallery()" style="flex:1;padding:10px;border-radius:10px"><option value="new">Newest</option><option value="old">Oldest</option><option value="name">Name A-Z</option></select><label style="background:#4caf50;color:#fff;padding:10px 12px;border-radius:10px;font-weight:700;cursor:pointer">➕ Upload<input type="file" accept="image/*,application/pdf" multiple onchange="proAddFiles(this)" style="display:none"></label></div>
+<div id="galList" class="galGrid" style="margin-top:10px">No saved yet</div></div>
+<div class="card"><b>📱 Phone Gallery</b><p class="small">App ki file Phone Gallery me nahi dikhegi jab tak Save na karo. Settings me Location set karo.</p><div class="iconRow"><button onclick="saveAllToAndroid()" style="background:#ff9800 !important;color:#fff !important">📱 Sab Gallery Me</button><button onclick="openPage('settings')">⚙️ Settings</button></div></div>
+<button onclick="clearGallery()" style="width:100%;padding:12px;background:#ffebee;border:1px solid #ffcdd2;border-radius:12px;color:#c62828;font-weight:700">🗑️ Clear Gallery (Free Storage)</button></div></div>
+
+<!-- SETTINGS - v9.4 NEW PAGE -->
+<div class="page" id="page-settings"><div class="pageHead"><button onclick="backToCam()">←</button><b>⚙️ Settings - Saved Files</b><span onclick="backToCam()">✕</span></div><div class="pageBody">
+<div class="card"><b>📁 Save Location - Kahan Save Ho?</b>
+<label class="setOpt"><input type="radio" name="saveLoc" value="app" onchange="setSaveLocation('app')"><div><b>📱 App Only</b><br><small>Sirf App me - Phone Gallery me nahi - Fast, Private</small></div></label>
+<label class="setOpt"><input type="radio" name="saveLoc" value="download" onchange="setSaveLocation('download')"><div><b>📥 Downloads</b><br><small>Gallery → Albums → Download me dikhegi</small></div></label>
+<label class="setOpt"><input type="radio" name="saveLoc" value="pictures" onchange="setSaveLocation('pictures')"><div><b>🖼️ Pictures / GodEye Album ✅ Recommended</b><br><small>Gallery me alag GodEye album banega</small></div></label>
+<label class="setOpt"><input type="radio" name="saveLoc" value="camera" onchange="setSaveLocation('camera')"><div><b>📷 Camera / DCIM</b><br><small>Main Photos ke saath dikhegi</small></div></label>
+<label class="setOpt"><input type="radio" name="saveLoc" value="ask" onchange="setSaveLocation('ask')"><div><b>❓ Har Baar Poochho</b><br><small>Har save pe puchega</small></div></label>
+<p class="small" id="currentSaveLocText"></p></div>
+<div class="card"><b>📂 Custom Folder Path</b><p class="small">Jaise: Pictures / GodEye / Work ya SD Card / GodEye</p>
+<div class="iconRow"><button onclick="setCustomPath('Pictures/GodEye')">Pictures/GodEye</button><button onclick="setCustomPath('Pictures/GodEye/Work')">Pictures/GodEye/Work</button></div>
+<div class="iconRow"><button onclick="setCustomPath('Download/GodEye')">Download/GodEye</button><button onclick="setCustomPath('DCIM/Camera/GodEye')">DCIM/Camera/GodEye</button></div>
+<div class="iconRow"><button onclick="setCustomPath('SD Card/GodEye')" style="background:#ff9800 !important;color:#fff !important">💾 SD Card/GodEye</button></div>
+<div style="display:flex;gap:6px;margin-top:8px"><input id="customPathInput" placeholder="Apna path - Jaise Pictures/MyScans" style="flex:1"><button onclick="saveCustomPathFromInput()" class="primary" style="width:auto">Save</button></div>
+<p class="small" id="currentCustomPathText"></p>
+<label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="useSDCardToggle" onchange="setUseSDCard(this.checked)" style="width:18px;height:18px"> <span><b>SD Card pe save karo</b></span></label>
+<p class="small">⚠️ Android Rule: Web App seedha SD Card / Folder me nahi daal sakta. Hum file ko us path ke saath bhejte hain + Move Helper dete hain.</p></div>
+<div class="card"><b>Auto Save + File Name</b>
+<label style="display:flex;justify-content:space-between;align-items:center"><span><b>Auto Save to Phone Gallery</b><br><small>Scan karte hi khud Gallery me jaye</small></span><input type="checkbox" id="autoSaveToggle" onchange="setAutoSave(this.checked)" style="width:22px;height:22px"></label>
+<select id="fileNameFormat" onchange="setFileNameFormat(this.value)" style="margin-top:10px"><option value="godeye-date">GodEye-20-Nov-2026.jpg</option><option value="date-godeye">20-Nov-2026-GodEye.jpg</option><option value="scan-number">Scan-001, Scan-002...</option><option value="custom">Custom Prefix...</option></select>
+<input id="customPrefixInput" placeholder="Apna naam - Jaise Nasir-Scan" oninput="setCustomPrefix(this.value)" style="display:none">
+</div>
+<div class="card"><b>💾 Storage</b><p class="small" id="settingsStorageText"></p><div class="iconRow"><button onclick="saveAllToAndroid()" style="background:#ff9800 !important;color:#fff !important">📁 Sab ko Is Location Pe Bhejo</button><button onclick="clearGallery()" class="redBtn">🗑️ Sab Delete</button></div></div>
+</div></div>
 
 <div class="page" id="page-attend"><div class="pageHead"><button onclick="backToCam()">←</button><b>✅ Attendance - School</b><span onclick="backToCam()">✕</span></div><div class="pageBody">
 <div class="card"><b>🏫 School / Department Attendance</b><p class="small">Uses GPS + Time as proof - Whole School / Department</p>
@@ -171,9 +288,11 @@ let stream=null, isVideoMode=false, recorder=null, chunks=[], recStart=0, recTim
 let gpsCamOn=true, lastGPS={lat:0,lng:0,acc:0}, countItems=JSON.parse(localStorage.getItem('godeye_count')||'[]');
 let billStream=null, docStream=null, faceStream=null, faceAppMode='attend', faceRunning=false, faceBoxes=[], faceDetector=null, faceLoop=null, faceFacing='user', facePersonName='', galFilter='all', docPages=[];
 let autoAttendOn=false, autoTimer=null, lastAutoTime=0, autoDetectOn=false;
+// v9.4 Viewer state
+let proCurrentIndex=-1, proFiltered=[];
 
-function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2200)}
-function initLabels(){document.getElementById('modeLabel').textContent=LIMITS.label;document.getElementById('dashMode').textContent=LIMITS.label;document.getElementById('dashVer').textContent=VERSION;document.getElementById('payMode').textContent=LIMITS.label;document.getElementById('devBadge').textContent=APP_MODE==='DEV'?'DEV TESTING • No Limits':LIMITS.label;document.getElementById('recTimer').style.display='none';renderFaceLog();renderBillList();renderDocList();renderCountItems();updateEnrolledList();renderAttend();renderRoster();}
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2600)}
+function initLabels(){document.getElementById('modeLabel').textContent=LIMITS.label;document.getElementById('dashMode').textContent=LIMITS.label;document.getElementById('dashVer').textContent=VERSION;document.getElementById('payMode').textContent=LIMITS.label;document.getElementById('devBadge').textContent=APP_MODE==='DEV'?'DEV TESTING • No Limits':LIMITS.label;document.getElementById('recTimer').style.display='none';renderFaceLog();renderBillList();renderDocList();renderCountItems();updateEnrolledList();renderAttend();renderRoster();renderSettingsUI();}
 async function startCamera(){try{if(stream) stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:curFacing},audio:false});var v=document.getElementById('video');v.srcObject=stream;await v.play()}catch(e){showToast('Camera permission needed - Tap Allow')}}
 async function flipMainCam(){curFacing=curFacing==='environment'?'user':'environment';await startCamera();}
 function capturePhoto(){if(!canSave())return;var v=document.getElementById('video');if(!v.srcObject){showToast('Camera starting...');startCamera();return}var c=document.createElement('canvas');c.width=v.videoWidth||1280;c.height=v.videoHeight||720;c.getContext('2d').drawImage(v,0,0);savePage('Photo',c.toDataURL('image/jpeg',0.75));showToast('Photo Saved'+(gpsCamOn&&lastGPS.lat?' • 📍 GPS Attached':''))}
@@ -186,28 +305,152 @@ function toggleVideo(){
     var mime='video/webm'; if(window.MediaRecorder && MediaRecorder.isTypeSupported('video/mp4')) mime='video/mp4';
     recorder=new MediaRecorder(stream,{mimeType:mime}); recorder.ondataavailable=e=>{if(e.data.size) chunks.push(e.data)};
     recorder.onstop=()=>{ clearInterval(recTimerInt); document.getElementById('recTimer').style.display='none'; document.getElementById('shutterBtn').textContent='🎬 Video';
-      var blob=new Blob(chunks,{type:mime}); var url=URL.createObjectURL(blob);
-      try{ var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]'); arr.unshift({title:'Video',img:'',video:url,time:new Date().toLocaleString(),gps:lastGPS.lat?lastGPS.lat.toFixed(5)+','+lastGPS.lng.toFixed(5):'No GPS'}); localStorage.setItem('godeye_pages',JSON.stringify(arr.slice(0,50))); }catch(e){ showToast('Storage full - Clear Gallery'); }
-      showToast('✅ Video Saved - Play in Gallery'); renderGallery();
+      var blob=new Blob(chunks,{type:mime});
+      // FIX v9.4: ObjectURL localStorage me nahi - IndexedDB me video blob save karo, warna reload pe video dead ho jata tha
+      saveVideoBlob(blob,mime);
+      showToast('✅ Video Saved - Gallery me kholo'); renderGallery();
     };
     recorder.start(500); recStart=Date.now(); document.getElementById('recTimer').style.display='block'; document.getElementById('shutterBtn').textContent='⏹️ Stop';
     recTimerInt=setInterval(()=>{var s=Math.floor((Date.now()-recStart)/1000);document.getElementById('recTimer').textContent='● REC '+String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);
     showToast('● Recording started');
   }catch(e){ showToast('Video not supported on this phone'); }
 }
+// Video IndexedDB
+function videoDB(){ return new Promise((res,rej)=>{ var r=indexedDB.open('godeye_videos',1); r.onupgradeneeded=e=>e.target.result.createObjectStore('videos',{keyPath:'id'}); r.onsuccess=e=>res(e.target.result); r.onerror=e=>rej(e); }); }
+async function saveVideoBlob(blob,mime){
+  var id='vid_'+Date.now();
+  try{ var db=await videoDB(); var tx=db.transaction('videos','readwrite'); tx.objectStore('videos').put({id:id,blob:blob,mime:mime}); tx.oncomplete=()=>{ var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]'); arr.unshift({title:'Video',img:'',videoId:id,video:'',time:new Date().toLocaleString(),gps:lastGPS.lat?lastGPS.lat.toFixed(5)+','+lastGPS.lng.toFixed(5):'No GPS'}); localStorage.setItem('godeye_pages',JSON.stringify(arr.slice(0,50))); }; }catch(e){ showToast('Video save fail - Storage full'); }
+}
+async function getVideoURL(videoId){ try{ var db=await videoDB(); return new Promise(r=>{ var tx=db.transaction('videos','readonly'); var req=tx.objectStore('videos').get(videoId); req.onsuccess=()=>{ var v=req.result; r(v?URL.createObjectURL(v.blob):null); }; req.onerror=()=>r(null); }); }catch(e){ return null; } }
 function openDash(){ if(stream) stream.getTracks().forEach(t=>t.stop()); document.getElementById('front').style.display='none';document.getElementById('dash').style.display='block';renderDash()}
 function backToCam(){document.querySelectorAll('.page').forEach(p=>p.style.display='none');document.getElementById('dash').style.display='none';document.getElementById('front').style.display='flex';stopPageCams();startCamera();}
 function openPage(id){
   if(stream) stream.getTracks().forEach(t=>t.stop()); stream=null;
   stopPageCams();document.getElementById('front').style.display='none';document.getElementById('dash').style.display='none';document.querySelectorAll('.page').forEach(p=>p.style.display='none');document.getElementById('page-'+id).style.display='block';
-  if(id==='gps'){getGPS();renderGPSHistory()}if(id==='gallery') renderGallery();if(id==='attend'){renderAttend();renderRoster();}if(id==='count') renderCountItems();if(id==='bill'){renderBillList();startBillCam();}if(id==='doc'){renderDocList();startDocCam();}if(id==='face'){renderFaceLog();updateEnrolledList();}
+  if(id==='gps'){getGPS();renderGPSHistory()}if(id==='gallery') renderGallery();if(id==='settings') renderSettingsUI();if(id==='attend'){renderAttend();renderRoster();}if(id==='count') renderCountItems();if(id==='bill'){renderBillList();startBillCam();}if(id==='doc'){renderDocList();startDocCam();}if(id==='face'){renderFaceLog();updateEnrolledList();}
 }
 function stopPageCams(){[billStream,docStream,faceStream].forEach(s=>{if(s) s.getTracks().forEach(t=>t.stop())});billStream=docStream=faceStream=null;faceRunning=false;cancelAnimationFrame(faceLoop);}
-function savePage(title,img){if(!canSave())return;try{var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');arr.unshift({title:title,img:img,time:new Date().toLocaleString(),gps:lastGPS.lat?lastGPS.lat.toFixed(5)+','+lastGPS.lng.toFixed(5):'No GPS'});localStorage.setItem('godeye_pages',JSON.stringify(arr.slice(0,50)));}catch(e){showToast('⚠️ Storage full - Clear Gallery to save more');}renderDash()}
-function renderDash(){var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');document.getElementById('dashList').innerHTML=arr.length?arr.slice(0,5).map(x=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>'+x.title+'</b><br><small>'+x.time+' • '+x.gps+'</small></div>').join(''):'No saved yet'}
+function savePage(title,img){
+  if(!canSave())return;
+  try{
+    // Compress badi image - Storage full na ho
+    var finalImg=img;
+    var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');
+    arr.unshift({title:title,img:finalImg,time:new Date().toLocaleString(),gps:lastGPS.lat?lastGPS.lat.toFixed(5)+','+lastGPS.lng.toFixed(5):'No GPS',id:Date.now()+''+Math.random()});
+    localStorage.setItem('godeye_pages',JSON.stringify(arr.slice(0,50)));
+    // Auto Save - Settings se
+    if(appSettings.autoSave && finalImg) saveWithLocation({data:finalImg,name:title});
+  }catch(e){showToast('⚠️ Storage full - Clear Gallery to save more');}
+  renderDash();
+}
+function renderDash(){var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');document.getElementById('dashList').innerHTML=arr.length?arr.slice(0,5).map((x,i)=>'<div onclick="openFromDash('+i+')" style="padding:8px;border-bottom:1px solid #eee;cursor:pointer"><b>'+x.title+'</b><br><small>'+x.time+' • '+x.gps+' • Tap to Open 👆</small></div>').join(''):'No saved yet'}
+function openFromDash(i){ var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]'); proFiltered=arr; proOpenByIndex(i); }
+
+// ===== v9.4 GALLERY - CLICK TO OPEN =====
 function filterGal(f){galFilter=f;renderGallery();}
-function renderGallery(){var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');var q=(document.getElementById('galSearch')?.value||'').toLowerCase();arr=arr.filter(x=>(galFilter==='all'||x.title.includes(galFilter))&&x.title.toLowerCase().includes(q));document.getElementById('galList').innerHTML=arr.length?arr.map(x=>'<div style="margin-bottom:12px">'+(x.video?'<video src="'+x.video+'" controls style="width:100%;border-radius:10px"></video>':x.img?'<img src="'+x.img+'" style="width:100%;border-radius:10px">':'<div style="padding:20px;background:#eee;border-radius:10px;text-align:center">No image</div>')+'<b>'+x.title+'</b><br><small>'+x.time+' • '+x.gps+'</small></div>').join(''):'No saved yet'}
-function clearGallery(){ if(confirm('Clear all gallery?')){ localStorage.setItem('godeye_pages','[]'); renderGallery(); renderDash(); showToast('Gallery cleared'); } }
+function renderGallery(){
+  var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');
+  // Purani kharab video entries saaf - ObjectURL wali
+  arr=arr.filter(x=>!(x.video && x.video.startsWith('blob:')));
+  var q=(document.getElementById('galSearch')?.value||'').toLowerCase();
+  var sort=document.getElementById('galSort')?.value||'new';
+  proFiltered=arr.filter(x=>(galFilter==='all'||x.title.includes(galFilter)) && (x.title+' '+x.time).toLowerCase().includes(q));
+  proFiltered.sort((a,b)=> sort==='name'?a.title.localeCompare(b.title):sort==='old'?new Date(a.time)-new Date(b.time):new Date(b.time)-new Date(a.time));
+  var st=document.getElementById('galStats'); if(st) st.textContent=proFiltered.length+' Files • Total: '+arr.length+' • Tap kisi file pe - Full Viewer khulega';
+  var el=document.getElementById('galList'); if(!el) return;
+  el.innerHTML=proFiltered.length?proFiltered.map((x,i)=>{
+    var thumb=x.img?'<img src="'+x.img+'" loading="lazy">':x.videoId?'<div style="height:100px;display:flex;align-items:center;justify-content:center;font-size:32px;background:#111">🎬</div>':'<div style="height:100px;display:flex;align-items:center;justify-content:center;font-size:32px;background:#eee">📝</div>';
+    return '<div class="galItem" onclick="proOpenByIndex('+i+')">'+thumb+'<div class="gEye">👁️</div><div class="gName">'+x.title+'</div><div class="gMeta">'+x.time+'</div></div>';
+  }).join(''):'<div style="grid-column:1/-1;text-align:center;color:#666;padding:20px">No saved yet<br><small>Photo / Bill / Doc save karo</small></div>';
+}
+function clearGallery(){ if(confirm('Clear all gallery?')){ localStorage.setItem('godeye_pages','[]'); renderGallery(); renderDash(); renderSettingsUI(); showToast('Gallery cleared'); } }
+async function proAddFiles(input){
+  var files=Array.from(input.files||[]); if(!files.length) return;
+  for(var file of files){
+    var data=await new Promise(r=>{ var rd=new FileReader(); rd.onload=e=>r(e.target.result); rd.readAsDataURL(file); });
+    savePage('Photo - '+file.name, data);
+  }
+  input.value=''; renderGallery(); showToast('✅ '+files.length+' file add hui - Click karke kholo');
+}
+// ===== v9.4 VIEWER =====
+async function proOpenByIndex(i){
+  proCurrentIndex=i; var f=proFiltered[i]; if(!f){ showToast('File nahi mili'); return; }
+  document.getElementById('proViewer').style.display='flex';
+  document.getElementById('proViewerTitle').textContent=f.title||'File';
+  document.getElementById('proViewerCounter').textContent=(i+1)+' / '+proFiltered.length;
+  document.getElementById('moveHelperBox').style.display='none';
+  var img=document.getElementById('proViewerImg'), frame=document.getElementById('proViewerFrame'), no=document.getElementById('proViewerNoImg');
+  img.style.display='none'; frame.style.display='none'; no.style.display='none'; img.src=''; frame.src='';
+  if(f.img){ img.src=f.img; img.style.display='block'; }
+  else if(f.videoId){ var url=await getVideoURL(f.videoId); if(url){ frame.src=url; frame.style.display='block'; } else { no.style.display='block'; } }
+  else { no.style.display='block'; }
+}
+function closeProViewer(){ document.getElementById('proViewer').style.display='none'; document.getElementById('proViewerImg').src=''; document.getElementById('proViewerFrame').src=''; proCurrentIndex=-1; }
+function proPrev(){ if(proCurrentIndex>0) proOpenByIndex(proCurrentIndex-1); }
+function proNext(){ if(proCurrentIndex<proFiltered.length-1) proOpenByIndex(proCurrentIndex+1); }
+function proDownloadCurrent(){
+  var f=proFiltered[proCurrentIndex]; if(!f||!f.img){ showToast('Is file me image nahi hai'); return; }
+  var a=document.createElement('a'); var name=makeFileName(f.title); a.href=f.img; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  showToast('✅ Downloads me save: '+name);
+}
+function proDeleteCurrent(){
+  if(proCurrentIndex<0) return; if(!confirm('Delete karni hai?')) return;
+  var f=proFiltered[proCurrentIndex];
+  var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');
+  arr=arr.filter(x=>!(x.time===f.time && x.title===f.title));
+  localStorage.setItem('godeye_pages',JSON.stringify(arr));
+  closeProViewer(); renderGallery(); renderDash(); showToast('Deleted');
+}
+function proRename(){
+  var f=proFiltered[proCurrentIndex]; if(!f) return;
+  var n=prompt('Naya naam:', f.title); if(!n) return;
+  var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]');
+  var idx=arr.findIndex(x=>x.time===f.time && x.title===f.title); if(idx>=0) arr[idx].title=n;
+  localStorage.setItem('godeye_pages',JSON.stringify(arr)); renderGallery(); proOpenByIndex(proCurrentIndex); showToast('Renamed');
+}
+async function proShareCurrent(){
+  var f=proFiltered[proCurrentIndex]; if(!f||!f.img){ showToast('Share ke liye image nahi hai'); return; }
+  try{
+    var blob=await (await fetch(f.img)).blob(); var file=new File([blob], makeFileName(f.title), {type:'image/jpeg'});
+    if(navigator.share && navigator.canShare?.({files:[file]})) await navigator.share({files:[file]}); else proDownloadCurrent();
+  }catch(e){ proDownloadCurrent(); }
+}
+// ===== v9.4 SAVE TO PHONE - ANDROID + CUSTOM PATH =====
+async function saveWithLocation(f){
+  var loc=appSettings.saveLocation;
+  if(loc==='app'){ showToast('✅ App me save hua - Phone Gallery me nahi jayega (Settings: App Only)'); return; }
+  if(loc==='ask'){ var c=prompt('Kahan save karna hai?\n1=Downloads\n2='+getFullSavePath()+'\n3=Camera\n4=App Only','2'); loc={'1':'download','2':'pictures','3':'camera','4':'app'}[c]||'pictures'; if(loc==='app') return; }
+  if(!f.data){ showToast('Image nahi mili'); return; }
+  try{
+    var blob=await (await fetch(f.data)).blob(); var fileName=makeFileName(f.name); var file=new File([blob], fileName, {type:'image/jpeg'});
+    if(navigator.share && navigator.canShare?.({files:[file]})){ await navigator.share({files:[file], title:fileName, text:'Save to: '+getFullSavePath()+'/'+fileName}); showMoveHelper(getFullSavePath()+'/'+fileName); return; }
+  }catch(e){ if(e.name==='AbortError') return; }
+  var a=document.createElement('a'); a.href=f.data; a.download=makeFileName(f.name); a.click(); showMoveHelper(getFullSavePath()+'/'+makeFileName(f.name));
+}
+async function saveToAndroidGallery(){
+  var f=proFiltered[proCurrentIndex]; if(!f||!f.img){ showToast('Pehle koi image kholo'); return; }
+  await saveWithLocation({data:f.img, name:f.title});
+}
+function showMoveHelper(fullPath){
+  var box=document.getElementById('moveHelperBox'); if(!box) return; box.style.display='block';
+  document.getElementById('moveHelperText').textContent='File ab Downloads me hai. Isko '+fullPath+' me le jane ke liye Files App kholo → File pe long press → Move to → '+fullPath;
+  showToast('✅ Save hua - Move Helper dekho');
+}
+function openFilesAppToMove(){ try{ window.location.href='intent://com.google.android.documentsui/#Intent;package=com.google.android.documentsui;end'; }catch(e){} setTimeout(()=>{ showToast('Files App me: Downloads → File → Move to → '+getFullSavePath()); },800); }
+function openAndroidGallery(){ try{ window.location.href='intent://com.google.android.apps.photos/#Intent;package=com.google.android.apps.photos;end'; }catch(e){} setTimeout(()=>{ showToast('Gallery App kholo → Albums → Download me dekho'); },800); }
+async function saveAllToAndroid(){
+  var arr=JSON.parse(localStorage.getItem('godeye_pages')||'[]').filter(x=>x.img); if(!arr.length){ showToast('Koi image nahi'); return; }
+  if(!confirm(arr.length+' photos Gallery me save karni hain?')) return;
+  for(var f of arr){
+    try{ var blob=await (await fetch(f.img)).blob(); var file=new File([blob], makeFileName(f.title), {type:'image/jpeg'}); if(navigator.share && navigator.canShare?.({files:[file]})){ await navigator.share({files:[file]}); await new Promise(r=>setTimeout(r,800)); } else { var a=document.createElement('a'); a.href=f.img; a.download=makeFileName(f.title); a.click(); await new Promise(r=>setTimeout(r,500)); } }catch(e){ break; }
+  }
+  showToast('✅ Ho gaya - Gallery → Download me dekho');
+}
+// Swipe in viewer
+let touchX=0;
+document.addEventListener('DOMContentLoaded',()=>{
+  var st=document.getElementById('proViewerStage'); if(st){ st.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX}); st.addEventListener('touchend',e=>{ var dx=e.changedTouches[0].clientX-touchX; if(dx<-50) proNext(); if(dx>50) proPrev(); }); }
+});
 
 function getGPS(){if(!navigator.geolocation){showToast('GPS not supported');return}navigator.geolocation.getCurrentPosition(p=>{lastGPS={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy};var el=document.getElementById('gpsLive');if(el) el.textContent=lastGPS.lat.toFixed(6)+', '+lastGPS.lng.toFixed(6);var a=document.getElementById('gpsAcc');if(a) a.textContent='Accuracy: '+Math.round(lastGPS.acc)+' meters';document.getElementById('gpsDot').textContent='📍 GPS OK'},()=>showToast('GPS OFF - Turn on Location'),{enableHighAccuracy:true})}
 function openMaps(){if(!lastGPS.lat){showToast('Tap Refresh first');getGPS();return}window.open('https://maps.google.com/?q='+lastGPS.lat+','+lastGPS.lng,'_blank')}
@@ -216,7 +459,7 @@ function saveGPSPlace(){if(!lastGPS.lat){showToast('Tap Refresh first');return}v
 function renderGPSHistory(){var h=JSON.parse(localStorage.getItem('godeye_gps')||'[]');document.getElementById('gpsHistory').innerHTML=h.length?h.map(x=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>📍 '+x.name+'</b><br><small>'+x.lat.toFixed(5)+','+x.lng.toFixed(5)+' • '+x.time+'</small></div>').join(''):'No saved places yet'}
 function toggleGPSCam(){gpsCamOn=!gpsCamOn;document.getElementById('gpsCamBtn').textContent='📍 GPS With Camera: '+(gpsCamOn?'ON':'OFF');showToast('GPS With Camera '+(gpsCamOn?'ON':'OFF'))}
 
-// FACE - v7.4 FIXES: No prompt, Tap=New Square, Mesh Dots, Blur Fix, Enroll, Auto Attend
+// FACE - same as v7.4
 function faceApp(mode){faceAppMode=mode;var labels={attend:'Attendance',verify:'Verify',count:'Count',emotion:'Emotion',blur:'Blur',search:'Search'};document.getElementById('faceModeLabel').textContent=labels[mode];document.getElementById('faceAppDesc').textContent='Mode: '+labels[mode]+' - Type name above, Tap Start, Tap face in camera';if(mode==='search'){var q=document.getElementById('faceName').value.trim();if(q) searchFace(q);else showToast('Type name above to search');return;}showToast('Face Mode: '+labels[mode]);startFaceCam();}
 function toggleAutoDetect(){ autoDetectOn=!autoDetectOn; document.getElementById('autoDetectBtn').textContent='Auto Detect: '+(autoDetectOn?'ON':'OFF - Tap Mode ✅'); }
 function toggleAutoAttend(){ autoAttendOn=!autoAttendOn; document.getElementById('autoBtn').textContent='🤖 Auto Attendance: '+(autoAttendOn?'ON 🟢':'OFF'); if(autoAttendOn) startFaceCam(); }
@@ -258,7 +501,7 @@ function clearDocPages(){docPages=[];document.getElementById('docPageCount').tex
 function saveDoc(){if(!docPages.length){showToast('Capture at least 1 page');return}var title=document.getElementById('docTitle').value||'Doc';docPages.forEach((img,i)=>savePage('Doc - '+title+' - Page '+(i+1),img));var d=JSON.parse(localStorage.getItem('godeye_docs')||'[]');d.unshift({title:title,pages:docPages.length,time:new Date().toLocaleString()});localStorage.setItem('godeye_docs',JSON.stringify(d.slice(0,30)));clearDocPages();renderDocList();showToast('Doc Saved: '+title);}
 function renderDocList(){var d=JSON.parse(localStorage.getItem('godeye_docs')||'[]');document.getElementById('docList').innerHTML=d.length?d.map(x=>'<div style="padding:8px;border-bottom:1px solid #eee"><b>📄 '+x.title+' - '+x.pages+' pages</b><br><small>'+x.time+'</small></div>').join(''):'No docs yet';}
 
-// ATTEND - SCHOOL / MONTHLY / EXPORT
+// ATTEND
 function saveRoster(){ var names=document.getElementById('rosterInput').value.split('\n').map(s=>s.trim()).filter(Boolean); var obj={school:document.getElementById('schoolName').value,cls:document.getElementById('className').value,names:names}; localStorage.setItem('godeye_roster',JSON.stringify(obj)); renderRoster(); showToast('Roster Saved: '+names.length); }
 function loadRoster(){ var r=JSON.parse(localStorage.getItem('godeye_roster')||'{"names":[]}'); document.getElementById('rosterInput').value=r.names.join('\n'); document.getElementById('className').value=r.cls||''; document.getElementById('schoolName').value=r.school||''; renderRoster(); }
 function renderRoster(){ var r=JSON.parse(localStorage.getItem('godeye_roster')||'{"names":[]}'); var a=JSON.parse(localStorage.getItem('godeye_attend')||'[]'); var today=new Date().toLocaleDateString(); document.getElementById('rosterList').innerHTML=r.names.map(n=>{ var p=a.some(x=>x.name===n && new Date(x.time).toLocaleDateString()===today); return '<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #eee"><span>'+(p?'✅ ':'❌ ')+n+'</span><button onclick="markOneAttend(\''+n+'\')">Mark ✓</button></div>'; }).join('')||'No roster - Paste names above'; }
