@@ -772,5 +772,105 @@ document.addEventListener('click', function(e){
 });
 </script>
 <!-- END PATCH 3 -->
+  <!-- PATCH 4: SCANNER-01 | v10.4 | Scanner Camera + Manual Editing + Clickable | Auto-Fixes Patch 2 + 3 -->
+<script>
+// PATCH 4 - SELF HEAL: Stop ALL previous cameras when scanner opens
+if(typeof stopPageCams==='function'){
+  var _oldStop4 = stopPageCams;
+  stopPageCams = function(){
+    try{ if(typeof patch2CloseBillCam==='function') patch2CloseBillCam(); }catch(e){}
+    try{ if(typeof patch3CloseCountCam==='function') patch3CloseCountCam(); }catch(e){}
+    try{ if(typeof patch4CloseScanCam==='function') patch4CloseScanCam(); }catch(e){}
+    return _oldStop4();
+  };
+}
+
+// PATCH 4 - SCANNER STATE
+var scanCamStream=null; var scanPhotoData=null; var scanDocTitle='Scanned Document';
+
+// PATCH 4 - INJECT SCANNER PROFESSIONAL UI
+(function(){
+  var scanPage=document.getElementById('page-scanner')||document.getElementById('page-doc')||document.getElementById('scannerPage')||document.querySelector('[id*="scan"]');
+  if(!scanPage) return;
+  if(document.getElementById('patch4ScanBox')) return;
+  var box=document.createElement('div');
+  box.id='patch4ScanBox';
+  box.style.cssText='background:#fff;border-radius:14px;padding:12px;margin:10px;box-shadow:0 2px 10px rgba(0,0,0,.08)';
+  box.innerHTML=
+  '<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">📄 Scanner</b><span style="background:#f3e5f5;color:#7b1fa2;font-size:11px;padding:4px 8px;border-radius:20px;font-weight:bold">PROFESSIONAL</span></div>'+
+  '<div style="margin-top:10px"><label style="font-size:12px;color:#666;font-weight:bold">DOCUMENT TITLE</label><input id="patch4ScanTitle" value="Scanned Document" style="width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;margin-top:4px;font-size:14px;box-sizing:border-box" placeholder="e.g. ID Card, Bill, Letter"></div>'+
+  '<div style="margin-top:8px"><label style="font-size:12px;color:#666;font-weight:bold">NOTES (Manual Editing)</label><textarea id="patch4ScanNotes" rows="2" style="width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;margin-top:4px;font-size:14px;box-sizing:border-box;resize:none" placeholder="Type notes here... You can edit anytime"></textarea></div>'+
+  '<div id="patch4ScanCamWrap" style="display:none;margin-top:10px"><video id="patch4ScanVideo" autoplay playsinline muted style="width:100%;border-radius:10px;background:#000;aspect-ratio:4/3;object-fit:cover"></video>'+
+  '<div style="background:#111;color:#fff;font-size:11px;text-align:center;padding:6px;border-radius:0 0 10px 10px;margin-top:-4px">↖ Align document inside frame • Hold steady</div>'+
+  '<div style="display:flex;gap:8px;margin-top:8px"><button onclick="patch4TakeScanPhoto()" style="flex:1;background:#2196f3;color:#fff;padding:11px;border:none;border-radius:10px;font-weight:bold">📸 Scan Page</button><button onclick="patch4CloseScanCam()" style="flex:1;background:#eee;padding:11px;border:none;border-radius:10px;font-weight:bold">Close</button></div></div>'+
+  '<div id="patch4ScanPreview" style="display:none;margin-top:10px"><img id="patch4ScanImg" style="width:100%;border-radius:10px;border:1px solid #eee"><div style="display:flex;gap:8px;margin-top:6px"><button onclick="patch4RetakeScan()" style="flex:1;background:#eee;padding:9px;border:none;border-radius:8px;font-weight:bold">↻ Rescan</button><button onclick="patch4EditScan()" style="flex:1;background:#e3f2fd;color:#1565c0;padding:9px;border:none;border-radius:8px;font-weight:bold">✏️ Edit Title / Notes</button><button onclick="patch4RemoveScanPhoto()" style="flex:1;background:#ffebee;color:#c62828;padding:9px;border:none;border-radius:8px;font-weight:bold">🗑 Remove</button></div></div>'+
+  '<div style="display:flex;gap:8px;margin-top:10px"><button onclick="patch4OpenScanCam()" style="flex:1;background:#111;color:#fff;padding:12px;border:none;border-radius:10px;font-weight:bold">📷 Open Scanner</button><button onclick="patch4PickScanFile()" style="flex:1;background:#f5f5f5;padding:12px;border:none;border-radius:10px;font-weight:bold">🖼️ Gallery</button></div>'+
+  '<input type="file" id="patch4ScanFile" accept="image/*" style="display:none" onchange="patch4OnScanFile(event)">'+
+  '<div style="font-size:11px;color:#888;margin-top:8px;text-align:center">Tip: Title + Notes are editable before & after scan</div>';
+  var body=scanPage.querySelector('.pageBody')||scanPage;
+  body.insertBefore(box, body.firstChild);
+})();
+
+// PATCH 4 - SCANNER CAMERA
+async function patch4OpenScanCam(){
+  try{
+    stopPageCams();
+    var wrap=document.getElementById('patch4ScanCamWrap'); if(wrap) wrap.style.display='block';
+    var v=document.getElementById('patch4ScanVideo');
+    scanCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    v.srcObject=scanCamStream;
+    showToast('Scanner Open');
+  }catch(e){ showToast('Camera blocked - Use Gallery'); patch4PickScanFile(); }
+}
+function patch4CloseScanCam(){
+  try{ if(scanCamStream) scanCamStream.getTracks().forEach(function(t){t.stop()}); }catch(e){}
+  scanCamStream=null;
+  var wrap=document.getElementById('patch4ScanCamWrap'); if(wrap) wrap.style.display='none';
+}
+function patch4TakeScanPhoto(){
+  var v=document.getElementById('patch4ScanVideo');
+  if(!v||!v.videoWidth){ showToast('Wait for camera'); return; }
+  var c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  scanPhotoData=c.toDataURL('image/jpeg',0.85);
+  patch4ShowScanPhoto(); patch4CloseScanCam();
+  showToast('Page Scanned ✅');
+}
+function patch4ShowScanPhoto(){ if(!scanPhotoData) return; var p=document.getElementById('patch4ScanPreview'); var img=document.getElementById('patch4ScanImg'); if(p) p.style.display='block'; if(img) img.src=scanPhotoData; }
+function patch4RetakeScan(){ scanPhotoData=null; var p=document.getElementById('patch4ScanPreview'); if(p) p.style.display='none'; patch4OpenScanCam(); }
+function patch4RemoveScanPhoto(){ scanPhotoData=null; var p=document.getElementById('patch4ScanPreview'); if(p) p.style.display='none'; var f=document.getElementById('patch4ScanFile'); if(f) f.value=''; }
+function patch4PickScanFile(){ var f=document.getElementById('patch4ScanFile'); if(f) f.click(); }
+function patch4OnScanFile(e){
+  var file=e.target.files[0]; if(!file) return;
+  var r=new FileReader(); r.onload=function(ev){ scanPhotoData=ev.target.result; patch4ShowScanPhoto(); }; r.readAsDataURL(file);
+}
+// PATCH 4 - MANUAL EDITING: Edit Title / Notes anytime
+function patch4EditScan(){
+  var t=document.getElementById('patch4ScanTitle'); var n=document.getElementById('patch4ScanNotes');
+  if(!t) return;
+  var nt=prompt('Edit Document Title:', t.value||'');
+  if(nt!==null) t.value=nt;
+  var nn=prompt('Edit Notes:', n?n.value:'');
+  if(nn!==null && n) n.value=nn;
+  showToast('Saved ✅');
+  // If detail open, refresh it
+  var b=document.getElementById('detailBody');
+  if(b && document.getElementById('page-detail') && document.getElementById('page-detail').style.display==='block'){
+    patch2OpenDetail(t.value, scanPhotoData, n?n.value:'');
+  }
+}
+// PATCH 4 - CLICKABLE: Tap scanned card -> Detail with Title + Notes editable
+document.addEventListener('click', function(e){
+  var card=e.target.closest('[data-scan-id], .scan-card, .doc-card');
+  if(!card) return;
+  if(e.target.closest('button,input,video,textarea')) return;
+  var img=card.querySelector('img');
+  if(typeof patch2OpenDetail==='function') patch2OpenDetail('Scanned Document', img?img.src:null, card.innerText||'');
+});
+document.addEventListener('click', function(e){
+  if(e.target.closest('button') && e.target.textContent.includes('←')){ patch4CloseScanCam(); }
+});
+</script>
+<!-- END PATCH 4 -->
 </body>
   </html>
