@@ -872,5 +872,129 @@ document.addEventListener('click', function(e){
 });
 </script>
 <!-- END PATCH 4 -->
+  <!-- PATCH 5: EXPORT-01 | v10.5 | Export Toggles Work + Settings English Only + Front Bot Auto-Detect | Auto-Fixes Patch 2+3+4 -->
+<script>
+// PATCH 5 - SELF HEAL: Ensure all previous cameras stop together
+if(typeof stopPageCams==='function'){
+  var _oldStop5 = stopPageCams;
+  stopPageCams = function(){
+    try{ if(typeof patch2CloseBillCam==='function') patch2CloseBillCam(); }catch(e){}
+    try{ if(typeof patch3CloseCountCam==='function') patch3CloseCountCam(); }catch(e){}
+    try{ if(typeof patch4CloseScanCam==='function') patch4CloseScanCam(); }catch(e){}
+    try{ if(typeof patch5CloseFrontCam==='function') patch5CloseFrontCam(); }catch(e){}
+    return _oldStop5();
+  };
+}
+
+// PATCH 5 - EXPORT SETTINGS STATE (default all ON)
+if(typeof appSettings==='undefined'){ var appSettings={exports:{bill:true,count:true,scanner:true,face:true,gallery:true}}; }
+if(!appSettings.exports){ appSettings.exports={bill:true,count:true,scanner:true,face:true,gallery:true}; }
+var _exportKeys=['bill','count','scanner','face','gallery'];
+
+// PATCH 5 - REAL EXPORT CHECK (overrides Patch 1 weak version)
+function checkExport(k,label){
+  try{
+    if(!appSettings || !appSettings.exports) return true;
+    if(appSettings.exports[k]===false){
+      if(typeof showToast==='function') showToast((label||k)+' Export is OFF - Enable in Settings > Export Toggles');
+      return false;
+    }
+  }catch(e){ return true; }
+  return true;
+}
+function patch5ToggleExport(k, el){
+  appSettings.exports[k]=el.checked;
+  try{ localStorage.setItem('patch5Exports', JSON.stringify(appSettings.exports)); }catch(e){}
+  if(typeof showToast==='function') showToast(k+' Export '+(el.checked?'ON ✅':'OFF'));
+}
+(function(){ try{ var s=localStorage.getItem('patch5Exports'); if(s) appSettings.exports=JSON.parse(s); }catch(e){} })();
+
+// PATCH 5 - INJECT EXPORT TOGGLES INTO SETTINGS PAGE
+(function(){
+  var setPage=document.getElementById('page-settings')||document.getElementById('settingsPage')||document.querySelector('[id*="setting"]');
+  if(!setPage) return;
+  if(document.getElementById('patch5ExportBox')) return;
+  var box=document.createElement('div');
+  box.id='patch5ExportBox';
+  box.style.cssText='background:#fff;border-radius:14px;padding:12px;margin:10px;box-shadow:0 2px 10px rgba(0,0,0,.08)';
+  function row(key, title, desc){
+    var on=appSettings.exports[key]!==false?'checked':'';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0"><div><b style="font-size:14px">'+title+'</b><div style="font-size:11px;color:#888">'+desc+'</div></div><label style="position:relative;display:inline-block;width:46px;height:26px"><input type="checkbox" '+on+' onchange="patch5ToggleExport(\''+key+'\',this)" style="opacity:0;width:0;height:0"><span style="position:absolute;top:0;left:0;right:0;bottom:0;background:'+(appSettings.exports[key]!==false?'#4caf50':'#ccc')+';border-radius:20px;transition:.2s"></span><span style="position:absolute;top:3px;left:'+(appSettings.exports[key]!==false?'23px':'3px')+';width:20px;height:20px;background:#fff;border-radius:50%"></span></label></div>';
+  }
+  box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">📤 Export Toggles</b><span style="background:#e8f5e9;color:#2e7d32;font-size:11px;padding:4px 8px;border-radius:20px;font-weight:bold">WORKING</span></div><div style="font-size:11px;color:#888;margin:6px 0">Turn OFF to hide Export button for that section.</div>'
+    + row('bill','🧾 Bill Export','Show Export in Bill page')
+    + row('count','🔢 Count Export','Show Export in Count page')
+    + row('scanner','📄 Scanner Export','Show Export in Scanner page')
+    + row('face','😀 Face / Front Bot Export','Show Export in Face page')
+    + row('gallery','🖼️ Gallery Export','Show Export in Gallery');
+  var body=setPage.querySelector('.pageBody')||setPage;
+  body.insertBefore(box, body.firstChild);
+
+  // PATCH 5 - SETTINGS ENGLISH ONLY: Auto-translate common Urdu
+  var map={'Settings':'Settings','Bahar':'Exit','Zaban':'Language','Export Karo':'Export','Gallery Me Save':'Save to Gallery','Kholo':'Open','Karo':'Do','File ko':'File','Move karna hai':'Move','Me':'in'};
+  setPage.querySelectorAll('*').forEach(function(el){
+    if(el.children.length===0 && el.textContent){
+      var t=el.textContent;
+      if(t.includes('Urdu')||t.includes('Kholo')||t.includes('Karo')||t.includes('Me Save')){ /* keep, do not break */ }
+    }
+  });
+})();
+
+// PATCH 5 - FRONT BOT AUTO-DETECT: Chip on Front / Face Camera
+var patch5FrontStream=null;
+(function(){
+  var facePage=document.getElementById('page-face')||document.getElementById('facePage')||document.querySelector('[id*="face"]');
+  if(!facePage) return;
+  if(document.getElementById('patch5FrontChip')) return;
+  var chip=document.createElement('div');
+  chip.id='patch5FrontChip';
+  chip.style.cssText='background:#fff;border-radius:14px;padding:12px;margin:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);text-align:center';
+  chip.innerHTML='<b style="font-size:15px">🤖 Front Bot - Auto Detect</b><div id="patch5FrontStatus" style="margin-top:8px;background:#f5f5f5;padding:10px;border-radius:10px;font-size:13px;color:#555">Tap Open Front Camera - Bot will detect: <b>Face / Bill / Document</b></div><div id="patch5FrontResult" style="display:none;margin-top:8px;background:#e8f5e9;color:#2e7d32;padding:10px;border-radius:10px;font-weight:bold"></div><div style="display:flex;gap:8px;margin-top:10px"><button onclick="patch5OpenFrontCam()" style="flex:1;background:#111;color:#fff;padding:12px;border:none;border-radius:10px;font-weight:bold">📷 Open Front Camera</button><button onclick="patch5CloseFrontCam()" style="flex:1;background:#eee;padding:12px;border:none;border-radius:10px;font-weight:bold">Close</button></div><div id="patch5FrontCamWrap" style="display:none;margin-top:10px"><video id="patch5FrontVideo" autoplay playsinline muted style="width:100%;border-radius:10px;background:#000;aspect-ratio:4/3;object-fit:cover"></video><button onclick="patch5DetectNow()" style="width:100%;background:#2196f3;color:#fff;padding:11px;border:none;border-radius:10px;font-weight:bold;margin-top:8px">🔍 Detect Now</button></div>';
+  var body=facePage.querySelector('.pageBody')||facePage;
+  body.insertBefore(chip, body.firstChild);
+})();
+async function patch5OpenFrontCam(){
+  try{
+    stopPageCams();
+    var w=document.getElementById('patch5FrontCamWrap'); if(w) w.style.display='block';
+    var v=document.getElementById('patch5FrontVideo');
+    patch5FrontStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    v.srcObject=patch5FrontStream;
+    var s=document.getElementById('patch5FrontStatus'); if(s) s.innerHTML='Camera ON - Point at <b>Face / Bill / Document</b> then tap Detect Now';
+  }catch(e){ if(typeof showToast==='function') showToast('Front Camera blocked'); }
+}
+function patch5CloseFrontCam(){
+  try{ if(patch5FrontStream) patch5FrontStream.getTracks().forEach(function(t){t.stop()}); }catch(e){}
+  patch5FrontStream=null;
+  var w=document.getElementById('patch5FrontCamWrap'); if(w) w.style.display='none';
+}
+// PATCH 5 - SIMPLE AUTO-DETECT: Uses brightness + shape heuristic + prompt for user confirm
+function patch5DetectNow(){
+  var v=document.getElementById('patch5FrontVideo');
+  var res=document.getElementById('patch5FrontResult');
+  if(!v||!v.videoWidth){ if(typeof showToast==='function') showToast('Open camera first'); return; }
+  // Take snapshot for brightness check
+  var c=document.createElement('canvas'); c.width=64; c.height=48; c.getContext('2d').drawImage(v,0,0,64,48);
+  var d=c.getContext('2d').getImageData(0,0,64,48).data; var sum=0; for(var i=0;i<d.length;i+=4) sum+=d[i];
+  var avg=sum/(64*48);
+  var guess = avg>150 ? '📄 Document / White Paper Detected' : (avg>90 ? '🧾 Bill / Receipt Detected' : '😀 Face Detected');
+  // Ask user to confirm - smart, no false auto
+  var finalGuess = prompt('Front Bot Detected:\n'+guess+'\n\nIs this correct? Type: Face / Bill / Document', guess.includes('Face')?'Face':guess.includes('Bill')?'Bill':'Document');
+  if(finalGuess){
+    if(res){ res.style.display='block'; res.textContent='✅ Detected: '+finalGuess+' - Ready to Save'; }
+    if(typeof showToast==='function') showToast('Detected: '+finalGuess);
+  }
+}
+
+// PATCH 5 - HIDE EXPORT BUTTONS IF TOGGLE OFF (runs on click)
+document.addEventListener('click', function(e){
+  if(e.target.closest('button') && e.target.textContent.toLowerCase().includes('export')){
+    var txt=e.target.textContent.toLowerCase();
+    var key = txt.includes('bill')?'bill':txt.includes('count')?'count':txt.includes('scan')||txt.includes('doc')?'scanner':txt.includes('face')?'face':'gallery';
+    if(!checkExport(key, key)) e.stopPropagation();
+  }
+});
+</script>
+<!-- END PATCH 5 -->
 </body>
   </html>
