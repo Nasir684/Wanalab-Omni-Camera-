@@ -525,5 +525,62 @@ function renderCountItems(){var total=countItems.reduce((s,x)=>s+x.val,0);docume
 initLabels();startCamera();getGPS();
 setInterval(()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>{lastGPS={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy};document.getElementById('gpsDot').textContent='📍 GPS OK';}); },30000);
 </script>
+  <!-- PATCH 1: CORE-01 | v10.1 | Fixes: Urdu, Viewer Close, Camera Conflict, Detail Missing, Export Check -->
+<script>
+// PATCH 1 - AUTO CREATE DETAIL PAGE IF MISSING
+(function(){
+  if(!document.getElementById('page-detail')){
+    var d=document.createElement('div');
+    d.className='page'; d.id='page-detail'; d.style.zIndex='60';
+    d.innerHTML='<div class="pageHead"><button onclick="closeDetail()">←</button><b id="detailTitle">Detail</b><span onclick="closeDetail()">✕</span></div><div class="pageBody" id="detailBody"></div>';
+    document.body.appendChild(d);
+  }
+  // FIX VIEWER ENGLISH + CLOSE BUTTON
+  var no=document.getElementById('proViewerNoImg');
+  if(no) no.innerHTML='No image<br><small style="color:#aaa">This entry is text / count only</small>';
+  var box=document.getElementById('moveHelperBox');
+  if(box && !document.getElementById('patch1CloseBtn')){
+    box.style.position='relative';
+    var x=document.createElement('span');
+    x.id='patch1CloseBtn'; x.textContent='✕';
+    x.style.cssText='position:absolute;top:6px;right:10px;color:#fff;font-weight:bold;cursor:pointer;font-size:18px';
+    x.onclick=function(){ box.style.display='none'; };
+    box.appendChild(x);
+    var t=box.querySelector('div');
+    if(t && t.textContent.includes('File ko')) t.innerHTML='<b>📂 Move File to This Folder?</b>';
+    var btns=box.querySelectorAll('button');
+    if(btns[0]) btns[0].textContent='📂 Open Files App - Move';
+  }
+  // FIX VIEWER BUTTONS ENGLISH
+  document.querySelectorAll('button').forEach(function(b){
+    if(b.textContent.includes('Gallery Me Save')) b.textContent='📱 Save to Gallery';
+    if(b.textContent.includes('Phone Gallery Kholo')) b.textContent='🖼️ Open Phone Gallery';
+  });
+})();
+
+// PATCH 1 - SMART CLOSE DETAIL
+function closeDetail(){ var d=document.getElementById('page-detail'); if(d) d.style.display='none'; }
+
+// PATCH 1 - SMART EXPORT CHECK (never breaks if settings missing)
+function checkExport(k,label){
+  try{
+    if(typeof appSettings==='undefined'||!appSettings.exports) return true;
+    if(appSettings.exports[k]===false){ showToast((label||k)+' Export is OFF - Enable in Settings > Export Toggles'); return false; }
+  }catch(e){ return true; }
+  return true;
+}
+
+// PATCH 1 - SMART STOP ALL CAMERAS (fixes Bill camera running in Count/Face)
+function stopPageCams(){
+  try{
+    [billStream,docStream,faceStream].forEach(function(s){ if(s) s.getTracks().forEach(function(t){t.stop()}); });
+  }catch(e){}
+  try{ billStream=docStream=faceStream=null; faceRunning=false; cancelAnimationFrame(faceLoop); }catch(e){}
+  try{ if(typeof countStream!=='undefined'&&countStream){ countStream.getTracks().forEach(function(t){t.stop()}); countStream=null; } }catch(e){}
+  try{ if(typeof scanStream!=='undefined'&&scanStream){ scanStream.getTracks().forEach(function(t){t.stop()}); scanStream=null; } }catch(e){}
+  try{ if(typeof scanAutoTimer!=='undefined'&&scanAutoTimer) clearInterval(scanAutoTimer); }catch(e){}
+}
+</script>
+<!-- END PATCH 1 -->
 </body>
   </html>
